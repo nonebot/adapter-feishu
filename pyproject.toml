@@ -29,7 +29,9 @@ httpx = ">=0.18.0, <1.0.0"
 nonebot2 = "^2.0.0-alpha.14"
 
 [tool.poetry.dev-dependencies]
-nonebot2 = { path = "../../", develop = true }
+isort = "^5.10.1"
+black = "^21.11b1"
+nonebot2 = { git = "https://github.com/nonebot/nonebot2.git", branch = "dev" }
 
 # [[tool.poetry.source]]
 # name = "aliyun"
