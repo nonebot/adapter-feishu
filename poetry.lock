@@ -520,7 +520,7 @@ testing = ["pytest (>=6)", "pytest-checkdocs (>=2.4)", "pytest-flake8", "pytest-
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.7.3"
-content-hash = "4d47755a60365a0cc0e0aaebfa2f603bc13724bd55ef82a3aec33b3ad37941a2"
+content-hash = "3c8a997ed84881c2b8416be6987b95ecbadf13bb10cbee6cef8975f6ec6a6c1a"
 
 [metadata.files]
 aiocache = [
