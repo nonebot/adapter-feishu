@@ -8,7 +8,7 @@ readme = "README.md"
 homepage = "https://v2.nonebot.dev/"
 repository = "https://github.com/nonebot/nonebot2"
 documentation = "https://v2.nonebot.dev/"
-keywords = ["bot", "qq", "qqbot", "feishu", "larksuite"]
+keywords = ["bot", "feishu", "larksuite"]
 classifiers = [
   "Development Status :: 5 - Production/Stable",
   "Framework :: Robot Framework",
@@ -19,7 +19,6 @@ classifiers = [
 packages = [
   { include = "nonebot" }
 ]
-exclude = ["nonebot/__init__.py", "nonebot/adapters/__init__.py"]
 
 [tool.poetry.dependencies]
 python = "^3.7.3"
@@ -32,11 +31,6 @@ nonebot2 = ">=2.0.0-beta.1, <2.0.0-beta.2"
 isort = "^5.10.1"
 black = "^21.11b1"
 nonebot2 = { git = "https://github.com/nonebot/nonebot2.git", tag = "v2.0.0-beta.1" }
-
-# [[tool.poetry.source]]
-# name = "aliyun"
-# url = "https://mirrors.aliyun.com/pypi/simple/"
-# default = true
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
