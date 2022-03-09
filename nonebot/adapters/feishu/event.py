@@ -1,12 +1,9 @@
-import inspect
 import json
-from typing import Any, Dict, List, Literal, Optional, Type
-
-from pydantic import BaseModel, Field, root_validator
-from pygtrie import StringTrie
+from typing import Any, Dict, List, Literal, Optional
 
 from nonebot.adapters import Event as BaseEvent
 from nonebot.typing import overrides
+from pydantic import BaseModel, Field, root_validator
 
 from .message import Message, MessageDeserializer
 
@@ -853,26 +850,3 @@ class AttendanceUserTaskUpdatedEventDetail(BaseModel):
 class AttendanceUserTaskUpdatedEvent(NoticeEvent):
     __event__ = "attendance.user_task.updated_v1"
     event: AttendanceUserTaskUpdatedEventDetail
-
-
-_t = StringTrie(separator=".")
-
-# define `model` first to avoid globals changing while `for`
-model = None
-for model in globals().values():
-    if not inspect.isclass(model) or not issubclass(model, Event):
-        continue
-    _t["." + model.__event__] = model
-
-
-def get_event_model(event_name) -> List[Type[Event]]:
-    """
-    :说明:
-
-      根据事件名获取对应 ``Event Model`` 及 ``FallBack Event Model`` 列表
-
-    :返回:
-
-      - ``List[Type[Event]]``
-    """
-    return [model.value for model in _t.prefixes("." + event_name)][::-1]
