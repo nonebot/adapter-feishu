@@ -1,11 +1,10 @@
 import asyncio
 import inspect
 import json
+from datetime import timedelta
 from typing import Any, Callable, List, Optional, Type, Union, cast
 
 import httpx
-from aiocache import Cache, cached
-from aiocache.serializers import PickleSerializer
 from nonebot.adapters import Adapter as BaseAdapter
 from nonebot.drivers import (
     URL,
@@ -25,7 +24,7 @@ from .config import Config
 from .event import Event
 from .exception import ApiNotAvailable, NetworkError
 from .message import Message, MessageSegment
-from .utils import AESCipher, _handle_api_result, log
+from .utils import AESCipher, _handle_api_result, cache, log
 
 
 class Adapter(BaseAdapter):
@@ -77,12 +76,7 @@ class Adapter(BaseAdapter):
             )
             self.setup_http_server(http_setup)
 
-    @cached(
-        ttl=60 * 60,
-        cache=Cache.MEMORY,
-        key="_feishu_tenant_access_token",
-        serializer=PickleSerializer(),
-    )
+    @cache(ttl=timedelta(hours=1), key="feishu_tenant_access_token")
     async def _fetch_tenant_access_token(self) -> str:
         try:
             async with httpx.AsyncClient() as client:
@@ -114,13 +108,8 @@ class Adapter(BaseAdapter):
         log("DEBUG", f"Calling API <y>{api}</y>")
 
         headers = {}
-        self.feishu_config.feishu_tenant_access_token = (
-            await self._fetch_tenant_access_token()
-        )
-        if self.feishu_config.feishu_tenant_access_token is not None:
-            headers["Authorization"] = (
-                "Bearer " + self.feishu_config.feishu_tenant_access_token
-            )
+        tenant_access_token: str = await cache.get("feishu_tenant_access_token")
+        headers["Authorization"] = "Bearer " + tenant_access_token
 
         try:
             async with httpx.AsyncClient(timeout=timeout) as client:

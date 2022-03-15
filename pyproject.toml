@@ -22,10 +22,10 @@ packages = [
 
 [tool.poetry.dependencies]
 python = "^3.7.3"
-aiocache = "^0.11.1"
 pycryptodome = "^3.10.1"
 httpx = ">=0.18.0, <1.0.0"
 nonebot2 = ">=2.0.0-beta.1, <2.0.0-beta.2"
+cashews = "^4.0.0"
 
 [tool.poetry.dev-dependencies]
 isort = "^5.10.1"

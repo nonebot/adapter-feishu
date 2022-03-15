@@ -2,12 +2,15 @@ import base64
 import hashlib
 from typing import Any, Dict, Optional
 
+from cashews import cache
 from Crypto.Cipher import AES
 from nonebot.utils import logger_wrapper
 
 from .exception import ActionFailed
 
 log = logger_wrapper("FEISHU")
+
+cache.setup("mem://")
 
 
 def _handle_api_result(result: Optional[Dict[str, Any]]) -> Any:
