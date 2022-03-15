@@ -108,7 +108,7 @@ class Adapter(BaseAdapter):
         log("DEBUG", f"Calling API <y>{api}</y>")
 
         headers = {}
-        tenant_access_token: str = await cache.get("feishu_tenant_access_token")
+        tenant_access_token: str = await self._fetch_tenant_access_token()
         headers["Authorization"] = "Bearer " + tenant_access_token
 
         try:
