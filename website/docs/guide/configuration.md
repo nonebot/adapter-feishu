@@ -13,9 +13,9 @@ options:
 在 `.env` 文件中添加以下配置
 
 ```
-APP_ID=<yourAppId>
-APP_SECRET=<yourAppSecret>
-VERIFICATION_TOKEN=<yourVerificationToken>
+FEISHU_APP_ID=<yourAppId>
+FEISHU_APP_SECRET=<yourAppSecret>
+FEISHU_VERIFICATION_TOKEN=<yourVerificationToken>
 ```
 
 复制所创建应用**“凭证和基础信息”**中的 **App ID** 、 **App Secret** 和 **“事件订阅”** 中的 **Verification Token** ，替换上面相应的配置的值。

@@ -18,8 +18,12 @@ pip install nonebot-adapter-feishu
 
 在 `bot.py` 中添加：
 
-```python
-from nonebot.adapters.feishu import Bot as FeishuBot
+```python title=bot.py {2,7}
+import nonebot
+from nonebot.adapters.feishu import Adapter as FeishuAdapter
 
-driver.register_adapter("feishu", FeishuBot)
+nonebot.init()
+
+driver = nonebot.get_driver()
+driver.register_adapter(FeishuAdapter)
 ```
