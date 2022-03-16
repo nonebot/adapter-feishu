@@ -1,9 +1,10 @@
 import json
 from typing import Any, Dict, List, Literal, Optional
 
-from nonebot.adapters import Event as BaseEvent
 from nonebot.typing import overrides
-from pydantic import BaseModel, Field, root_validator
+from pydantic import Field, BaseModel, root_validator
+
+from nonebot.adapters import Event as BaseEvent
 
 from .message import Message, MessageDeserializer
 

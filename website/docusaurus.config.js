@@ -125,7 +125,12 @@ const config = {
           {
             title: "Related",
             icon: ["fas", "external-link-alt"],
-            items: [{ label: "飞书开放平台", href: "https://open.feishu.cn/app?lang=zh-CN" }],
+            items: [
+              {
+                label: "飞书开放平台",
+                href: "https://open.feishu.cn/app?lang=zh-CN",
+              },
+            ],
           },
         ],
       },

@@ -1,13 +1,14 @@
 import re
-from typing import TYPE_CHECKING, Any, Callable, Union
+from typing import TYPE_CHECKING, Any, Union, Callable
+
+from nonebot.typing import overrides
+from nonebot.message import handle_event
 
 from nonebot.adapters import Bot as BaseBot
-from nonebot.message import handle_event
-from nonebot.typing import overrides
 
-from .event import Event, GroupMessageEvent, MessageEvent, PrivateMessageEvent
-from .message import Message, MessageSegment, MessageSerializer
 from .utils import log
+from .message import Message, MessageSegment, MessageSerializer
+from .event import Event, MessageEvent, GroupMessageEvent, PrivateMessageEvent
 
 if TYPE_CHECKING:
     from nonebot.config import Config

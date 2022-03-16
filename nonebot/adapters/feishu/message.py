@@ -1,11 +1,12 @@
-import itertools
 import json
+import itertools
 from dataclasses import dataclass
-from typing import Any, Dict, Iterable, List, Mapping, Optional, Tuple, Type, Union
+from typing import Any, Dict, List, Type, Tuple, Union, Mapping, Iterable, Optional
+
+from nonebot.typing import overrides
 
 from nonebot.adapters import Message as BaseMessage
 from nonebot.adapters import MessageSegment as BaseMessageSegment
-from nonebot.typing import overrides
 
 
 class MessageSegment(BaseMessageSegment["Message"]):

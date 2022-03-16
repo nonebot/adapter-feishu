@@ -1,30 +1,31 @@
+import json
 import asyncio
 import inspect
-import json
 from datetime import timedelta
-from typing import Any, Callable, List, Optional, Type, Union, cast
+from typing import Any, List, Type, Union, Callable, Optional, cast
 
 import httpx
-from nonebot.adapters import Adapter as BaseAdapter
+from pygtrie import StringTrie
+from nonebot.typing import overrides
+from nonebot.utils import escape_tag
 from nonebot.drivers import (
     URL,
     Driver,
-    HTTPServerSetup,
     Request,
     Response,
     ReverseDriver,
+    HTTPServerSetup,
 )
-from nonebot.typing import overrides
-from nonebot.utils import escape_tag
-from pygtrie import StringTrie
+
+from nonebot.adapters import Adapter as BaseAdapter
 
 from . import event
 from .bot import Bot
-from .config import Config
 from .event import Event
-from .exception import ApiNotAvailable, NetworkError
+from .config import Config
 from .message import Message, MessageSegment
-from .utils import AESCipher, _handle_api_result, cache, log
+from .exception import NetworkError, ApiNotAvailable
+from .utils import AESCipher, log, cache, _handle_api_result
 
 
 class Adapter(BaseAdapter):
