@@ -134,8 +134,8 @@ const config = {
         darkTheme: darkCodeTheme,
       },
       algolia: {
-        appId: "",
-        apiKey: "",
+        appId: "<empty>",
+        apiKey: "<empty>",
         indexName: "adapter-feishu",
         contextualSearch: true,
       },
