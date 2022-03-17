@@ -35,7 +35,7 @@ def _check_at_me(bot: "Bot", event: "Event"):
 
     if event.event.message.chat_type == "p2p":
         event.to_me = True
-
+    else:
         for index, segment in enumerate(message):
             if (
                 segment.type == "at"
@@ -113,8 +113,10 @@ async def send(
 
     at_sender = at_sender and bool(event.get_user_id())
 
+    full_message = Message()  # create a new message with at sender segment
     if at_sender and receive_id_type == "chat_id":
-        msg = MessageSegment.at(event.get_user_id()) + " " + msg
+        full_message += MessageSegment.at(event.get_user_id()) + " "
+    full_message += message
 
     msg_type, content = MessageSerializer(msg).serialize()
 

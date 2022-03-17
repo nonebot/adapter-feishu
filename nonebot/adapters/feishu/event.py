@@ -212,6 +212,10 @@ class MessageEvent(Event):
     def get_session_id(self) -> str:
         return f"{self.event.message.chat_type}_{self.event.message.chat_id}_{self.get_user_id()}"
 
+    @overrides(Event)
+    def is_tome(self) -> bool:
+        return self.to_me
+
 
 class GroupMessageEvent(MessageEvent):
     __event__ = "im.message.receive_v1.group"
