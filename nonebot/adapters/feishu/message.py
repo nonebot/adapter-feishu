@@ -133,13 +133,17 @@ class Message(BaseMessage[MessageSegment]):
         return MessageSegment
 
     @overrides(BaseMessage)
-    def __add__(self, other: Union[str, Mapping, Iterable[Mapping]]) -> "Message":
+    def __add__(
+        self, other: Union[str, "MessageSegment", Iterable["MessageSegment"]]
+    ) -> "Message":
         return super(Message, self).__add__(
             MessageSegment.text(other) if isinstance(other, str) else other
         )
 
     @overrides(BaseMessage)
-    def __radd__(self, other: Union[str, Mapping, Iterable[Mapping]]) -> "Message":
+    def __radd__(
+        self, other: Union[str, "MessageSegment", Iterable["MessageSegment"]]
+    ) -> "Message":
         return super(Message, self).__radd__(
             MessageSegment.text(other) if isinstance(other, str) else other
         )
