@@ -1,6 +1,6 @@
 ---
-sidebar_position: 3
-description: 配置访问令牌、签名
+sidebar_position: 2
+description: 配置飞书适配器
 
 options:
   menu:
