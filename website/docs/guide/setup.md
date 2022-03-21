@@ -17,6 +17,32 @@ options:
 
 :::
 
+## 在 NoneBot 配置文件中添加相应配置
+
+在 `.env` 文件中添加以下配置
+
+```
+FEISHU_APP_ID=<yourAppId>
+FEISHU_APP_SECRET=<yourAppSecret>
+FEISHU_VERIFICATION_TOKEN=<yourVerificationToken>
+```
+
+复制所创建应用**“凭证和基础信息”**中的 **App ID** 、 **App Secret** 和 **“事件订阅”** 中的 **Verification Token** ，替换上面相应的配置的值。
+
+此外，对于飞书平台的事件订阅加密机制，飞书适配器也提供 `ENCRYPT_KEY` 配置项。
+
+```
+ENCRYPT_KEY=<yourEncryptKey>
+```
+
+当此项不为空时，飞书适配器会认为用户启用了加密机制，并对事件上报中的密文进行解密。
+
+对于[Lark(飞书平台海外版)](https://www.larksuite.com) 的用户，飞书适配器也提供**实验性**支持，仅需要在配置文件中添加 `IS_LARK=true` 即可。
+
+```
+IS_LARK=true
+```
+
 ## 开启应用权限
 
 应用拥有所需权限后，才能调用飞书接口获取相关信息。如果需要用到所有飞书平台的 API，请开启所有应用权限。
