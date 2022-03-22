@@ -5,9 +5,9 @@ description = "feishu(larksuite) adapter for nonebot2"
 authors = ["StarHeartHunt <starheart233@gmail.com>"]
 license = "MIT"
 readme = "README.md"
-homepage = "https://v2.nonebot.dev/"
-repository = "https://github.com/nonebot/nonebot2"
-documentation = "https://v2.nonebot.dev/"
+homepage = "https://feishu.adapters.nonebot.dev/"
+repository = "https://github.com/nonebot/adapter-feishu"
+documentation = "https://feishu.adapters.nonebot.dev/"
 keywords = ["bot", "feishu", "larksuite"]
 classifiers = [
   "Development Status :: 5 - Production/Stable",

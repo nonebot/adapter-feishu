@@ -1,5 +1,5 @@
 <p align="center">
-  <a href="https://adapter-feishu.netlify.app/"><img src="https://adapter-feishu.netlify.app/logo.png" width="200" height="200" alt="nonebot"></a>
+  <a href="https://feishu.adapters.nonebot.dev/"><img src="https://feishu.adapters.nonebot.dev/logo.png" width="200" height="200" alt="nonebot"></a>
 </p>
 
 <div align="center">
