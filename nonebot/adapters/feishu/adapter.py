@@ -57,7 +57,7 @@ class Adapter(BaseAdapter):
     def setup(self) -> None:
         if not isinstance(self.driver, ReverseDriver):
             raise RuntimeError(
-                f"Current driver {self.config.driver} don't support reverse connections!"
+                f"Current driver {self.config.driver} doesn't support forward connections!"
                 "Feishu Adapter need a ReverseDriver to work."
             )
 

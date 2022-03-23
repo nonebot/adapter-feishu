@@ -9,7 +9,7 @@ class BotConfig(BaseModel):
 
     :配置项:
 
-      - ``api_id``: 飞书开放平台后台“凭证与基础信息”处给出的 App ID
+      - ``app_id``: 飞书开放平台后台“凭证与基础信息”处给出的 App ID
       - ``app_secret``: 飞书开放平台后台“凭证与基础信息”处给出的 App Secret
       - ``encrypt_key``: 飞书开放平台后台“事件订阅”处设置的 Encrypt Key
       - ``verification_token``: 飞书开放平台后台“事件订阅”处设置的 Verification Token
