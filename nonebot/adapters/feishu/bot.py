@@ -1,17 +1,19 @@
 import re
-from typing import TYPE_CHECKING, Any, Union, Callable
+from typing import TYPE_CHECKING, Any, List, Union, Callable
 
 from nonebot.typing import overrides
 from nonebot.message import handle_event
+from pydantic import Field, HttpUrl, BaseModel
 
 from nonebot.adapters import Bot as BaseBot
 
 from .utils import log
+from .config import BotConfig
 from .message import Message, MessageSegment, MessageSerializer
 from .event import Event, MessageEvent, GroupMessageEvent, PrivateMessageEvent
 
 if TYPE_CHECKING:
-    from nonebot.config import Config
+    from .adapter import Adapter
 
 
 def _check_at_me(bot: "Bot", event: "Event"):
@@ -39,14 +41,14 @@ def _check_at_me(bot: "Bot", event: "Event"):
         for index, segment in enumerate(message):
             if (
                 segment.type == "at"
-                and segment.data.get("user_name") in bot.config.nickname
+                and segment.data.get("user_name") == bot.bot_info.app_name
             ):
                 event.to_me = True
                 del event.event.message.content[index]
                 return
             elif segment.type == "text" and segment.data.get("mentions"):
                 for mention in segment.data["mentions"].values():
-                    if mention["name"] in bot.config.nickname:
+                    if mention["id"]["open_id"] == bot.bot_info.open_id:
                         event.to_me = True
                         segment.data["text"] = segment.data["text"].replace(
                             f"@{mention['name']}", ""
@@ -133,6 +135,14 @@ async def send(
     return await bot.call_api(f"im/v1/messages", **params)
 
 
+class BotInfo(BaseModel):
+    activate_status: int = Field(alias="activate_status")
+    app_name: str = Field(alias="app_name")
+    avatar_url: HttpUrl = Field(alias="avatar_url")
+    ip_white_list: List[str] = Field(alias="ip_white_list")
+    open_id: str = Field(alias="open_id")
+
+
 class Bot(BaseBot):
     """
     飞书 协议 Bot 适配。继承属性参考 `BaseBot <./#class-basebot>`_ 。
@@ -141,6 +151,12 @@ class Bot(BaseBot):
     send_handler: Callable[
         ["Bot", Event, Union[str, Message, MessageSegment]], Any
     ] = send
+
+    @overrides(BaseBot)
+    def __init__(self, adapter: "Adapter", bot_config: BotConfig, bot_info: BotInfo):
+        super().__init__(adapter, bot_config.app_id)
+        self.bot_config: BotConfig = bot_config
+        self.bot_info: BotInfo = bot_info
 
     @property
     def type(self) -> str:

@@ -2,10 +2,11 @@ import json
 import asyncio
 import inspect
 from datetime import timedelta
-from typing import Any, List, Type, Union, Callable, Optional, cast
+from typing import Any, Dict, List, Type, Union, Callable, Optional, cast
 
 import httpx
 from pygtrie import StringTrie
+from pydantic import parse_obj_as
 from nonebot.typing import overrides
 from nonebot.utils import escape_tag
 from nonebot.drivers import (
@@ -20,11 +21,11 @@ from nonebot.drivers import (
 from nonebot.adapters import Adapter as BaseAdapter
 
 from . import event
-from .bot import Bot
 from .event import Event
-from .config import Config
+from .bot import Bot, BotInfo
+from .exception import NetworkError
+from .config import Config, BotConfig
 from .message import Message, MessageSegment
-from .exception import NetworkError, ApiNotAvailable
 from .utils import AESCipher, log, cache, _handle_api_result
 
 
@@ -44,7 +45,8 @@ class Adapter(BaseAdapter):
         super().__init__(driver, **kwargs)
         """飞书适配器配置"""
         self.feishu_config: Config = Config(**self.config.dict())
-        self._setup()
+        self.bot_apps: Dict[str, BotConfig] = {}
+        self.setup()
 
     @classmethod
     @overrides(BaseAdapter)
@@ -52,40 +54,77 @@ class Adapter(BaseAdapter):
         """适配器名称: `Feishu`"""
         return "Feishu"
 
-    @property
-    def api_root(self) -> str:
-        if self.feishu_config.feishu_is_lark:
-            return "https://open.larksuite.com/open-apis/"
-        else:
-            return "https://open.feishu.cn/open-apis/"
-
-    def _construct_url(self, path: str) -> str:
-        return self.api_root + path
-
-    def _setup(self) -> None:
-        if isinstance(self.driver, ReverseDriver):
-            http_setup = HTTPServerSetup(
-                URL("/feishu/"), "POST", self.get_name(), self._handle_http
+    def setup(self) -> None:
+        if not isinstance(self.driver, ReverseDriver):
+            raise RuntimeError(
+                f"Current driver {self.config.driver} don't support reverse connections!"
+                "Feishu Adapter need a ReverseDriver to work."
             )
-            self.setup_http_server(http_setup)
-            http_setup = HTTPServerSetup(
-                URL("/feishu/http"), "POST", self.get_name(), self._handle_http
-            )
-            self.setup_http_server(http_setup)
-            http_setup = HTTPServerSetup(
-                URL("/feishu/http/"), "POST", self.get_name(), self._handle_http
-            )
-            self.setup_http_server(http_setup)
 
-    @cache(ttl=timedelta(hours=1), key="feishu_tenant_access_token")
-    async def _fetch_tenant_access_token(self) -> str:
+        @self.driver.on_startup
+        async def _():
+            async with httpx.AsyncClient() as client:
+                for bot_config in self.feishu_config.feishu_bots:
+                    try:
+                        response = await client.get(
+                            self._construct_url(bot_config, "bot/v3/info"),
+                            headers={
+                                "Authorization": "Bearer "
+                                + await self._fetch_tenant_access_token(bot_config)
+                            },
+                        )
+                        if 200 <= response.status_code < 300:
+                            result = response.json()
+                        else:
+                            print(response.content)
+                            raise NetworkError(
+                                f"HTTP request received unexpected "
+                                f"status code: {response.status_code}"
+                            )
+                    except httpx.InvalidURL:
+                        raise NetworkError("API root url invalid")
+                    except httpx.HTTPError:
+                        raise NetworkError("HTTP request failed")
+
+                    self.bot_apps[bot_config.app_id] = bot_config
+                    bot_info = parse_obj_as(BotInfo, result.get("bot", {}))
+
+                    bot = self.bots.get(bot_config.app_id)
+                    if not bot:
+                        bot = Bot(self, bot_config, bot_info)
+                        self.bot_connect(bot)
+                        log(
+                            "INFO",
+                            f"<y>Bot {escape_tag(bot_config.app_id)}</y> connected",
+                        )
+                    setup = HTTPServerSetup(
+                        URL(f"/feishu/{bot.self_id}"),
+                        "POST",
+                        self.get_name(),
+                        self._handle_http,
+                    )
+                    self.setup_http_server(setup)
+
+    def _construct_url(self, bot_config: BotConfig, path: str):
+        api_base = (
+            self.feishu_config.feishu_lark_api_base
+            if bot_config.is_lark
+            else self.feishu_config.feishu_api_base
+        )
+
+        return api_base + path
+
+    @cache(ttl=timedelta(hours=1), key="feishu_tenant_access_token_{bot_config.app_id}")
+    async def _fetch_tenant_access_token(self, bot_config: BotConfig) -> str:
         try:
             async with httpx.AsyncClient() as client:
                 response = await client.post(
-                    self._construct_url("auth/v3/tenant_access_token/internal/"),
+                    self._construct_url(
+                        bot_config, "auth/v3/tenant_access_token/internal/"
+                    ),
                     json={
-                        "app_id": self.feishu_config.feishu_app_id,
-                        "app_secret": self.feishu_config.feishu_app_secret,
+                        "app_id": bot_config.app_id,
+                        "app_secret": bot_config.app_secret,
                     },
                     timeout=self.config.api_timeout,
                 )
@@ -109,15 +148,16 @@ class Adapter(BaseAdapter):
         log("DEBUG", f"Calling API <y>{api}</y>")
 
         headers = {}
-        tenant_access_token: str = await self._fetch_tenant_access_token()
-        headers["Authorization"] = "Bearer " + tenant_access_token
+        headers["Authorization"] = "Bearer " + await self._fetch_tenant_access_token(
+            bot.bot_config
+        )
 
         try:
             async with httpx.AsyncClient(timeout=timeout) as client:
                 response = await client.send(
                     httpx.Request(
                         data["method"],
-                        self.api_root + api,
+                        self._construct_url(bot.bot_config, api),
                         json=data.get("body", {}),
                         params=data.get("query", {}),
                         headers=headers,
@@ -141,17 +181,18 @@ class Adapter(BaseAdapter):
             raise NetworkError("HTTP request failed")
 
     async def _handle_http(self, request: Request) -> Response:
-        if self.feishu_config.feishu_app_id is None:
-            raise ApiNotAvailable
+        bot_config = self.bot_apps.get(request.url.parts[-1])
+        if bot_config is None:
+            raise RuntimeError("Corresponding bot config not found")
 
-        encrypt_key = self.feishu_config.feishu_encrypt_key
         data = request.content
-
         if data is not None:
-            if encrypt_key is not None:
+            if bot_config.encrypt_key is not None:
                 encrypted = json.loads(data).get("encrypt")
                 if encrypted is not None:
-                    decrypted = AESCipher(encrypt_key).decrypt_string(encrypted)
+                    decrypted = AESCipher(bot_config.encrypt_key).decrypt_string(
+                        encrypted
+                    )
                     data = json.loads(decrypted)
             else:
                 data = json.loads(data)
@@ -187,7 +228,7 @@ class Adapter(BaseAdapter):
                 content="Missing `verification token` in POST body",
             )
         else:
-            if token != self.feishu_config.feishu_verification_token:
+            if token != bot_config.verification_token:
                 log("WARNING", "Verification token check failed")
                 return Response(
                     403,
@@ -196,16 +237,11 @@ class Adapter(BaseAdapter):
 
         if data is not None:
             event = self.json_to_event(data)
+            bot = self.bots.get(bot_config.app_id)
+            if not bot:
+                raise RuntimeError("Corresponding Bot instance not found")
+            bot = cast(Bot, bot)
             if event:
-                bot = self.bots.get(self.feishu_config.feishu_app_id)
-                if not bot:
-                    bot = Bot(self, self.feishu_config.feishu_app_id)
-                    self.bot_connect(bot)
-                    log(
-                        "INFO",
-                        f"<y>Bot {escape_tag(self.feishu_config.feishu_app_id)}</y> connected",
-                    )
-                bot = cast(Bot, bot)
                 asyncio.create_task(bot.handle_event(event))
 
         return Response(200)
