@@ -135,9 +135,14 @@ class Adapter(BaseAdapter):
 
             if 200 <= response.status_code < 300:
                 result = response.json()
-                await cache.set(
-                    token_key, result["tenant_access_token"], result["expire"]
-                )
+                expire = result["expire"]
+                # token 有效期为 2 小时，在此期间调用该接口 token 不会改变
+                # 当 token 有效期小于 30 分的时候，再次请求获取 token 的时候，会生成一个新的 token，与此同时老的 token 依然有效
+                # 在有效期小于 30 分时使 token 过期，确保 token 时效性
+                if expire > 30 * 60:
+                    expire -= 30 * 60
+
+                await cache.set(token_key, result["tenant_access_token"], expire)
                 return result["tenant_access_token"]
             else:
                 raise NetworkError(
