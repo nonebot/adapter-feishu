@@ -114,8 +114,13 @@ class Adapter(BaseAdapter):
 
         return api_base + path
 
-    @cache(ttl=timedelta(hours=1), key="feishu_tenant_access_token_{bot_config.app_id}")
+    @cache(ttl=timedelta(hours=1), key="")
     async def _fetch_tenant_access_token(self, bot_config: BotConfig) -> str:
+        token_key = "feishu_tenant_access_token_" + bot_config.app_id
+        cached_token = await cache.get(token_key)
+        if cached_token is not None:
+            return cached_token
+
         try:
             async with httpx.AsyncClient() as client:
                 response = await client.post(
@@ -131,6 +136,9 @@ class Adapter(BaseAdapter):
 
             if 200 <= response.status_code < 300:
                 result = response.json()
+                await cache.set(
+                    token_key, result["tenant_access_token"], result["expire"]
+                )
                 return result["tenant_access_token"]
             else:
                 raise NetworkError(
