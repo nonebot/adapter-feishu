@@ -287,6 +287,36 @@ class GroupDisbandedEvent(NoticeEvent):
     event: GroupDisbandedEventDetail
 
 
+class Emoji(BaseModel):
+    emoji_type: str
+
+
+class MessageReactionDeletedEventDetail(BaseModel):
+    message_id: str
+    reaction_type: Emoji
+    operator_type: str
+    user_id: UserId
+    action_time: str
+
+
+class MessageReactionDeletedEvent(NoticeEvent):
+    __event__ = "im.message.reaction.deleted_v1"
+    event: MessageReactionDeletedEventDetail
+
+
+class MessageReactionCreatedEventDetail(BaseModel):
+    message_id: str
+    reaction_type: Emoji
+    operator_type: str
+    user_id: UserId
+    action_time: str
+
+
+class MessageReactionCreatedEvent(NoticeEvent):
+    __event__ = "im.message.reaction.created_v1"
+    event: MessageReactionCreatedEventDetail
+
+
 class I18nNames(BaseModel):
     zh_cn: str
     en_us: str
