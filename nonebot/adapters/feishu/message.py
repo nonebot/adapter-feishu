@@ -166,8 +166,6 @@ class Message(BaseMessage[MessageSegment]):
                     yield MessageSegment(seg["type"], seg.get("data") or {})
 
     def _merge(self) -> "Message":
-        i: int
-        seg: MessageSegment
         msg: List[MessageSegment] = []
         for i, seg in enumerate(self):
             if seg.type == "text" and i != 0 and msg[-1].type == "text":
