@@ -84,8 +84,8 @@ class MessageSegment(BaseMessageSegment["Message"]):
         return MessageSegment("image", {"image_key": image_key})
 
     @staticmethod
-    def interactive(title: str, elements: list) -> "MessageSegment":
-        return MessageSegment("interactive", {"title": title, "elements": elements})
+    def interactive(data: dict) -> "MessageSegment":
+        return MessageSegment("interactive", data)
 
     @staticmethod
     def share_chat(chat_id: str) -> "MessageSegment":
