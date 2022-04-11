@@ -75,7 +75,6 @@ class Adapter(BaseAdapter):
                         if 200 <= response.status_code < 300:
                             result = response.json()
                         else:
-                            print(response.content)
                             raise NetworkError(
                                 f"HTTP request received unexpected "
                                 f"status code: {response.status_code}"
