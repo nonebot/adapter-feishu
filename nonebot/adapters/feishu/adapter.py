@@ -69,8 +69,7 @@ class Adapter(BaseAdapter):
                         response = await client.get(
                             self._construct_url(bot_config, "bot/v3/info"),
                             headers={
-                                "Authorization": "Bearer "
-                                + await self._fetch_tenant_access_token(bot_config)
+                                f"Authorization": "Bearer {await self._fetch_tenant_access_token(bot_config)}"
                             },
                         )
                         if 200 <= response.status_code < 300:
@@ -159,22 +158,26 @@ class Adapter(BaseAdapter):
         timeout: float = data.get("_timeout", self.config.api_timeout)
         log("DEBUG", f"Calling API <y>{api}</y>")
 
-        headers = {}
-        headers["Authorization"] = "Bearer " + await self._fetch_tenant_access_token(
-            bot.bot_config
-        )
+        headers = {
+            "Authorization": f"Bearer {await self._fetch_tenant_access_token(bot.bot_config)}"
+        }
 
         try:
             async with httpx.AsyncClient(timeout=timeout) as client:
-                response = await client.send(
+                request = data.get(
+                    "request",
                     httpx.Request(
                         data["method"],
                         self._construct_url(bot.bot_config, api),
-                        json=data.get("body", {}),
-                        params=data.get("query", {}),
+                        cookies=data.get("cookies"),
+                        content=data.get("content"),
+                        files=data.get("files"),
+                        json=data.get("body"),
+                        params=data.get("query"),
                         headers=headers,
-                    )
+                    ),
                 )
+                response = await client.send(request)
             if 200 <= response.status_code < 300:
                 if response.headers["content-type"].startswith("application/json"):
                     result = response.json()
