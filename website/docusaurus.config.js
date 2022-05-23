@@ -65,6 +65,7 @@ const config = {
             type: "docLink",
             docId: "api/index",
           },
+          { label: "更新日志", to: "/changelog" },
           {
             label: "NoneBot",
             icon: ["fas", "angle-double-right"],
