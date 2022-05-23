@@ -113,7 +113,7 @@ class Adapter(BaseAdapter):
         return api_base + path
 
     async def _fetch_tenant_access_token(self, bot_config: BotConfig) -> str:
-        token_key = "feishu_tenant_access_token_" + bot_config.app_id
+        token_key = f"feishu_tenant_access_token_{bot_config.app_id}"
         cached_token = await cache.get(token_key)
         if cached_token is not None:
             return cached_token
