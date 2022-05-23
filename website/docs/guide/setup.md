@@ -22,9 +22,13 @@ options:
 在 `.env` 文件中添加以下配置
 
 ```
-FEISHU_APP_ID=<yourAppId>
-FEISHU_APP_SECRET=<yourAppSecret>
-FEISHU_VERIFICATION_TOKEN=<yourVerificationToken>
+FEISHU_BOTS=[{"app_id":"<your app_id>","app_secret":"<your app_secret>","verification_token":"<your app_verification_token>"}]
+```
+
+飞书适配器支持同时传入多份配置，仅需要按相同格式传入 `FEISHU_BOTS` 即可。
+
+```
+FEISHU_BOTS=[{"app_id":"<your app_id>","app_secret":"<your app_secret>","verification_token":"<your app_verification_token>"},{"app_id":"<your app_id2>","app_secret":"<your app_secret2>","verification_token":"<your app_verification_token2>"}]
 ```
 
 复制所创建应用**“凭证和基础信息”**中的 **App ID** 、 **App Secret** 和 **“事件订阅”** 中的 **Verification Token** ，替换上面相应的配置的值。
