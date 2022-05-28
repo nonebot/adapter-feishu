@@ -8,10 +8,6 @@
 
   - `**kwargs` (Any)
 
-### _property_ `api_root` {#Adapter-api_root}
-
-- **类型:** str
-
 ### _class-var_ `event_models` {#Adapter-event_models}
 
 - **类型:** pygtrie.StringTrie
@@ -108,3 +104,9 @@
 - **返回**
 
   - AnyClassMethod | ((\*Any, \*\*Any) -> Any) -> AnyClassMethod
+
+### _method_ `setup(self)` {#Adapter-setup}
+
+- **返回**
+
+  - None

@@ -22,7 +22,21 @@
 
   - Any
 
-## _class_ `Bot(adapter, self_id)` {#Bot}
+## _class_ `BotInfo(*, activate_status, app_name, avatar_url, ip_white_list, open_id)` {#BotInfo}
+
+- **参数**
+
+  - `activate_status` (int)
+
+  - `app_name` (str)
+
+  - `avatar_url` (pydantic.networks.HttpUrl)
+
+  - `ip_white_list` (list[str])
+
+  - `open_id` (str)
+
+## _class_ `Bot(adapter, bot_config, bot_info)` {#Bot}
 
 - **说明**
 
@@ -32,7 +46,9 @@
 
   - `adapter` (Adapter)
 
-  - `self_id` (str)
+  - `bot_config` ([BotConfig](./config.md#BotConfig))
+
+  - `bot_info` ([BotInfo](#BotInfo))
 
 ### _property_ `type` {#Bot-type}
 

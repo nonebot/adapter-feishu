@@ -503,6 +503,64 @@
 
   - `**extra_data` (Any)
 
+## _class_ `Emoji(*, emoji_type)` {#Emoji}
+
+- **参数**
+
+  - `emoji_type` (str)
+
+## _class_ `MessageReactionDeletedEventDetail(*, message_id, reaction_type, operator_type, user_id, action_time)` {#MessageReactionDeletedEventDetail}
+
+- **参数**
+
+  - `message_id` (str)
+
+  - `reaction_type` ([Emoji](#Emoji))
+
+  - `operator_type` (str)
+
+  - `user_id` ([UserId](#UserId))
+
+  - `action_time` (str)
+
+## _class_ `MessageReactionDeletedEvent(*, schema='', header, event, **extra_data)` {#MessageReactionDeletedEvent}
+
+- **参数**
+
+  - `schema` (str)
+
+  - `header` ([EventHeader](#EventHeader))
+
+  - `event` ([MessageReactionDeletedEventDetail](#MessageReactionDeletedEventDetail))
+
+  - `**extra_data` (Any)
+
+## _class_ `MessageReactionCreatedEventDetail(*, message_id, reaction_type, operator_type, user_id, action_time)` {#MessageReactionCreatedEventDetail}
+
+- **参数**
+
+  - `message_id` (str)
+
+  - `reaction_type` ([Emoji](#Emoji))
+
+  - `operator_type` (str)
+
+  - `user_id` ([UserId](#UserId))
+
+  - `action_time` (str)
+
+## _class_ `MessageReactionCreatedEvent(*, schema='', header, event, **extra_data)` {#MessageReactionCreatedEvent}
+
+- **参数**
+
+  - `schema` (str)
+
+  - `header` ([EventHeader](#EventHeader))
+
+  - `event` ([MessageReactionCreatedEventDetail](#MessageReactionCreatedEventDetail))
+
+  - `**extra_data` (Any)
+
 ## _class_ `I18nNames(*, zh_cn, en_us, ja_jp)` {#I18nNames}
 
 - **参数**
