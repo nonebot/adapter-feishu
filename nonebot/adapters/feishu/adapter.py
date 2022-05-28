@@ -69,7 +69,7 @@ class Adapter(BaseAdapter):
                         response = await client.get(
                             self._construct_url(bot_config, "bot/v3/info"),
                             headers={
-                                f"Authorization": "Bearer {await self._fetch_tenant_access_token(bot_config)}"
+                                "Authorization": f"Bearer {await self._fetch_tenant_access_token(bot_config)}"
                             },
                         )
                         if 200 <= response.status_code < 300:
