@@ -140,7 +140,7 @@ class Adapter(BaseAdapter):
                 if expire > 30 * 60:
                     expire -= 30 * 60
 
-                await cache.set(token_key, result["tenant_access_token"], expire)
+                await cache.set(token_key, result["tenant_access_token"], expire)  # type: ignore
                 return result["tenant_access_token"]
             else:
                 raise NetworkError(
