@@ -20,7 +20,7 @@ def _check_at_me(bot: "Bot", event: "Event"):
     """
     :说明:
 
-      检查消息开头或结尾是否存在 @机器人，去除并赋值 ``event.reply``, ``event.to_me``
+      检查消息开头或结尾是否存在 @机器人，去除并赋值 ``event.to_me``
 
     :参数:
 
