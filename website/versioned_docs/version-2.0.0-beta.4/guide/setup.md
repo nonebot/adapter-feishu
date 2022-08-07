@@ -35,7 +35,9 @@ FEISHU_BOTS=[{"app_id":"<your app_id>","app_secret":"<your app_secret>","verific
 
 如果在飞书开发者后台的事件订阅中配置了事件上报的 Encrypt Key，也需要传入 FEISHU_BOTS 中。
 
-当 encrypt_key 存在且不为空时，飞书适配器会认为用户启用了加密机制，并对事件上报中的密文进行解密。
+当 `encrypt_key` 存在且不为空时，飞书适配器会认为用户启用了加密机制，并对事件上报中的密文进行解密。
+
+如果不需要启用加密功能，请将配置项中的 `encrypt_key` 键值对删去，或将 `encrypt_key` 置为 `null`。
 
 对于[Lark(飞书平台海外版)](https://www.larksuite.com) 的用户，飞书适配器也提供**实验性**支持，仅需要在配置文件中将 `is_lark` 改为 `true`。
 
@@ -50,6 +52,7 @@ FEISHU_BOTS=[{"app_id":"<your app_id>","app_secret":"<your app_secret>","verific
 ### 配置上报地址
 
 飞书适配器会自动注册以下地址作为事件订阅上报入口点。
+
 由于飞书开放平台的事件订阅并不会上报 App ID，在填写事件订阅请求网址时，请按照如下格式填写，对应的以 `$` 开头的变量请使用 `.env.*` 文件中所定义的值进行替换，`$app_id` 替换为飞书开放平台提供的 App ID。
 
 ```
