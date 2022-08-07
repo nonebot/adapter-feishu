@@ -22,30 +22,22 @@ options:
 在 `.env` 文件中添加以下配置
 
 ```
-FEISHU_BOTS=[{"app_id":"<your app_id>","app_secret":"<your app_secret>","verification_token":"<your app_verification_token>"}]
+FEISHU_BOTS=[{"app_id":"<your app_id>","app_secret":"<your app_secret>","verification_token":"<your app_verification_token>","encrypt_key":"<your encrypt_key>","is_lark":false}]
 ```
 
 飞书适配器支持同时传入多份配置，仅需要按相同格式传入 `FEISHU_BOTS` 即可。
 
 ```
-FEISHU_BOTS=[{"app_id":"<your app_id>","app_secret":"<your app_secret>","verification_token":"<your app_verification_token>"},{"app_id":"<your app_id2>","app_secret":"<your app_secret2>","verification_token":"<your app_verification_token2>"}]
+FEISHU_BOTS=[{"app_id":"<your app_id>","app_secret":"<your app_secret>","verification_token":"<your app_verification_token>","encrypt_key":"<your encrypt_key>","is_lark":false},{"app_id":"<your app_id2>","app_secret":"<your app_secret2>","verification_token":"<your app_verification_token2>","encrypt_key":"<your encrypt_key>","is_lark":false}]
 ```
 
 复制所创建应用**“凭证和基础信息”**中的 **App ID** 、 **App Secret** 和 **“事件订阅”** 中的 **Verification Token** ，替换上面相应的配置的值。
 
-此外，对于飞书平台的事件订阅加密机制，飞书适配器也提供 `ENCRYPT_KEY` 配置项。
+如果在飞书开发者后台的事件订阅中配置了事件上报的 Encrypt Key，也需要传入 FEISHU_BOTS 中。
 
-```
-ENCRYPT_KEY=<yourEncryptKey>
-```
+当 encrypt_key 存在且不为空时，飞书适配器会认为用户启用了加密机制，并对事件上报中的密文进行解密。
 
-当此项不为空时，飞书适配器会认为用户启用了加密机制，并对事件上报中的密文进行解密。
-
-对于[Lark(飞书平台海外版)](https://www.larksuite.com) 的用户，飞书适配器也提供**实验性**支持，仅需要在配置文件中添加 `IS_LARK=true` 即可。
-
-```
-IS_LARK=true
-```
+对于[Lark(飞书平台海外版)](https://www.larksuite.com) 的用户，飞书适配器也提供**实验性**支持，仅需要在配置文件中将 `is_lark` 改为 `true`。
 
 ## 开启应用权限
 
@@ -55,17 +47,22 @@ IS_LARK=true
 
 ## 配置飞书事件订阅
 
-:::tip 提示
+### 配置上报地址
 
-在添加事件订阅时请注意，带有**（历史版本）**字样的事件的格式为**不受支持的旧版事件格式**，请使用对应的**新版事件（不带历史版本字样）作为替代**。
-
-:::
-
+飞书适配器会自动注册以下地址作为事件订阅上报入口点。
 由于飞书开放平台的事件订阅并不会上报 App ID，在填写事件订阅请求网址时，请按照如下格式填写，对应的以 `$` 开头的变量请使用 `.env.*` 文件中所定义的值进行替换，`$app_id` 替换为飞书开放平台提供的 App ID。
 
 ```
 http://$HOST:$PORT/feishu/$app_id
 ```
+
+### 配置事件订阅列表
+
+:::tip 提示
+
+在添加事件订阅时请注意，带有**（历史版本）**字样的事件的格式为**不受支持的旧版事件格式**，请使用对应的**新版事件（不带历史版本字样）作为替代**。
+
+:::
 
 ## 编写一个适用于飞书适配器的插件并加载
 
