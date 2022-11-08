@@ -20,6 +20,5 @@ jobs:
         run: |
           poetry build
           poetry publish -u ${{secrets.PYPI_USERNAME}} -p ${{secrets.PYPI_PASSWORD}}
-          gh release upload --clobber ${{ env.TAG_NAME }} dist/*.tar.gz dist/*.whl
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
