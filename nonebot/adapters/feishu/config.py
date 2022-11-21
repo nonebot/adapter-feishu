@@ -14,6 +14,7 @@ class BotConfig(BaseModel):
       - ``encrypt_key``: 飞书开放平台后台“事件订阅”处设置的 Encrypt Key
       - ``verification_token``: 飞书开放平台后台“事件订阅”处设置的 Verification Token
       - ``is_lark``: 是否使用 Lark（飞书海外版），默认为 false
+      - ``entry``: 事件订阅上报入口地址前缀，默认为 feishu
 
     """
 
@@ -22,6 +23,7 @@ class BotConfig(BaseModel):
     encrypt_key: Optional[str] = None
     verification_token: str
     is_lark: bool = False
+    entry: str = "feishu"
 
 
 class Config(BaseModel):

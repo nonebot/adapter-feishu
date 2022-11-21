@@ -22,13 +22,13 @@ options:
 在 `.env` 文件中添加以下配置
 
 ```
-FEISHU_BOTS=[{"app_id":"<your app_id>","app_secret":"<your app_secret>","verification_token":"<your app_verification_token>","encrypt_key":"<your encrypt_key>","is_lark":false}]
+FEISHU_BOTS=[{"app_id":"<your app_id>","app_secret":"<your app_secret>","verification_token":"<your app_verification_token>","encrypt_key":"<your encrypt_key>","is_lark":false,"entry":"feishu"}]
 ```
 
 飞书适配器支持同时传入多份配置，仅需要按相同格式传入 `FEISHU_BOTS` 即可。
 
 ```
-FEISHU_BOTS=[{"app_id":"<your app_id>","app_secret":"<your app_secret>","verification_token":"<your app_verification_token>","encrypt_key":"<your encrypt_key>","is_lark":false},{"app_id":"<your app_id2>","app_secret":"<your app_secret2>","verification_token":"<your app_verification_token2>","encrypt_key":"<your encrypt_key>","is_lark":false}]
+FEISHU_BOTS=[{"app_id":"<your app_id>","app_secret":"<your app_secret>","verification_token":"<your app_verification_token>","encrypt_key":"<your encrypt_key>","is_lark":false,"entry":"feishu"},{"app_id":"<your app_id2>","app_secret":"<your app_secret2>","verification_token":"<your app_verification_token2>","encrypt_key":"<your encrypt_key>","is_lark":false,"entry":"feishu"}]
 ```
 
 复制所创建应用**“凭证和基础信息”**中的 **App ID** 、 **App Secret** 和 **“事件订阅”** 中的 **Verification Token** ，替换上面相应的配置的值。
@@ -40,6 +40,8 @@ FEISHU_BOTS=[{"app_id":"<your app_id>","app_secret":"<your app_secret>","verific
 如果不需要启用加密功能，请将配置项中的 `encrypt_key` 键值对删去，或将 `encrypt_key` 置为 `null`。
 
 对于[Lark(飞书平台海外版)](https://www.larksuite.com) 的用户，飞书适配器也提供**实验性**支持，仅需要在配置文件中将 `is_lark` 改为 `true`。
+
+对于上报地址的配置，飞书适配器默认使用 `feishu`，如果需要更改上报地址，仅需要在配置文件中填入 `entry` 的值。
 
 ## 开启应用权限
 
@@ -53,10 +55,10 @@ FEISHU_BOTS=[{"app_id":"<your app_id>","app_secret":"<your app_secret>","verific
 
 飞书适配器会自动注册以下地址作为事件订阅上报入口点。
 
-由于飞书开放平台的事件订阅并不会上报 App ID，在填写事件订阅请求网址时，请按照如下格式填写，对应的以 `$` 开头的变量请使用 `.env.*` 文件中所定义的值进行替换，`$app_id` 替换为飞书开放平台提供的 App ID。
+由于飞书开放平台的事件订阅并不会上报 App ID，在填写事件订阅请求网址时，请按照如下格式填写，对应的以 `$` 开头的变量请使用 `.env.*` 文件中所定义的值进行替换，`$app_id` 替换为飞书开放平台提供的 App ID，`$entry` 替换自定义的入口，默认为 `feishu`。
 
 ```
-http://$HOST:$PORT/feishu/$app_id
+http://$HOST:$PORT/$entry/$app_id
 ```
 
 ### 配置事件订阅列表

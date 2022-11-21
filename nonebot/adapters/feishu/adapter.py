@@ -96,7 +96,7 @@ class Adapter(BaseAdapter):
                             f"<y>Bot {escape_tag(bot_config.app_id)}</y> connected",
                         )
                     setup = HTTPServerSetup(
-                        URL(f"/feishu/{bot.self_id}"),
+                        URL(f"/{bot_config.entry}/{bot.self_id}"),
                         "POST",
                         self.get_name(),
                         self._handle_http,

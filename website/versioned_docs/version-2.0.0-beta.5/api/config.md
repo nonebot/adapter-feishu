@@ -13,6 +13,7 @@
   - `encrypt_key`: 飞书开放平台后台“事件订阅”处设置的 Encrypt Key
   - `verification_token`: 飞书开放平台后台“事件订阅”处设置的 Verification Token
   - `is_lark`: 是否使用 Lark（飞书海外版），默认为 false
+  - `entry`: 事件订阅上报入口地址前缀，默认为 feishu
 
 - **参数**
 
@@ -25,6 +26,8 @@
   - `verification_token` (str)
 
   - `is_lark` (bool)
+
+  - `entry` (str)
 
 ## _class_ `Config(*, feishu_api_base='https://open.feishu.cn/open-apis/', feishu_lark_api_base='https://open.larksuite.com/open-apis/', feishu_bots=None)` {#Config}
 
