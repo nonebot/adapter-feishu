@@ -16,9 +16,9 @@
 
   - `tenant_key` (str)
 
-  - `resource_id` (str)
+  - `resource_id` (str | None)
 
-  - `user_list` (list[dict])
+  - `user_list` (list[dict] | None)
 
 ## _class_ `Event(*, schema='', header, event=None, **extra_data)` {#Event}
 
@@ -157,9 +157,9 @@
 
   - `message_id` (str)
 
-  - `root_id` (str)
+  - `root_id` (str | None)
 
-  - `parent_id` (str)
+  - `parent_id` (str | None)
 
   - `msg_type` (str)
 
@@ -179,7 +179,7 @@
 
   - `mentions` (list[[ReplyMention](#ReplyMention)])
 
-  - `upper_message_id` (str)
+  - `upper_message_id` (str | None)
 
   - `**extra_data` (Any)
 
@@ -189,9 +189,9 @@
 
   - `message_id` (str)
 
-  - `root_id` (str)
+  - `root_id` (str | None)
 
-  - `parent_id` (str)
+  - `parent_id` (str | None)
 
   - `create_time` (str)
 
@@ -203,7 +203,7 @@
 
   - `content` ([Message](./message.md#Message))
 
-  - `mentions` (list[[Mention](#Mention)])
+  - `mentions` (list[[Mention](#Mention)] | None)
 
 ### _classmethod_ `parse_message(cls, values)` {#EventMessage-parse_message}
 
@@ -221,9 +221,9 @@
 
   - `message_id` (str)
 
-  - `root_id` (str)
+  - `root_id` (str | None)
 
-  - `parent_id` (str)
+  - `parent_id` (str | None)
 
   - `create_time` (str)
 
@@ -235,7 +235,7 @@
 
   - `content` ([Message](./message.md#Message))
 
-  - `mentions` (list[[Mention](#Mention)])
+  - `mentions` (list[[Mention](#Mention)] | None)
 
 ## _class_ `PrivateEventMessage(*, message_id, root_id=None, parent_id=None, create_time, chat_id, chat_type, message_type, content, mentions=None)` {#PrivateEventMessage}
 
@@ -243,9 +243,9 @@
 
   - `message_id` (str)
 
-  - `root_id` (str)
+  - `root_id` (str | None)
 
-  - `parent_id` (str)
+  - `parent_id` (str | None)
 
   - `create_time` (str)
 
@@ -257,7 +257,7 @@
 
   - `content` ([Message](./message.md#Message))
 
-  - `mentions` (list[[Mention](#Mention)])
+  - `mentions` (list[[Mention](#Mention)] | None)
 
 ## _class_ `MessageEventDetail(*, sender, message)` {#MessageEventDetail}
 
@@ -295,7 +295,7 @@
 
   - `to_me` (bool)
 
-  - `reply` ([Reply](#Reply))
+  - `reply` ([Reply](#Reply) | None)
 
   - `**extra_data` (Any)
 
@@ -375,7 +375,7 @@
 
   - `to_me` (bool)
 
-  - `reply` ([Reply](#Reply))
+  - `reply` ([Reply](#Reply) | None)
 
   - `**extra_data` (Any)
 
@@ -391,7 +391,7 @@
 
   - `to_me` (bool)
 
-  - `reply` ([Reply](#Reply))
+  - `reply` ([Reply](#Reply) | None)
 
   - `**extra_data` (Any)
 
@@ -857,7 +857,7 @@
 
   - `status` ([UserStatus](#UserStatus))
 
-  - `department_ids` (list[str])
+  - `department_ids` (list[str] | None)
 
   - `leader_user_id` (str)
 
@@ -873,7 +873,7 @@
 
   - `employee_type` (int)
 
-  - `orders` (list[[UserOrder](#UserOrder)])
+  - `orders` (list[[UserOrder](#UserOrder)] | None)
 
   - `custom_attrs` (list[[UserCustomAttr](#UserCustomAttr)])
 
@@ -1383,9 +1383,9 @@
 
   - `id` ([UserId](#UserId))
 
-  - `user_role` (int)
+  - `user_role` (int | None)
 
-  - `user_type` (int)
+  - `user_type` (int | None)
 
 ## _class_ `Meeting(*, id, topic, meeting_no, start_time=None, end_time=None, host_user=None, owner)` {#Meeting}
 
@@ -1397,11 +1397,11 @@
 
   - `meeting_no` (str)
 
-  - `start_time` (str)
+  - `start_time` (str | None)
 
-  - `end_time` (str)
+  - `end_time` (str | None)
 
-  - `host_user` ([MeetingUser](#MeetingUser))
+  - `host_user` ([MeetingUser](#MeetingUser) | None)
 
   - `owner` ([MeetingUser](#MeetingUser))
 
@@ -1613,7 +1613,7 @@
 
   - `longitude` (float)
 
-  - `photo_urls` (list[str])
+  - `photo_urls` (list[str] | None)
 
   - `record_id` (str)
 

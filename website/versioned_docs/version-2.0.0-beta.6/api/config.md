@@ -20,7 +20,7 @@
 
   - `app_secret` (str)
 
-  - `encrypt_key` (str)
+  - `encrypt_key` (str | None)
 
   - `verification_token` (str)
 

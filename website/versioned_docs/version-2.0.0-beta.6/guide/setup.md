@@ -80,11 +80,15 @@ helper = on_command("say")
 
 
 @helper.handle()
-async def feishu_helper(bot: FeishuBot, event: MessageEvent, state: T_State):
-    message = event.get_message()
-    await helper.finish(message, at_sender=True)
+async def feishu_helper(
+    bot: FeishuBot,
+    event: MessageEvent,
+    state: T_State,
+    command_arg: Message = CommandArg(),
+):
+    await helper.finish(command_arg, at_sender=True)
 ```
 
-以上代码注册了一个对飞书平台适用的`say`指令，并会提取`/say`之后的内容发送到事件所对应的群或私聊。
+以上代码注册了一个对飞书平台适用的 `say` 指令，并会提取 `/say` 之后的内容发送到事件所对应的群或私聊。
 
-大功告成！现在可以试试向机器人发送类似`/say Hello, Feishu!`的消息进行测试了。
+大功告成！现在可以试试向机器人发送类似 `/say Hello, Feishu!` 的消息进行测试了。
