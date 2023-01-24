@@ -35,7 +35,7 @@ pytest-asyncio = "^0.18.1"
 nonebug = { git = "https://github.com/nonebot/nonebug.git" }
 nonebot2 = { git = "https://github.com/nonebot/nonebot2.git" }
 nb-autodoc = { git = "https://github.com/nonebot/nb-autodoc.git" }
-pre-commit = "^2.21.0"
+pre-commit = "^3.0.0"
 Jinja2 = "^3.1.2"
 
 [tool.black]
