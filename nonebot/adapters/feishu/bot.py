@@ -120,7 +120,7 @@ async def send(
         full_message += MessageSegment.at(event.get_user_id()) + " "
     full_message += message
 
-    msg_type, content = MessageSerializer(msg).serialize()
+    msg_type, content = MessageSerializer(full_message).serialize()
 
     params = {
         "method": "POST",
