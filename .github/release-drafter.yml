@@ -1,0 +1,43 @@
+template: $CHANGES
+category-template: "### $TITLE"
+name-template: "Release v$RESOLVED_VERSION 🌈"
+tag-template: "v$RESOLVED_VERSION"
+change-template: "- $TITLE [@$AUTHOR](https://github.com/$AUTHOR) ([#$NUMBER]($URL))"
+change-title-escapes: '\<&'
+exclude-labels:
+  - "dependencies"
+  - "skip-changelog"
+categories:
+  - title: "💥 破坏性变更"
+    labels:
+      - "Breaking"
+  - title: "🚀 新功能"
+    labels:
+      - "feature"
+      - "enhancement"
+  - title: "🐛 Bug 修复"
+    labels:
+      - "fix"
+      - "bugfix"
+      - "bug"
+  - title: "📝 文档"
+    labels:
+      - "documentation"
+  - title: "💫 杂项"
+  - title: "🍻 插件发布"
+    label: "Plugin"
+  - title: "🍻 机器人发布"
+    label: "Bot"
+  - title: "🍻 适配器发布"
+    label: "Adapter"
+version-resolver:
+  major:
+    labels:
+      - "major"
+  minor:
+    labels:
+      - "minor"
+  patch:
+    labels:
+      - "patch"
+  default: patch
