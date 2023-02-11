@@ -1,24 +1,48 @@
+
+
 name: Release
 
 on:
-  push:
-    tags:
-      - v*
+  workflow_dispatch:
 
 jobs:
-  release:
+  build:
     runs-on: ubuntu-latest
+
     steps:
       - uses: actions/checkout@v3
+        with:
+          ref: master
+          token: ${{ secrets.GH_TOKEN }}
 
       - name: Setup Python Environment
         uses: ./.github/actions/setup-python
 
-      - run: |
-          echo "TAG_NAME=${GITHUB_REF#refs/tags/}" >> $GITHUB_ENV
-      - name: Build and Publish Package
+      - name: Setup Node Environment
+        uses: ./.github/actions/setup-node
+
+      - name: Build API Doc
+        uses: ./.github/actions/build-api-doc
+
+      - run: echo "TAG_NAME=v$(poetry version -s)" >> $GITHUB_ENV
+
+      - name: Archive Changelog
+        uses: docker://ghcr.io/nonebot/auto-changelog:master
+        with:
+          changelog_file: website/src/pages/changelog.md
+          archive_regex: '(?<=## )最近更新(?=\n)'
+          archive_title: ${{ env.TAG_NAME }}
+          commit_and_push: false
+
+      - name: Archive Files
         run: |
-          poetry build
-          poetry publish -u ${{secrets.PYPI_USERNAME}} -p ${{secrets.PYPI_PASSWORD}}
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          yarn archive $(poetry version -s)
+          yarn prettier
+      - name: Push Tag
+        run: |
+          git config user.name github-actions[bot]
+          git config user.email github-actions[bot]@users.noreply.github.com
+          git add .
+          git commit -m ":bookmark: Release $(poetry version -s)"
+          git tag ${{ env.TAG_NAME }}
+          git push && git push --tags
