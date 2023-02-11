@@ -36,6 +36,7 @@ jobs:
         run: |
           yarn archive $(poetry version -s)
           yarn prettier
+
       - name: Push Tag
         run: |
           git config user.name github-actions[bot]
