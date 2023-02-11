@@ -130,7 +130,6 @@ async def send(
             "msg_type": msg_type,
         },
     }
-    print(params)
 
     return await bot.call_api(f"im/v1/messages", **params)
 
