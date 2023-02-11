@@ -113,7 +113,7 @@ async def send(
     else:
         raise ValueError("Cannot guess `receive_id` and `receive_id_type` to reply!")
 
-    full_message = Message() # create a new message for prepending
+    full_message = Message()  # create a new message for prepending
     at_sender = at_sender and bool(event.get_user_id())
     if at_sender and receive_id_type == "chat_id":
         full_message += MessageSegment.at(event.get_user_id()) + " "
