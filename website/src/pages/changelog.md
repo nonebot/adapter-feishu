@@ -7,6 +7,10 @@ toc_max_heading_level: 2
 
 ## 最近更新
 
+### 🐛 Bug 修复
+
+- Bug: feishu `at_sender` param in group chat fail to work
+
 ## v2.0.0b3
 
 - 修复适配器启动时 Authorization 头构造问题
