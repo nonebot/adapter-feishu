@@ -27,16 +27,22 @@ httpx = ">=0.18.0, <1.0.0"
 nonebot2 = ">=2.0.0-beta.1"
 cashews = "^4.0.0"
 
-[tool.poetry.dev-dependencies]
-isort = "^5.12.0"
+[tool.poetry.group.dev.dependencies]
+pycln = "^2.1.2"
+isort = "^5.10.1"
 black = "^23.1.0"
-pytest-cov = "^3.0.0"
-pytest-asyncio = "^0.18.1"
-nonebug = { git = "https://github.com/nonebot/nonebug.git" }
+nonemoji = "^0.1.2"
+pre-commit = "^3.0.0"
 nonebot2 = { git = "https://github.com/nonebot/nonebot2.git" }
+
+[tool.poetry.group.test.dependencies]
+pytest-cov = "^4.0.0"
+pytest-xdist = "^3.0.2"
+pytest-asyncio = "^0.20.0"
+nonebug = { git = "https://github.com/nonebot/nonebug.git" }
+
+[tool.poetry.group.docs.dependencies]
 nb-autodoc = { git = "https://github.com/nonebot/nb-autodoc.git" }
-pre-commit = "^3.0.4"
-Jinja2 = "^3.1.2"
 
 [tool.black]
 line-length = 88
