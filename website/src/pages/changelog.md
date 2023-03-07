@@ -7,7 +7,9 @@ toc_max_heading_level: 2
 
 ## 最近更新
 
-- No changes
+### 💫 杂项
+
+- :arrow_up: auto update by pre-commit hooks [@pre-commit-ci](https://github.com/pre-commit-ci) ([#36](https://github.com/nonebot/adapter-feishu/pull/36))
 
 ## v2.0.0-beta.7
 
