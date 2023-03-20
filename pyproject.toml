@@ -38,7 +38,7 @@ nonebot2 = { git = "https://github.com/nonebot/nonebot2.git" }
 [tool.poetry.group.test.dependencies]
 pytest-cov = "^4.0.0"
 pytest-xdist = "^3.0.2"
-pytest-asyncio = "^0.20.0"
+pytest-asyncio = ">=0.20,<0.22"
 nonebug = { git = "https://github.com/nonebot/nonebug.git" }
 
 [tool.poetry.group.docs.dependencies]
