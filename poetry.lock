@@ -783,14 +783,14 @@ resolved_reference = "f8f0bdbf827737e389227bd268f8e05786b9e6fd"
 
 [[package]]
 name = "nonemoji"
-version = "0.1.3"
+version = "0.1.4"
 description = "Simple gitmoji cli written in python"
 category = "dev"
 optional = false
 python-versions = ">=3.7.3,<4.0.0"
 files = [
-    {file = "nonemoji-0.1.3-py3-none-any.whl", hash = "sha256:ef6616afd127de714fa245c7241ebee77bb3850a5cd2fa1ae79524d6780cdeed"},
-    {file = "nonemoji-0.1.3.tar.gz", hash = "sha256:ee38739e777258d4221700e64f31d004e24210560ff117d5b48cc0cc9f4d5757"},
+    {file = "nonemoji-0.1.4-py3-none-any.whl", hash = "sha256:6e2b22d315bd936df7d004cf55b13fac5d55abd36aba6b37b405da39b6f78269"},
+    {file = "nonemoji-0.1.4.tar.gz", hash = "sha256:f7480e1f2f27f0a149da23f371bab0a47dd2cf46674f61798658b3daa7836fc5"},
 ]
 
 [package.dependencies]
