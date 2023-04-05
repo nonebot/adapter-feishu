@@ -122,14 +122,14 @@ uvloop = ["uvloop (>=0.15.2)"]
 
 [[package]]
 name = "cashews"
-version = "6.0.1"
+version = "6.0.2"
 description = "cache tools with async power"
 category = "main"
 optional = false
 python-versions = ">=3.7"
 files = [
-    {file = "cashews-6.0.1-py3-none-any.whl", hash = "sha256:677878f7d0a873e22f2f2e87b49930ab5804f07453078fdd1b00a83c7f6272e3"},
-    {file = "cashews-6.0.1.tar.gz", hash = "sha256:9e600195bc041a06247e6b529a262282148e088e50cefc7de6911f8144f7a3d0"},
+    {file = "cashews-6.0.2-py3-none-any.whl", hash = "sha256:4c5ff02dc57b94b08651787e51691debfca734e79c54a18b35d4ad6ba253bdff"},
+    {file = "cashews-6.0.2.tar.gz", hash = "sha256:f2e4e6fe5aa29a10121c5e5686608d7273bf0b1f7fdeeb101b0110070d194c54"},
 ]
 
 [package.extras]
