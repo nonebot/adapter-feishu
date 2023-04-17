@@ -2,6 +2,7 @@ import json
 from typing import Any, Dict, List, Literal, Optional
 
 from nonebot.typing import overrides
+from nonebot.utils import escape_tag
 from pydantic import Field, BaseModel, root_validator
 
 from nonebot.adapters import Event as BaseEvent
@@ -43,7 +44,7 @@ class Event(BaseEvent):
 
     @overrides(BaseEvent)
     def get_event_description(self) -> str:
-        return str(self.dict())
+        return escape_tag(str(self.dict()))
 
     @overrides(BaseEvent)
     def get_message(self) -> Message:
@@ -190,7 +191,7 @@ class MessageEvent(Event):
         return (
             f"{self.event.message.message_id} from {self.get_user_id()}"
             f"@[{self.event.message.chat_type}:{self.event.message.chat_id}]"
-            f" {self.get_message()}"
+            f" {escape_tag(str(self.get_message()))}"
         )
 
     @overrides(Event)
@@ -240,7 +241,7 @@ class NoticeEvent(Event):
 
     @overrides(Event)
     def get_event_description(self) -> str:
-        return str(self.dict())
+        return escape_tag(str(self.dict()))
 
     @overrides(Event)
     def get_message(self) -> Message:
