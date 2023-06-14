@@ -20,3 +20,9 @@ repos:
     hooks:
       - id: prettier
         types_or: [javascript, jsx, ts, tsx, markdown]
+
+  - repo: https://github.com/nonebot/nonemoji
+    rev: v0.1.4
+    hooks:
+      - id: nonemoji
+        stages: [prepare-commit-msg]
