@@ -111,17 +111,7 @@ const config = {
           {
             title: "NoneBot Team",
             icon: ["fas", "user-friends"],
-            items: [
-              {
-                label: "Homepage",
-                href: "https://nonebot.dev",
-              },
-              {
-                label: "NoneBot V1",
-                href: "https://docs.nonebot.dev",
-              },
-              { label: "NoneBot V2", href: "https://v2.nonebot.dev" },
-            ],
+            items: [{ label: "Homepage", href: "https://nonebot.dev" }],
           },
           {
             title: "Related",
