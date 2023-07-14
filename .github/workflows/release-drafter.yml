@@ -52,6 +52,9 @@ jobs:
   release:
     if: startsWith(github.ref, 'refs/tags/')
     runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: write
     steps:
       - uses: actions/checkout@v3
 
@@ -64,8 +67,16 @@ jobs:
       - name: Build API Doc
         uses: ./.github/actions/build-api-doc
 
-      - run: |
+      - name: Get Version
+        id: version
+        run: |
+          echo "VERSION=$(poetry version -s)" >> $GITHUB_OUTPUT
+          echo "TAG_VERSION=${GITHUB_REF#refs/tags/v}" >> $GITHUB_OUTPUT
           echo "TAG_NAME=${GITHUB_REF#refs/tags/}" >> $GITHUB_ENV
+
+      - name: Check Version
+        if: steps.version.outputs.VERSION != steps.version.outputs.TAG_VERSION
+        run: exit 1
 
       - uses: release-drafter/release-drafter@v5
         with:
@@ -75,10 +86,13 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Build and Publish Package
-        run: |
-          poetry build
-          poetry publish -u ${{secrets.PYPI_USERNAME}} -p ${{secrets.PYPI_PASSWORD}}
-          gh release upload --clobber ${{ env.TAG_NAME }} dist/*.tar.gz dist/*.whl
+      - name: Build Package
+        run: poetry build
+
+      - name: Publish Package to PyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
+
+      - name: Publish Package to GitHub Release
+        run: gh release upload --clobber ${{ steps.version.outputs.TAG_NAME }} dist/*.tar.gz dist/*.whl
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
