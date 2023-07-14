@@ -72,7 +72,7 @@ jobs:
         run: |
           echo "VERSION=$(poetry version -s)" >> $GITHUB_OUTPUT
           echo "TAG_VERSION=${GITHUB_REF#refs/tags/v}" >> $GITHUB_OUTPUT
-          echo "TAG_NAME=${GITHUB_REF#refs/tags/}" >> $GITHUB_ENV
+          echo "TAG_NAME=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
 
       - name: Check Version
         if: steps.version.outputs.VERSION != steps.version.outputs.TAG_VERSION
@@ -80,8 +80,8 @@ jobs:
 
       - uses: release-drafter/release-drafter@v5
         with:
-          name: Release ${{ env.TAG_NAME }} 🌈
-          tag: ${{ env.TAG_NAME }}
+          name: Release ${{ steps.version.outputs.TAG_NAME }} 🌈
+          tag: ${{ steps.version.outputs.TAG_NAME }}
           publish: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
