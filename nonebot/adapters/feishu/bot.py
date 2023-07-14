@@ -173,15 +173,14 @@ class Bot(BaseBot):
             event: Event 对象
             message: 要发送的消息
             at_sender (bool): 是否 @ 事件主体
-            kwargs: 其他参数，
-            可以与 {ref}`nonebot.adapters.feishu.adapter.Adapter.custom_send` 配合使用
+            kwargs: 其他参数，可以与 {ref}`nonebot.adapters.feishu.adapter.Adapter.custom_send` 配合使用
         返回:
             API 调用返回数据
         异常:
             ValueError: 缺少 `user_id`, `group_id`
             NetworkError: 网络错误
             ActionFailed: API 调用失败
-        """
+        """  # noqa: E501
         return await self.__class__.send_handler(self, event, message, **kwargs)
 
     @overrides(BaseBot)
