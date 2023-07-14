@@ -39,7 +39,7 @@ def _handle_api_result(result: Optional[Dict[str, Any]]) -> Any:
         return result
 
 
-class AESCipher(object):
+class AESCipher:
     def __init__(self, key):
         self.block_size = AES.block_size
         self.key = hashlib.sha256(AESCipher.str_to_bytes(key)).digest()

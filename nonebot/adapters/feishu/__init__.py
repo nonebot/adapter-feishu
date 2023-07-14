@@ -1,8 +1,8 @@
 """飞书协议适配"""
 
-from .event import *
 from .bot import Bot as Bot
 from .utils import log as log
+from .event import *  # noqa: F403
 from .adapter import Adapter as Adapter
 from .message import Message as Message
 from .exception import ActionFailed as ActionFailed

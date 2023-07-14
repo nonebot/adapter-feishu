@@ -1,7 +1,6 @@
 import json
 import asyncio
 import inspect
-from datetime import timedelta
 from typing import Any, Dict, List, Type, Union, Callable, Optional, cast
 
 import httpx
@@ -57,7 +56,8 @@ class Adapter(BaseAdapter):
     def setup(self) -> None:
         if not isinstance(self.driver, ReverseDriver):
             raise RuntimeError(
-                f"Current driver {self.config.driver} doesn't support reverse connections!"
+                f"Current driver {self.config.driver} "
+                "doesn't support reverse connections!"
                 "Feishu Adapter need a ReverseDriver to work."
             )
 
@@ -66,11 +66,10 @@ class Adapter(BaseAdapter):
             async with httpx.AsyncClient() as client:
                 for bot_config in self.feishu_config.feishu_bots:
                     try:
+                        token = await self.get_tenant_access_token(bot_config)
                         response = await client.get(
                             self._construct_url(bot_config, "bot/v3/info"),
-                            headers={
-                                "Authorization": f"Bearer {await self._fetch_tenant_access_token(bot_config)}"
-                            },
+                            headers={"Authorization": f"Bearer {token}"},
                         )
                         if 200 <= response.status_code < 300:
                             result = response.json()
@@ -112,7 +111,7 @@ class Adapter(BaseAdapter):
 
         return api_base + path
 
-    async def _fetch_tenant_access_token(self, bot_config: BotConfig) -> str:
+    async def get_tenant_access_token(self, bot_config: BotConfig) -> str:
         token_key = f"feishu_tenant_access_token_{bot_config.app_id}"
         cached_token = await cache.get(token_key)
         if cached_token is not None:
@@ -135,12 +134,15 @@ class Adapter(BaseAdapter):
                 result = response.json()
                 expire = result["expire"]
                 # token 有效期为 2 小时，在此期间调用该接口 token 不会改变
-                # 当 token 有效期小于 30 分的时候，再次请求获取 token 的时候，会生成一个新的 token，与此同时老的 token 依然有效
+                # 当 token 有效期小于 30 分的时候，再次请求获取 token 的时候，
+                # 会生成一个新的 token，与此同时老的 token 依然有效
                 # 在有效期小于 30 分时使 token 过期，确保 token 时效性
                 if expire > 30 * 60:
                     expire -= 30 * 60
 
-                await cache.set(token_key, result["tenant_access_token"], expire)  # type: ignore
+                await cache.set(
+                    token_key, result["tenant_access_token"], expire
+                )  # type: ignore
                 return result["tenant_access_token"]
             else:
                 raise NetworkError(
@@ -157,9 +159,8 @@ class Adapter(BaseAdapter):
         timeout: float = data.get("_timeout", self.config.api_timeout)
         log("DEBUG", f"Calling API <y>{api}</y>")
 
-        headers = {
-            "Authorization": f"Bearer {await self._fetch_tenant_access_token(bot.bot_config)}"
-        }
+        token = await self.get_tenant_access_token(bot.bot_config)
+        headers = {"Authorization": f"Bearer {token}"}
 
         try:
             async with httpx.AsyncClient(timeout=timeout) as client:
@@ -223,7 +224,7 @@ class Adapter(BaseAdapter):
         if not schema:
             return Response(
                 400,
-                content="Missing `schema` in POST body, only accept event of version 2.0",
+                content=("Missing `schema` in POST body, only accept event V2"),
             )
 
         headers = data.get("header")
@@ -316,7 +317,9 @@ class Adapter(BaseAdapter):
 
     @classmethod
     def get_event_model(cls, event_name: str) -> List[Type[Event]]:
-        """根据事件名获取对应 `Event Model` 及 `FallBack Event Model` 列表，不包括基类 `Event`。"""
+        """根据事件名获取对应 `Event Model` 及 `FallBack Event Model` 列表，
+        不包括基类 `Event`。
+        """
         return [model.value for model in cls.event_models.prefixes("." + event_name)][
             ::-1
         ]

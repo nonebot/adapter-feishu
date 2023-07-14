@@ -131,7 +131,7 @@ async def send(
         },
     }
 
-    return await bot.call_api(f"im/v1/messages", **params)
+    return await bot.call_api("im/v1/messages", **params)
 
 
 class BotInfo(BaseModel):
@@ -173,7 +173,8 @@ class Bot(BaseBot):
             event: Event 对象
             message: 要发送的消息
             at_sender (bool): 是否 @ 事件主体
-            kwargs: 其他参数，可以与 {ref}`nonebot.adapters.feishu.adapter.Adapter.custom_send` 配合使用
+            kwargs: 其他参数，
+            可以与 {ref}`nonebot.adapters.feishu.adapter.Adapter.custom_send` 配合使用
         返回:
             API 调用返回数据
         异常:

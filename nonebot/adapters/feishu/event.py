@@ -211,7 +211,11 @@ class MessageEvent(Event):
 
     @overrides(Event)
     def get_session_id(self) -> str:
-        return f"{self.event.message.chat_type}_{self.event.message.chat_id}_{self.get_user_id()}"
+        return (
+            f"{self.event.message.chat_type}"
+            f"_{self.event.message.chat_id}"
+            f"_{self.get_user_id()}"
+        )
 
     @overrides(Event)
     def is_tome(self) -> bool:
