@@ -33,7 +33,7 @@ isort = "^5.10.1"
 black = "^23.1.0"
 nonemoji = "^0.1.2"
 pre-commit = "^3.0.0"
-nonebot2 = { git = "https://github.com/nonebot/nonebot2.git" }
+nonebot2 = { git = "https://github.com/nonebot/nonebot2.git", branch = "master", extras = ["fastapi"] }
 
 [tool.poetry.group.test.dependencies]
 pytest-cov = "^4.0.0"
