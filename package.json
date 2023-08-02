@@ -7,14 +7,15 @@
   "scripts": {
     "archive": "yarn workspace website docusaurus docs:version",
     "build": "yarn workspace website build",
-    "build:plugin": "cross-env BASE_URL='/docs/' yarn workspace website build",
     "start": "yarn workspace website start",
     "serve": "yarn workspace website serve",
     "clear": "yarn workspace website clear",
-    "prettier": "prettier --config ./.prettierrc --write \"./website/\""
+    "prettier": "prettier --config ./.prettierrc --write \"./website/\"",
+    "pyright": "pyright"
   },
   "devDependencies": {
     "cross-env": "^7.0.3",
-    "prettier": "^2.5.0"
+    "prettier": "^2.5.0",
+    "pyright": "^1.1.317"
   }
 }

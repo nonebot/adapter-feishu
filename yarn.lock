@@ -6184,6 +6184,13 @@ pupa@^2.1.1:
   dependencies:
     escape-goat "^2.0.0"
 
+pyright@^1.1.317:
+  version "1.1.320"
+  resolved "https://registry.yarnpkg.com/pyright/-/pyright-1.1.320.tgz#93aa0934acebce8b19cf95e9d69538f9bae08784"
+  integrity sha512-YO5GuZTJuSeQBxYPOD+Ih3vfmNcnvc/VafxTG8cObuY5Zu5y+Dq4E0gcdhyGVeg3w29tFL9OvlEO23C6+CjqNw==
+  optionalDependencies:
+    fsevents "~2.3.2"
+
 q@^1.1.2:
   version "1.5.1"
   resolved "https://registry.yarnpkg.com/q/-/q-1.5.1.tgz#7e32f75b41381291d04611f1bf14109ac00651d7"

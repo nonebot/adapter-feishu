@@ -71,17 +71,14 @@ fixture-parentheses = false
 mark-parentheses = false
 
 [tool.pyright]
-reportShadowedImports = false
 pythonVersion = "3.8"
 pythonPlatform = "All"
 executionEnvironments = [
   { root = "./" },
 ]
-exclude = [
-  "**/node_modules",
-  "**/__pycache__",
-  "**/tests"
-]
+
+typeCheckingMode = "basic"
+reportShadowedImports = false
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
