@@ -88,7 +88,12 @@ class Adapter(BaseAdapter):
 
                     bot = self.bots.get(bot_config.app_id)
                     if not bot:
-                        bot = Bot(self, bot_config, bot_info)
+                        bot = Bot(
+                            self,
+                            bot_config.app_id,
+                            bot_config=bot_config,
+                            bot_info=bot_info,
+                        )
                         self.bot_connect(bot)
                         log(
                             "INFO",

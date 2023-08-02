@@ -152,14 +152,17 @@ class Bot(BaseBot):
     ] = send
 
     @overrides(BaseBot)
-    def __init__(self, adapter: "Adapter", bot_config: BotConfig, bot_info: BotInfo):
-        super().__init__(adapter, bot_config.app_id)
+    def __init__(
+        self,
+        adapter: "Adapter",
+        self_id: str,
+        *,
+        bot_config: BotConfig,
+        bot_info: BotInfo,
+    ):
+        super().__init__(adapter, self_id)
         self.bot_config: BotConfig = bot_config
         self.bot_info: BotInfo = bot_info
-
-    @property
-    def type(self) -> str:
-        return "feishu"
 
     @overrides(BaseBot)
     async def send(
