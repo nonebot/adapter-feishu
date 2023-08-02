@@ -7,6 +7,10 @@ toc_max_heading_level: 2
 
 ## 最近更新
 
+### 🐛 Bug 修复
+
+- Fix: 删除过时的 `bot.type` 定义及更新 `bot.__init__` 签名 [@StarHeartHunt](https://github.com/StarHeartHunt) ([#67](https://github.com/nonebot/adapter-feishu/pull/67))
+
 ### 💫 杂项
 
 - :arrow_up: auto update by pre-commit hooks [@pre-commit-ci](https://github.com/pre-commit-ci) ([#65](https://github.com/nonebot/adapter-feishu/pull/65))
