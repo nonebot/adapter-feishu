@@ -28,7 +28,7 @@ nonebot2 = ">=2.0.0"
 cashews = ">=6.0.0, <7.0.0"
 
 [tool.poetry.group.dev.dependencies]
-ruff = ">=0.0.282,<0.0.284"
+ruff = ">=0.0.282,<0.0.285"
 isort = "^5.10.1"
 black = "^23.1.0"
 nonemoji = "^0.1.2"
