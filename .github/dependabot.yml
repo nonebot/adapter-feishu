@@ -5,7 +5,17 @@ updates:
     schedule:
       interval: daily
 
-  - package-ecosystem: pip
-    directory: "/"
+  - package-ecosystem: github-actions
+    directory: "/.github/actions/build-api-doc"
+    schedule:
+      interval: daily
+
+  - package-ecosystem: github-actions
+    directory: "/.github/actions/setup-node"
+    schedule:
+      interval: daily
+
+  - package-ecosystem: github-actions
+    directory: "/.github/actions/setup-python"
     schedule:
       interval: daily
