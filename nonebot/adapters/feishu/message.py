@@ -236,8 +236,7 @@ class MessageDeserializer:
                 msg += MessageSegment("text", {"text": self.data["title"]})
 
             for seg in itertools.chain(*self.data["content"]):
-                tag = seg.pop("tag")
-                if tag == "at":
+                if (tag := seg.pop("tag")) == "at":
                     seg["user_name"] = dict_mention[seg["user_id"]]["name"]
                     seg["user_id"] = dict_mention[seg["user_id"]]["id"]["open_id"]
 

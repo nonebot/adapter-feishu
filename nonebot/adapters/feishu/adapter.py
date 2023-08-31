@@ -86,8 +86,7 @@ class Adapter(BaseAdapter):
                     self.bot_apps[bot_config.app_id] = bot_config
                     bot_info = parse_obj_as(BotInfo, result.get("bot", {}))
 
-                    bot = self.bots.get(bot_config.app_id)
-                    if not bot:
+                    if not (bot := self.bots.get(bot_config.app_id)):
                         bot = Bot(
                             self,
                             bot_config.app_id,
@@ -221,20 +220,17 @@ class Adapter(BaseAdapter):
         if not isinstance(data, dict):
             return Response(500, content="Received non-JSON data, cannot cast to dict")
 
-        challenge = data.get("challenge")
-        if challenge:
+        if challenge := data.get("challenge"):
             return Response(200, content=json.dumps({"challenge": challenge}).encode())
 
-        schema = data.get("schema")
-        if not schema:
+        if not data.get("schema"):
             return Response(
                 400,
                 content=("Missing `schema` in POST body, only accept event V2"),
             )
 
-        headers = data.get("header")
-        if headers:
-            token = headers.get("token")
+        if headers := data.get("header"):
+            token: str = headers.get("token")
         else:
             log("WARNING", "Missing `header` in POST body")
             return Response(
@@ -257,13 +253,10 @@ class Adapter(BaseAdapter):
                 )
 
         if data is not None:
-            event = self.json_to_event(data)
-            bot = self.bots.get(bot_config.app_id)
-            if not bot:
+            if not (bot := self.bots.get(bot_config.app_id)):
                 raise RuntimeError("Corresponding Bot instance not found")
-            bot = cast(Bot, bot)
-            if event:
-                asyncio.create_task(bot.handle_event(event))
+            if event := self.json_to_event(data):
+                asyncio.create_task(cast(Bot, bot).handle_event(event))
 
         return Response(200)
 

@@ -30,9 +30,8 @@ def _check_at_me(bot: "Bot", event: "Event"):
     if not isinstance(event, MessageEvent):
         return
 
-    message = event.get_message()
     # ensure message not empty
-    if not message:
+    if not (message := event.get_message()):
         message.append(MessageSegment.text(""))
 
     if event.event.message.chat_type == "p2p":
