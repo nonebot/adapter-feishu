@@ -7,6 +7,10 @@ toc_max_heading_level: 2
 
 ## 最近更新
 
+### 🚀 新功能
+
+- Feat: 更新平台消息段参数 [@StarHeartHunt](https://github.com/StarHeartHunt) ([#75](https://github.com/nonebot/adapter-feishu/pull/75))
+
 ### 💫 杂项
 
 - :arrow_up: auto update by pre-commit hooks [@pre-commit-ci](https://github.com/pre-commit-ci) ([#73](https://github.com/nonebot/adapter-feishu/pull/73))
