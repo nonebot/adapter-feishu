@@ -24,17 +24,22 @@ class MessageSegment(BaseMessageSegment["Message"]):
         return {
             "image": "[图片]",
             "file": "[文件]",
+            "folder": "[文件夹]",
             "audio": "[音频]",
             "media": "[视频]",
             "sticker": "[表情包]",
             "interactive": "[消息卡片]",
             "hongbao": "[红包]",
-            "share_calendar_event": "[日程卡片]",
+            "share_calendar_event": "[日程分享卡片]",
+            "calendar": "[日程邀请卡片]",
+            "general_calendar": "[日程转让卡片]",
             "share_chat": "[群名片]",
             "share_user": "[个人名片]",
             "system": "[系统消息]",
             "location": "[位置]",
             "video_chat": "[视频通话]",
+            "todo": "[任务]",
+            "vote": "[投票]",
         }
 
     def __str__(self) -> str:
