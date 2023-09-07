@@ -65,18 +65,13 @@ class MessageSegment(BaseMessageSegment["Message"]):
     def is_text(self) -> bool:
         return self.type == "text"
 
-    # 接收消息
-    @staticmethod
-    def at(user_id: str) -> "MessageSegment":
-        return MessageSegment("at", {"user_id": user_id})
-
     # 发送消息
     @staticmethod
     def text(text: str) -> "MessageSegment":
         return MessageSegment("text", {"text": text})
 
     @staticmethod
-    def post(title: str, content: list) -> "MessageSegment":
+    def post(title: str, content: List[Any]) -> "MessageSegment":
         return MessageSegment("post", {"title": title, "content": content})
 
     @staticmethod
@@ -84,8 +79,13 @@ class MessageSegment(BaseMessageSegment["Message"]):
         return MessageSegment("image", {"image_key": image_key})
 
     @staticmethod
-    def interactive(data: dict) -> "MessageSegment":
+    def interactive(data: Dict[str, Any]) -> "MessageSegment":
         return MessageSegment("interactive", data)
+
+    # 接收消息
+    @staticmethod
+    def at(user_id: str) -> "MessageSegment":
+        return MessageSegment("at", {"user_id": user_id})
 
     @staticmethod
     def share_chat(chat_id: str) -> "MessageSegment":
@@ -96,26 +96,22 @@ class MessageSegment(BaseMessageSegment["Message"]):
         return MessageSegment("share_user", {"user_id": user_id})
 
     @staticmethod
-    def audio(file_key: str, duration: int) -> "MessageSegment":
-        return MessageSegment("audio", {"file_key": file_key, "duration": duration})
+    def audio(file_key: str) -> "MessageSegment":
+        return MessageSegment("audio", {"file_key": file_key})
 
     @staticmethod
-    def media(
-        file_key: str, image_key: str, file_name: str, duration: int
-    ) -> "MessageSegment":
+    def media(file_key: str, image_key: Optional[str]) -> "MessageSegment":
         return MessageSegment(
             "media",
             {
                 "file_key": file_key,
                 "image_key": image_key,
-                "file_name": file_name,
-                "duration": duration,
             },
         )
 
     @staticmethod
-    def file(file_key: str, file_name: str) -> "MessageSegment":
-        return MessageSegment("file", {"file_key": file_key, "file_name": file_name})
+    def file(file_key: str) -> "MessageSegment":
+        return MessageSegment("file", {"file_key": file_key})
 
     @staticmethod
     def sticker(file_key: str) -> "MessageSegment":
