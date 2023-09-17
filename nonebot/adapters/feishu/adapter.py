@@ -1,12 +1,12 @@
 import json
 import asyncio
 import inspect
+from typing_extensions import override
 from typing import Any, Dict, List, Type, Union, Callable, Optional, cast
 
 import httpx
 from pygtrie import StringTrie
 from pydantic import parse_obj_as
-from nonebot.typing import overrides
 from nonebot.utils import escape_tag
 from nonebot.drivers import (
     URL,
@@ -39,7 +39,7 @@ class Adapter(BaseAdapter):
             continue
         event_models["." + model.__event__] = model
 
-    @overrides(BaseAdapter)
+    @override
     def __init__(self, driver: Driver, **kwargs: Any):
         super().__init__(driver, **kwargs)
         """飞书适配器配置"""
@@ -48,7 +48,7 @@ class Adapter(BaseAdapter):
         self.setup()
 
     @classmethod
-    @overrides(BaseAdapter)
+    @override
     def get_name(cls) -> str:
         """适配器名称: `Feishu`"""
         return "Feishu"
@@ -158,7 +158,7 @@ class Adapter(BaseAdapter):
         except httpx.HTTPError:
             raise NetworkError("HTTP request failed")
 
-    @overrides(BaseAdapter)
+    @override
     async def _call_api(self, bot: Bot, api: str, **data: Any) -> Any:
         timeout: float = data.get("_timeout", self.config.api_timeout)
         log("DEBUG", f"Calling API <y>{api}</y>")

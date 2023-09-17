@@ -1,7 +1,7 @@
 import re
+from typing_extensions import override
 from typing import TYPE_CHECKING, Any, List, Union, Callable
 
-from nonebot.typing import overrides
 from nonebot.message import handle_event
 from pydantic import Field, HttpUrl, BaseModel
 
@@ -150,7 +150,7 @@ class Bot(BaseBot):
         ["Bot", Event, Union[str, Message, MessageSegment]], Any
     ] = send
 
-    @overrides(BaseBot)
+    @override
     def __init__(
         self,
         adapter: "Adapter",
@@ -163,7 +163,7 @@ class Bot(BaseBot):
         self.bot_config: BotConfig = bot_config
         self.bot_info: BotInfo = bot_info
 
-    @overrides(BaseBot)
+    @override
     async def send(
         self,
         event: Event,
@@ -185,7 +185,7 @@ class Bot(BaseBot):
         """  # noqa: E501
         return await self.__class__.send_handler(self, event, message, **kwargs)
 
-    @overrides(BaseBot)
+    @override
     async def call_api(self, api: str, **data) -> Any:
         """
         :说明:

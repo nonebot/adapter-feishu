@@ -1,7 +1,7 @@
 import json
+from typing_extensions import override
 from typing import Any, Dict, List, Literal, Optional
 
-from nonebot.typing import overrides
 from nonebot.utils import escape_tag
 from pydantic import Field, BaseModel, root_validator
 
@@ -20,6 +20,9 @@ class EventHeader(BaseModel):
     resource_id: Optional[str]
     user_list: Optional[List[dict]]
 
+    class Config:
+        extra = "allow"
+
 
 class Event(BaseEvent):
     """
@@ -34,35 +37,35 @@ class Event(BaseEvent):
     header: EventHeader
     event: Any
 
-    @overrides(BaseEvent)
+    @override
     def get_type(self) -> str:
         return self.header.event_type
 
-    @overrides(BaseEvent)
+    @override
     def get_event_name(self) -> str:
         return self.header.event_type
 
-    @overrides(BaseEvent)
+    @override
     def get_event_description(self) -> str:
         return escape_tag(str(self.dict()))
 
-    @overrides(BaseEvent)
+    @override
     def get_message(self) -> Message:
         raise ValueError("Event has no message!")
 
-    @overrides(BaseEvent)
+    @override
     def get_plaintext(self) -> str:
         raise ValueError("Event has no plaintext!")
 
-    @overrides(BaseEvent)
+    @override
     def get_user_id(self) -> str:
         raise ValueError("Event has no user_id!")
 
-    @overrides(BaseEvent)
+    @override
     def get_session_id(self) -> str:
         raise ValueError("Event has no session_id!")
 
-    @overrides(BaseEvent)
+    @override
     def is_tome(self) -> bool:
         return False
 
@@ -135,6 +138,9 @@ class EventMessage(BaseModel):
     content: Message
     mentions: Optional[List[Mention]]
 
+    class Config:
+        extra = "allow"
+
     @root_validator(pre=True)
     def parse_message(cls, values: dict):
         values["content"] = MessageDeserializer(
@@ -178,15 +184,15 @@ class MessageEvent(Event):
     """
     reply: Optional[Reply]
 
-    @overrides(Event)
-    def get_type(self) -> Literal["message", "notice"]:
+    @override
+    def get_type(self) -> Literal["message"]:
         return "message"
 
-    @overrides(Event)
+    @override
     def get_event_name(self) -> str:
         return f"{self.get_type()}.{self.event.message.chat_type}"
 
-    @overrides(Event)
+    @override
     def get_event_description(self) -> str:
         return (
             f"{self.event.message.message_id} from {self.get_user_id()}"
@@ -194,22 +200,22 @@ class MessageEvent(Event):
             f" {escape_tag(str(self.get_message()))}"
         )
 
-    @overrides(Event)
+    @override
     def get_message(self) -> Message:
         return self.event.message.content
 
-    @overrides(Event)
+    @override
     def get_plaintext(self) -> str:
         return str(self.get_message())
 
-    @overrides(Event)
+    @override
     def get_user_id(self) -> str:
         return self.event.sender.sender_id.open_id
 
     def get_all_user_id(self) -> UserId:
         return self.event.sender.sender_id
 
-    @overrides(Event)
+    @override
     def get_session_id(self) -> str:
         return (
             f"{self.event.message.chat_type}"
@@ -217,7 +223,7 @@ class MessageEvent(Event):
             f"_{self.get_user_id()}"
         )
 
-    @overrides(Event)
+    @override
     def is_tome(self) -> bool:
         return self.to_me
 
@@ -235,31 +241,31 @@ class PrivateMessageEvent(MessageEvent):
 class NoticeEvent(Event):
     event: Dict[str, Any]
 
-    @overrides(Event)
-    def get_type(self) -> Literal["message", "notice"]:
+    @override
+    def get_type(self) -> Literal["notice"]:
         return "notice"
 
-    @overrides(Event)
+    @override
     def get_event_name(self) -> str:
         return self.header.event_type
 
-    @overrides(Event)
+    @override
     def get_event_description(self) -> str:
         return escape_tag(str(self.dict()))
 
-    @overrides(Event)
+    @override
     def get_message(self) -> Message:
         raise ValueError("Event has no message!")
 
-    @overrides(Event)
+    @override
     def get_plaintext(self) -> str:
         raise ValueError("Event has no plaintext!")
 
-    @overrides(Event)
+    @override
     def get_user_id(self) -> str:
         raise ValueError("Event has no user_id!")
 
-    @overrides(Event)
+    @override
     def get_session_id(self) -> str:
         raise ValueError("Event has no session_id!")
 

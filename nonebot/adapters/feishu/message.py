@@ -1,9 +1,8 @@
 import json
 import itertools
 from dataclasses import dataclass
+from typing_extensions import override
 from typing import Any, Dict, List, Type, Tuple, Union, Mapping, Iterable, Optional
-
-from nonebot.typing import overrides
 
 from nonebot.adapters import Message as BaseMessage
 from nonebot.adapters import MessageSegment as BaseMessageSegment
@@ -15,7 +14,7 @@ class MessageSegment(BaseMessageSegment["Message"]):
     """
 
     @classmethod
-    @overrides(BaseMessageSegment)
+    @override
     def get_message_class(cls) -> Type["Message"]:
         return Message
 
@@ -50,7 +49,7 @@ class MessageSegment(BaseMessageSegment["Message"]):
         else:
             return self.segment_text.get(self.type, "[未知消息类型]")
 
-    @overrides(BaseMessageSegment)
+    @override
     def __add__(
         self, other: Union[str, "MessageSegment", Iterable["MessageSegment"]]
     ) -> "Message":
@@ -58,7 +57,7 @@ class MessageSegment(BaseMessageSegment["Message"]):
             MessageSegment.text(other) if isinstance(other, str) else other
         )
 
-    @overrides(BaseMessageSegment)
+    @override
     def __radd__(
         self, other: Union[str, "MessageSegment", Iterable["MessageSegment"]]
     ) -> "Message":
@@ -66,7 +65,7 @@ class MessageSegment(BaseMessageSegment["Message"]):
             MessageSegment.text(other) if isinstance(other, str) else Message(other)
         ) + self
 
-    @overrides(BaseMessageSegment)
+    @override
     def is_text(self) -> bool:
         return self.type == "text"
 
@@ -129,11 +128,11 @@ class Message(BaseMessage[MessageSegment]):
     """
 
     @classmethod
-    @overrides(BaseMessage)
+    @override
     def get_segment_class(cls) -> Type[MessageSegment]:
         return MessageSegment
 
-    @overrides(BaseMessage)
+    @override
     def __add__(
         self, other: Union[str, "MessageSegment", Iterable["MessageSegment"]]
     ) -> "Message":
@@ -141,7 +140,7 @@ class Message(BaseMessage[MessageSegment]):
             MessageSegment.text(other) if isinstance(other, str) else other
         )
 
-    @overrides(BaseMessage)
+    @override
     def __radd__(
         self, other: Union[str, "MessageSegment", Iterable["MessageSegment"]]
     ) -> "Message":
@@ -150,7 +149,7 @@ class Message(BaseMessage[MessageSegment]):
         )
 
     @staticmethod
-    @overrides(BaseMessage)
+    @override
     def _construct(
         msg: Union[str, Mapping, Iterable[Mapping]]
     ) -> Iterable[MessageSegment]:
@@ -177,7 +176,7 @@ class Message(BaseMessage[MessageSegment]):
                 msg.append(seg)
         return Message(msg)
 
-    @overrides(BaseMessage)
+    @override
     def extract_plain_text(self) -> str:
         return "".join(seg.data["text"] for seg in self if seg.is_text())
 
