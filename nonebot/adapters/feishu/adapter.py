@@ -84,14 +84,20 @@ class Adapter(BaseAdapter):
                         raise NetworkError("HTTP request failed")
 
                     self.bot_apps[bot_config.app_id] = bot_config
-                    bot_info = parse_obj_as(BotInfo, result.get("bot", {}))
+                    if result.get("code", -1) != 0:
+                        log(
+                            "ERROR",
+                            "<r><bg #f8bbd0>Failed to get bot info.</bg #f8bbd0></r> "
+                            f"Bot {bot_config.app_id} disconnected",
+                        )
+                        continue
 
                     if not (bot := self.bots.get(bot_config.app_id)):
                         bot = Bot(
                             self,
                             bot_config.app_id,
                             bot_config=bot_config,
-                            bot_info=bot_info,
+                            bot_info=parse_obj_as(BotInfo, result.get("bot", {})),
                         )
                         self.bot_connect(bot)
                         log(
