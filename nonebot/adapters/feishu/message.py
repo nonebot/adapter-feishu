@@ -1,5 +1,6 @@
 import json
 import itertools
+from functools import reduce
 from dataclasses import dataclass
 from typing_extensions import override
 from typing import Any, Dict, List, Type, Tuple, Union, Mapping, Iterable, Optional
@@ -211,7 +212,9 @@ class MessageSerializer:
                     )
                 else:
                     msg["title"] = segment.data["title"]
-                    msg["content"].append(segment.data["content"][0])
+                    msg["content"].append(
+                        reduce(lambda a, b: a + b, segment.data["content"])
+                    )
                 last_segment_type = segment.type
             return "post", json.dumps({"zh_cn": {**msg}})
 
