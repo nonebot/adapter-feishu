@@ -195,18 +195,23 @@ class MessageSerializer:
         if len(segments) > 1:
             msg = {"title": "", "content": [[]]}
             for segment in segments:
-                if segment == "image":
+                if segment.type == "image":
                     if last_segment_type != "image":
                         msg["content"].append([])
                 else:
                     if last_segment_type == "image":
                         msg["content"].append([])
-                msg["content"][-1].append(
-                    {
-                        "tag": segment.type if segment.type != "image" else "img",
-                        **segment.data,
-                    }
-                )
+
+                if segment.type != "post":
+                    msg["content"][-1].append(
+                        {
+                            "tag": segment.type if segment.type != "image" else "img",
+                            **segment.data,
+                        }
+                    )
+                else:
+                    msg["title"] = segment.data["title"]
+                    msg["content"].append(segment.data["content"][0])
                 last_segment_type = segment.type
             return "post", json.dumps({"zh_cn": {**msg}})
 
