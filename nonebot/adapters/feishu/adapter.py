@@ -8,14 +8,7 @@ import httpx
 from pygtrie import StringTrie
 from pydantic import parse_obj_as
 from nonebot.utils import escape_tag
-from nonebot.drivers import (
-    URL,
-    Driver,
-    Request,
-    Response,
-    ReverseDriver,
-    HTTPServerSetup,
-)
+from nonebot.drivers import URL, Driver, Request, Response, ASGIMixin, HTTPServerSetup
 
 from nonebot.adapters import Adapter as BaseAdapter
 
@@ -54,11 +47,11 @@ class Adapter(BaseAdapter):
         return "Feishu"
 
     def setup(self) -> None:
-        if not isinstance(self.driver, ReverseDriver):
+        if not isinstance(self.driver, ASGIMixin):
             raise RuntimeError(
                 f"Current driver {self.config.driver} "
                 "doesn't support reverse connections!"
-                "Feishu Adapter need a ReverseDriver to work."
+                "Feishu Adapter need a ASGIMixin to work."
             )
 
         @self.driver.on_startup
@@ -88,7 +81,7 @@ class Adapter(BaseAdapter):
                         log(
                             "ERROR",
                             "<r><bg #f8bbd0>Failed to get bot info.</bg #f8bbd0></r> "
-                            f"Bot {bot_config.app_id} disconnected",
+                            f"Skipped Bot {bot_config.app_id} registration",
                         )
                         continue
 
