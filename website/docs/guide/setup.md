@@ -19,19 +19,7 @@ options:
 
 ## 在 NoneBot 配置文件中添加相应配置
 
-在 `.env` 文件中添加以下配置
-
-```
-FEISHU_BOTS=[{"app_id":"<your app_id>","app_secret":"<your app_secret>","verification_token":"<your app_verification_token>","encrypt_key":"<your encrypt_key>","is_lark":false}]
-```
-
-飞书适配器支持同时传入多份配置，仅需要按相同格式传入 `FEISHU_BOTS` 即可。
-
-```
-FEISHU_BOTS=[{"app_id":"<your app_id>","app_secret":"<your app_secret>","verification_token":"<your app_verification_token>","encrypt_key":"<your encrypt_key>","is_lark":false},{"app_id":"<your app_id2>","app_secret":"<your app_secret2>","verification_token":"<your app_verification_token2>","encrypt_key":"<your encrypt_key>","is_lark":false}]
-```
-
-复制所创建应用**“凭证和基础信息”**中的 **App ID** 、 **App Secret** 和 **“事件订阅”** 中的 **Verification Token** ，替换上面相应的配置的值。
+复制所创建应用**“凭证和基础信息”**中的 **App ID** 、 **App Secret** 和 **“事件订阅”** 中的 **Verification Token** ，替换以下配置模板中的值。
 
 如果在飞书开发者后台的事件订阅中配置了事件上报的 Encrypt Key，也需要传入 FEISHU_BOTS 中。
 
@@ -41,11 +29,47 @@ FEISHU_BOTS=[{"app_id":"<your app_id>","app_secret":"<your app_secret>","verific
 
 对于[Lark(飞书平台海外版)](https://www.larksuite.com) 的用户，飞书适配器也提供**实验性**支持，仅需要在配置文件中将 `is_lark` 改为 `true`。
 
+```bash
+FEISHU_BOTS='
+[
+  {
+    "app_id": "<your app_id>",
+    "app_secret": "<your app_secret>",
+    "verification_token": "<your app_verification_token>",
+    "encrypt_key": "<your encrypt_key>",
+    "is_lark": false
+  }
+]
+'
+```
+
+飞书适配器支持同时传入多份配置，仅需要按相同格式传入 `FEISHU_BOTS` 即可。
+
+```bash
+FEISHU_BOTS='
+[
+  {
+    "app_id": "<your app_id>",
+    "app_secret": "<your app_secret>",
+    "verification_token": "<your app_verification_token>",
+    "encrypt_key": "<your encrypt_key>",
+    "is_lark": false
+  },
+  {
+    "app_id": "<your app_id2>",
+    "app_secret": "<your app_secret2>",
+    "verification_token": "<your app_verification_token2>",
+    "encrypt_key": "<your encrypt_key>",
+    "is_lark": false
+  }
+]
+```
+
 ## 开启应用权限
 
 应用拥有所需权限后，才能调用飞书接口获取相关信息。如果需要用到所有飞书平台的 API，请开启所有应用权限。
 
-在仅群聊功能的情况下，需要为应用开启用户、消息、通讯录和群聊权限组所有权限。
+在仅群聊功能的情况下，需要为应用开启用户、消息、通讯录和群聊权限组所有权限，并且启用机器人角色以便获取机器人昵称。
 
 ## 配置飞书事件订阅
 
@@ -55,7 +79,7 @@ FEISHU_BOTS=[{"app_id":"<your app_id>","app_secret":"<your app_secret>","verific
 
 由于飞书开放平台的事件订阅并不会上报 App ID，在填写事件订阅请求网址时，请按照如下格式填写，对应的以 `$` 开头的变量请使用 `.env.*` 文件中所定义的值进行替换，`$app_id` 替换为飞书开放平台提供的 App ID。
 
-```
+```bash
 http://$HOST:$PORT/feishu/$app_id
 ```
 
