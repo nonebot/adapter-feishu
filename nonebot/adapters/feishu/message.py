@@ -546,7 +546,19 @@ class Message(BaseMessage[MessageSegment]):
         combined = {"zh_cn": {"title": "", "content": [[]]}}
         if len(self) >= 2:
             for seg in self:
-                combined["zh_cn"]["content"][0].append({"tag": seg.type, **seg.data})
+                if seg.type != "post":
+                    combined["zh_cn"]["content"][-1].append(
+                        {"tag": seg.type, **seg.data}
+                    )
+                else:
+                    zh_cn_data = seg.data.pop("zh_cn", None)
+                    if zh_cn_data:
+                        combined["zh_cn"]["title"] = zh_cn_data["title"]
+                        combined["zh_cn"]["content"] = [
+                            *combined["zh_cn"]["content"],
+                            *zh_cn_data["content"],
+                        ]
+                    combined.update(seg.data)
 
             return "post", json.dumps(combined, ensure_ascii=False)
         else:
