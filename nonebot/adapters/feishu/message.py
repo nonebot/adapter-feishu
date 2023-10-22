@@ -1,12 +1,26 @@
+import re
 import json
 import itertools
-from functools import reduce
 from dataclasses import dataclass
 from typing_extensions import override
-from typing import Any, Dict, List, Type, Tuple, Union, Mapping, Iterable, Optional
+from typing import (
+    TYPE_CHECKING,
+    Any,
+    Dict,
+    List,
+    Type,
+    Tuple,
+    Union,
+    Literal,
+    Iterable,
+    Optional,
+    TypedDict,
+)
 
 from nonebot.adapters import Message as BaseMessage
 from nonebot.adapters import MessageSegment as BaseMessageSegment
+
+from .models import MessageEventDetail
 
 
 class MessageSegment(BaseMessageSegment["Message"]):
@@ -19,36 +33,15 @@ class MessageSegment(BaseMessageSegment["Message"]):
     def get_message_class(cls) -> Type["Message"]:
         return Message
 
-    @property
-    def segment_text(self) -> dict:
-        return {
-            "image": "[图片]",
-            "file": "[文件]",
-            "folder": "[文件夹]",
-            "audio": "[音频]",
-            "media": "[视频]",
-            "sticker": "[表情包]",
-            "interactive": "[消息卡片]",
-            "hongbao": "[红包]",
-            "share_calendar_event": "[日程分享卡片]",
-            "calendar": "[日程邀请卡片]",
-            "general_calendar": "[日程转让卡片]",
-            "share_chat": "[群名片]",
-            "share_user": "[个人名片]",
-            "system": "[系统消息]",
-            "location": "[位置]",
-            "video_chat": "[视频通话]",
-            "todo": "[任务]",
-            "vote": "[投票]",
-        }
+    @override
+    def is_text(self) -> bool:
+        return self.type == "text"
 
+    @override
     def __str__(self) -> str:
-        if self.type in ["text", "hongbao", "a"]:
-            return self.data["text"]
-        elif self.type == "at":
-            return f"@{self.data['user_name']}"
-        else:
-            return self.segment_text.get(self.type, "[未知消息类型]")
+        if self.is_text():
+            return self.data.get("text", "")
+        return ""
 
     @override
     def __add__(
@@ -66,61 +59,510 @@ class MessageSegment(BaseMessageSegment["Message"]):
             MessageSegment.text(other) if isinstance(other, str) else Message(other)
         ) + self
 
-    @override
-    def is_text(self) -> bool:
-        return self.type == "text"
-
-    # 发送消息
     @staticmethod
-    def text(text: str) -> "MessageSegment":
-        return MessageSegment("text", {"text": text})
+    def text(text: str) -> "Text":
+        return Text("text", {"text": str(text)})
 
     @staticmethod
-    def post(title: str, content: List[Any]) -> "MessageSegment":
-        return MessageSegment("post", {"title": title, "content": content})
+    def post(
+        title: str, content: List[List["MessageSegment"]], language: str = "zh_cn"
+    ) -> "Post":
+        return Post("post", data={language: {"title": title, "content": content}})
 
     @staticmethod
-    def image(image_key: str) -> "MessageSegment":
-        return MessageSegment("image", {"image_key": image_key})
+    def image(image_key: str) -> "Image":
+        return Image("image", {"image_key": image_key})
 
     @staticmethod
-    def interactive(data: Dict[str, Any]) -> "MessageSegment":
-        return MessageSegment("interactive", data)
+    def interactive(
+        header: "InteractiveHeader",
+        config: "InteractiveConfig",
+        elements: Optional[List[Dict[str, Any]]] = None,
+        i18n_elements: Optional[List[Dict[str, Any]]] = None,
+    ):
+        elements_key = "elements" if elements else "i18n_elements"
+        elements_value = elements or i18n_elements
 
-    # 接收消息
-    @staticmethod
-    def at(user_id: str) -> "MessageSegment":
-        return MessageSegment("at", {"user_id": user_id})
-
-    @staticmethod
-    def share_chat(chat_id: str) -> "MessageSegment":
-        return MessageSegment("share_chat", {"chat_id": chat_id})
-
-    @staticmethod
-    def share_user(user_id: str) -> "MessageSegment":
-        return MessageSegment("share_user", {"user_id": user_id})
-
-    @staticmethod
-    def audio(file_key: str) -> "MessageSegment":
-        return MessageSegment("audio", {"file_key": file_key})
-
-    @staticmethod
-    def media(file_key: str, image_key: Optional[str]) -> "MessageSegment":
-        return MessageSegment(
-            "media",
+        return Interactive(
+            "interactive",
             {
-                "file_key": file_key,
-                "image_key": image_key,
+                "header": header,
+                elements_key: elements_value,
+                "config": config,
             },
         )
 
     @staticmethod
-    def file(file_key: str) -> "MessageSegment":
-        return MessageSegment("file", {"file_key": file_key})
+    def interactive_template(
+        template_id: str, template_variable: Dict[str, Any]
+    ) -> "InteractiveTemplate":
+        return InteractiveTemplate(
+            "interactive",
+            {
+                "template_id": template_id,
+                "template_variable": template_variable,
+            },
+        )
+
+    @staticmethod
+    def share_chat(chat_id: str) -> "MessageSegment":
+        return ShareChat("share_chat", {"chat_id": chat_id})
+
+    @staticmethod
+    def share_user(user_id: str) -> "MessageSegment":
+        return ShareUser("share_user", {"user_id": user_id})
+
+    @staticmethod
+    def audio(file_key: str, duration: Optional[int] = None) -> "MessageSegment":
+        return Audio("audio", {"file_key": file_key, "duration": duration})
+
+    @staticmethod
+    def media(
+        file_key: str,
+        image_key: Optional[str],
+        file_name: Optional[str] = None,
+        duration: Optional[int] = None,
+    ) -> "MessageSegment":
+        return Media(
+            "media",
+            {
+                "file_key": file_key,
+                "image_key": image_key,
+                "file_name": file_name,
+                "duration": duration,
+            },
+        )
+
+    @staticmethod
+    def file(file_key: str, file_name: Optional[str] = None) -> "MessageSegment":
+        return File("file", {"file_key": file_key, "file_name": file_name})
 
     @staticmethod
     def sticker(file_key: str) -> "MessageSegment":
-        return MessageSegment("sticker", {"file_key": file_key})
+        return Sticker("sticker", {"file_key": file_key})
+
+
+class _TextData(TypedDict):
+    text: str
+
+
+@dataclass
+class Text(MessageSegment):
+    if TYPE_CHECKING:
+        data: _TextData
+
+    @override
+    def __str__(self) -> str:
+        return self.data["text"]
+
+
+class _AtData(TypedDict):
+    user_id: str
+
+
+@dataclass
+class At(MessageSegment):
+    if TYPE_CHECKING:
+        data: _AtData
+
+    @override
+    def __str__(self) -> str:
+        return f"@{self.data['user_id']}"
+
+
+class _AtAllData(TypedDict):
+    user_id: Literal["all"]
+
+
+@dataclass
+class AtAll(MessageSegment):
+    if TYPE_CHECKING:
+        data: _AtAllData
+
+    @override
+    def __str__(self) -> str:
+        return "@all"
+
+
+class _ImageData(TypedDict):
+    image_key: str
+
+
+@dataclass
+class Image(MessageSegment):
+    if TYPE_CHECKING:
+        data: _ImageData
+
+    @override
+    def __str__(self) -> str:
+        return f"<image:{self.data['image_key']!r}>"
+
+
+class InteractiveHeaderTitle(TypedDict):
+    tag: Literal["plain_text"]
+    content: Optional[str]
+    i18n: Optional[Dict[str, str]]
+    template: Optional[str]
+
+
+class InteractiveHeader(TypedDict):
+    title: InteractiveHeaderTitle
+
+
+class InteractiveConfig(TypedDict):
+    enable_forward: Optional[bool]
+    update_multi: Optional[bool]
+
+
+class _InteractiveData(TypedDict):
+    header: InteractiveHeader
+    elements: Optional[List[Dict[str, Any]]]
+    i18n_elements: Optional[List[Dict[str, Any]]]
+    config: InteractiveConfig
+
+
+class Interactive(MessageSegment):
+    if TYPE_CHECKING:
+        data: _InteractiveData
+
+    @override
+    def __str__(self) -> str:
+        return f"<interactive:{self.data!r}>"
+
+
+class _InteractiveTemplateData(TypedDict):
+    template_id: str
+    template_variable: Dict[str, Any]
+
+
+@dataclass
+class InteractiveTemplate(MessageSegment):
+    if TYPE_CHECKING:
+        data: _InteractiveTemplateData
+
+    @override
+    def __str__(self) -> str:
+        return f"<interactive_template:{self.data!r}>"
+
+
+class _ShareChatData(TypedDict):
+    chat_id: str
+
+
+@dataclass
+class ShareChat(MessageSegment):
+    if TYPE_CHECKING:
+        data: _ShareChatData
+
+    @override
+    def __str__(self) -> str:
+        return f"<share_chat:{self.data['chat_id']!r}>"
+
+
+class _ShareUserData(TypedDict):
+    user_id: str
+
+
+@dataclass
+class ShareUser(MessageSegment):
+    if TYPE_CHECKING:
+        data: _ShareUserData
+
+    @override
+    def __str__(self) -> str:
+        return f"<share_user:{self.data['user_id']!r}>"
+
+
+class _AudioData(TypedDict):
+    file_key: str
+    duration: Optional[int]
+
+
+@dataclass
+class Audio(MessageSegment):
+    if TYPE_CHECKING:
+        data: _AudioData
+
+    @override
+    def __str__(self) -> str:
+        return f"<audio:{self.data!r}>"
+
+
+class _MediaData(TypedDict):
+    file_key: str
+    image_key: Optional[str]
+    file_name: Optional[str]
+    duration: Optional[int]
+
+
+@dataclass
+class Media(MessageSegment):
+    if TYPE_CHECKING:
+        data: _MediaData
+
+    @override
+    def __str__(self) -> str:
+        return f"<media:{self.data['file_key']!r}>"
+
+
+class _FileData(TypedDict):
+    file_key: str
+    file_name: Optional[str]
+
+
+@dataclass
+class File(MessageSegment):
+    if TYPE_CHECKING:
+        data: _FileData
+
+    @override
+    def __str__(self) -> str:
+        return f"<file:{self.data!r}>"
+
+
+class _StickerData(TypedDict):
+    file_key: str
+
+
+@dataclass
+class Sticker(MessageSegment):
+    if TYPE_CHECKING:
+        data: _StickerData
+
+    @override
+    def __str__(self) -> str:
+        return f"<sticker:{self.data['file_key']!r}>"
+
+
+class PostMessageNode(TypedDict):
+    tag: str
+
+
+class PostMessageNodeStylable(TypedDict):
+    style: Optional[List[Literal["bold", "underline", "lineThrough", "italic"]]]
+
+
+class _PostTextData(PostMessageNode, PostMessageNodeStylable):
+    text: str
+    un_escape: Optional[bool]
+
+
+class PostText(MessageSegment):
+    if TYPE_CHECKING:
+        data: _PostTextData
+
+    @override
+    def __str__(self) -> str:
+        return f"<text:{self.data!r}>"
+
+
+class _PostAData(PostMessageNode, PostMessageNodeStylable):
+    text: str
+    href: str
+
+
+class PostA(MessageSegment):
+    if TYPE_CHECKING:
+        data: _PostAData
+
+    @override
+    def __str__(self) -> str:
+        return f"<a:{self.data!r}>"
+
+
+class _PostAtData(PostMessageNode, PostMessageNodeStylable):
+    user_id: str
+    user_name: Optional[str]
+
+
+class PostAt(MessageSegment):
+    if TYPE_CHECKING:
+        data: _PostAtData
+
+    @override
+    def __str__(self) -> str:
+        return f"<at:{self.data!r}>"
+
+
+class _PostImgData(PostMessageNode):
+    image_key: str
+
+
+class PostImg(MessageSegment):
+    if TYPE_CHECKING:
+        data: _PostImgData
+
+    @override
+    def __str__(self) -> str:
+        return f"<img:{self.data!r}>"
+
+
+class _PostMediaData(PostMessageNode):
+    file_key: str
+    image_key: Optional[str]
+
+
+class PostMedia(MessageSegment):
+    if TYPE_CHECKING:
+        data: _PostMediaData
+
+    @override
+    def __str__(self) -> str:
+        return f"<media:{self.data!r}>"
+
+
+class _PostEmotionData(PostMessageNode):
+    emoji_type: str
+
+
+class PostEmotion(MessageSegment):
+    if TYPE_CHECKING:
+        data: _PostEmotionData
+
+    @override
+    def __str__(self) -> str:
+        return f"<emotion:{self.data!r}>"
+
+
+class _PostData(TypedDict):
+    title: str
+    content: List[List[MessageSegment]]
+
+
+@dataclass
+class Post(MessageSegment):
+    if TYPE_CHECKING:
+        data: Dict[str, _PostData]  # i18n
+
+    @override
+    def __str__(self) -> str:
+        return f"<post:{self.data!r}>"
+
+
+class _SystemData(TypedDict):
+    template: str
+    from_user: List[str]
+    to_chatters: List[str]
+
+
+@dataclass
+class System(MessageSegment):
+    if TYPE_CHECKING:
+        data: _SystemData
+
+    @override
+    def __str__(self) -> str:
+        return f"<system:{self.data!r}>"
+
+
+class _LocationData(TypedDict):
+    name: str
+    longitude: str
+    latitude: str
+
+
+@dataclass
+class Location(MessageSegment):
+    if TYPE_CHECKING:
+        data: _LocationData
+
+    @override
+    def __str__(self) -> str:
+        return f"<location:{self.data!r}>"
+
+
+class _VideoChatData(TypedDict):
+    topic: str
+    start_time: str
+
+
+@dataclass
+class VideoChat(MessageSegment):
+    if TYPE_CHECKING:
+        data: _VideoChatData
+
+    @override
+    def __str__(self) -> str:
+        return f"<video_chat:{self.data!r}>"
+
+
+class _TodoData(TypedDict):
+    task_id: str
+    summary: _PostData
+    due_time: str
+
+
+@dataclass
+class Todo(MessageSegment):
+    if TYPE_CHECKING:
+        data: _TodoData
+
+    @override
+    def __str__(self) -> str:
+        return f"<todo:{self.data!r}>"
+
+
+class _VoteData(TypedDict):
+    topic: str
+    options: List[str]
+
+
+@dataclass
+class Vote(MessageSegment):
+    if TYPE_CHECKING:
+        data: _VoteData
+
+    @override
+    def __str__(self) -> str:
+        return f"<vote:{self.data!r}>"
+
+
+class _HongbaoData(TypedDict):
+    text: str
+
+
+@dataclass
+class Hongbao(MessageSegment):
+    if TYPE_CHECKING:
+        data: _HongbaoData
+
+    @override
+    def __str__(self) -> str:
+        return f"<hongbao:{self.data['text']!r}>"
+
+
+class _CalendarData(TypedDict):
+    summary: str
+    start_time: str
+    end_time: str
+
+
+@dataclass
+class ShareCalendarEvent(MessageSegment):
+    if TYPE_CHECKING:
+        data: _CalendarData
+
+    @override
+    def __str__(self) -> str:
+        return f"<share_calendar_event:{self.data!r}>"
+
+
+class Calendar:
+    if TYPE_CHECKING:
+        data: _CalendarData
+
+    @override
+    def __str__(self) -> str:
+        return f"<calendar:{self.data!r}>"
+
+
+class GeneralCalendar:
+    if TYPE_CHECKING:
+        data: _CalendarData
+
+    @override
+    def __str__(self) -> str:
+        return f"<general_calendar:{self.data!r}>"
 
 
 class Message(BaseMessage[MessageSegment]):
@@ -151,114 +593,69 @@ class Message(BaseMessage[MessageSegment]):
 
     @staticmethod
     @override
-    def _construct(
-        msg: Union[str, Mapping, Iterable[Mapping]]
-    ) -> Iterable[MessageSegment]:
-        if isinstance(msg, Mapping) and not isinstance(msg, Iterable):
-            yield MessageSegment(msg["type"], msg.get("data") or {})
-            return
-        elif isinstance(msg, str):
-            yield MessageSegment.text(msg)
-        elif isinstance(msg, Iterable):
-            for seg in msg:
-                if isinstance(seg, MessageSegment):
-                    yield seg
-                else:
-                    yield MessageSegment(seg["type"], seg.get("data") or {})
+    def _construct(msg: str) -> Iterable[MessageSegment]:
+        yield Text("text", {"text": msg})
 
-    def _merge(self) -> "Message":
-        msg: List[MessageSegment] = []
-        for i, seg in enumerate(self):
-            if seg.type == "text" and i != 0 and msg[-1].type == "text":
-                msg[-1] = MessageSegment(
-                    "text", {"text": msg[-1].data["text"] + seg.data["text"]}
-                )
-            else:
-                msg.append(seg)
-        return Message(msg)
+    def serialize(self) -> Tuple[str, str]:
+        combined = {"zh_cn": {"title": "", "content": []}}
+        if len(self) >= 2:
+            for seg in self:
+                combined["zh_cn"]["content"].append([{"tag": seg.type, **seg.data}])
+
+            return "post", json.dumps(combined, ensure_ascii=False)
+        else:
+            return self[0].type, json.dumps(self[0].data, ensure_ascii=False)
+
+    @classmethod
+    def from_event_message(cls, event: MessageEventDetail) -> "Message":
+        msg = Message()
+        content = json.loads(event.message.content)
+        mentions = {
+            # wipeout @ at the start of key
+            mention.key[1:]: mention.id.open_id
+            for mention in (event.message.mentions or [])
+        }
+
+        if event.message.message_type == "text":
+            text = content["text"]
+            text_begin = 0
+
+            for embed in re.finditer(
+                r"(?P<type>(?:@))(?P<key>\w+)",
+                text,
+            ):
+                matched = text[text_begin : embed.pos + embed.start()]
+                if matched:
+                    msg.extend(Message(Text("text", matched)))
+
+                text_begin = embed.pos + embed.end()
+                if embed.group("type") == "@":
+                    msg.extend(
+                        Message(
+                            At("at", {"user_id": mentions.get(embed.group("key"), "")})
+                        )
+                    )
+
+            matched = text[text_begin:]
+            if matched:
+                msg.extend(Message(Text("text", {"text": text[text_begin:]})))
+
+        elif event.message.message_type == "post":
+            msg.append(Post("post", content))
+
+        return msg
 
     @override
     def extract_plain_text(self) -> str:
-        return "".join(seg.data["text"] for seg in self if seg.is_text())
+        text_list: List[str] = []
+        for seg in self:
+            if seg.is_text():
+                text_list.append(str(seg))
 
+            elif seg.type == "post":
+                text_list.append(seg.data["title"])
+                for node in itertools.chain.from_iterable(seg.data["content"]):
+                    if node["tag"] == "text":
+                        text_list.append(node["text"])
 
-@dataclass
-class MessageSerializer:
-    """
-    飞书 协议 Message 序列化器。
-    """
-
-    message: Message
-
-    def serialize(self) -> Tuple[str, str]:
-        segments = list(self.message)
-        last_segment_type: str = ""
-        if len(segments) > 1:
-            msg = {"title": "", "content": [[]]}
-            for segment in segments:
-                if segment.type == "image":
-                    if last_segment_type != "image":
-                        msg["content"].append([])
-                else:
-                    if last_segment_type == "image":
-                        msg["content"].append([])
-
-                if segment.type != "post":
-                    msg["content"][-1].append(
-                        {
-                            "tag": segment.type if segment.type != "image" else "img",
-                            **segment.data,
-                        }
-                    )
-                else:
-                    msg["title"] = segment.data["title"]
-                    msg["content"].append(
-                        reduce(lambda a, b: a + b, segment.data["content"])
-                    )
-                last_segment_type = segment.type
-            return "post", json.dumps({"zh_cn": {**msg}})
-
-        else:
-            return self.message[0].type, json.dumps(self.message[0].data)
-
-
-@dataclass
-class MessageDeserializer:
-    """
-    飞书 协议 Message 反序列化器。
-    """
-
-    type: str
-    data: Dict[str, Any]
-    mentions: Optional[List[dict]]
-
-    def deserialize(self) -> Message:
-        dict_mention = {}
-        if self.mentions:
-            for mention in self.mentions:
-                dict_mention[mention["key"]] = mention
-
-        if self.type == "post":
-            msg = Message()
-            if self.data["title"] != "":
-                msg += MessageSegment("text", {"text": self.data["title"]})
-
-            for seg in itertools.chain(*self.data["content"]):
-                if (tag := seg.pop("tag")) == "at":
-                    seg["user_name"] = dict_mention[seg["user_id"]]["name"]
-                    seg["user_id"] = dict_mention[seg["user_id"]]["id"]["open_id"]
-
-                msg += MessageSegment(tag if tag != "img" else "image", seg)
-
-            return msg._merge()
-        elif self.type == "text":
-            for key, mention in dict_mention.items():
-                self.data["text"] = self.data["text"].replace(
-                    key, f"@{mention['name']}"
-                )
-            self.data["mentions"] = dict_mention
-
-            return Message(MessageSegment(self.type, self.data))
-
-        else:
-            return Message(MessageSegment(self.type, self.data))
+        return "".join(text_list)

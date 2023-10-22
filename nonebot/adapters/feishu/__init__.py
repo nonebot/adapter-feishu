@@ -9,6 +9,4 @@ from .exception import ActionFailed as ActionFailed
 from .exception import NetworkError as NetworkError
 from .message import MessageSegment as MessageSegment
 from .exception import ApiNotAvailable as ApiNotAvailable
-from .message import MessageSerializer as MessageSerializer
-from .message import MessageDeserializer as MessageDeserializer
 from .exception import FeishuAdapterException as FeishuAdapterException

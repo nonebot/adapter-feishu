@@ -2,6 +2,7 @@ import re
 from typing_extensions import override
 from typing import TYPE_CHECKING, Any, List, Union, Callable
 
+import json
 from nonebot.message import handle_event
 from pydantic import Field, HttpUrl, BaseModel
 
@@ -9,7 +10,7 @@ from nonebot.adapters import Bot as BaseBot
 
 from .utils import log
 from .config import BotConfig
-from .message import Message, MessageSegment, MessageSerializer
+from .message import Message, MessageSegment, At
 from .event import Event, MessageEvent, GroupMessageEvent, PrivateMessageEvent
 
 if TYPE_CHECKING:
@@ -36,30 +37,48 @@ def _check_at_me(bot: "Bot", event: "Event"):
 
     if event.event.message.chat_type == "p2p":
         event.to_me = True
-    else:
-        for index, segment in enumerate(message):
-            if (
-                segment.type == "at"
-                and segment.data.get("user_name") == bot.bot_info.app_name
-            ):
-                event.to_me = True
-                del event.event.message.content[index]
-                return
-            elif segment.type == "text" and segment.data.get("mentions"):
-                for mention in segment.data["mentions"].values():
-                    if mention["id"]["open_id"] == bot.bot_info.open_id:
-                        event.to_me = True
-                        segment.data["text"] = segment.data["text"].replace(
-                            f"@{mention['name']}", ""
-                        )
-                        segment.data["text"] = segment.data["text"].lstrip()
-                        break
-                else:
-                    continue
-                break
+        return
 
-        if not message:
-            message.append(MessageSegment.text(""))
+    if (
+        isinstance(event, GroupMessageEvent)
+        and event.event.message.mentions is not None
+        and bot.bot_info.open_id
+        in [user.id.open_id for user in event.event.message.mentions]
+    ):
+        event.to_me = True
+
+    def _is_at_me_seg(segment: MessageSegment) -> bool:
+        return (
+            segment.type == "at" and segment.data.get("user_id") == bot.bot_info.open_id
+        )
+
+    deleted = False
+    if _is_at_me_seg(message[0]):
+        message.pop(0)
+        deleted = True
+        if message and message[0].type == "text":
+            message[0].data["text"] = message[0].data["text"].lstrip()
+            if not message[0].data["text"]:
+                del message[0]
+
+    if not deleted:
+        # wipe out last empty text segment
+        i = -1
+        last_msg_seg = message[i]
+        if (
+            last_msg_seg.type == "text"
+            and not last_msg_seg.data["text"].strip()
+            and len(message) >= 2
+        ):
+            i -= 1
+            last_msg_seg = message[i]
+
+        if _is_at_me_seg(last_msg_seg):
+            deleted = True
+            del message[i:]
+
+    if not message:
+        message.append(MessageSegment.text(""))
 
 
 def _check_nickname(bot: "Bot", event: "Event"):
@@ -115,10 +134,10 @@ async def send(
     full_message = Message()  # create a new message for prepending
     at_sender = at_sender and bool(event.get_user_id())
     if at_sender and receive_id_type == "chat_id":
-        full_message += MessageSegment.at(event.get_user_id()) + " "
+        full_message += At("at", {"user_id": event.get_user_id()}) + " "
     full_message += message
 
-    msg_type, content = MessageSerializer(full_message).serialize()
+    msg_type, content = full_message.serialize()
 
     params = {
         "method": "POST",
@@ -142,10 +161,6 @@ class BotInfo(BaseModel):
 
 
 class Bot(BaseBot):
-    """
-    飞书 协议 Bot 适配。继承属性参考 `BaseBot <./#class-basebot>`_ 。
-    """
-
     send_handler: Callable[
         ["Bot", Event, Union[str, Message, MessageSegment]], Any
     ] = send
@@ -189,7 +204,7 @@ class Bot(BaseBot):
     async def call_api(self, api: str, **data) -> Any:
         """
         :说明:
-          调用 OneBot 协议 API
+          调用 飞书 协议 API
         :参数:
           * ``api: str``: API 名称
           * ``**data: Any``: API 参数
