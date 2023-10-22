@@ -65,7 +65,7 @@ class MessageSegment(BaseMessageSegment["Message"]):
 
     @staticmethod
     def post(
-        title: str, content: List[List["MessageSegment"]], language: str = "zh_cn"
+        title: str, content: List[List["PostMessageNode"]], language: str = "zh_cn"
     ) -> "Post":
         return Post("post", data={language: {"title": title, "content": content}})
 
@@ -342,91 +342,37 @@ class PostMessageNodeStylable(TypedDict):
     style: Optional[List[Literal["bold", "underline", "lineThrough", "italic"]]]
 
 
-class _PostTextData(PostMessageNode, PostMessageNodeStylable):
+class PostText(PostMessageNode, PostMessageNodeStylable):
     text: str
     un_escape: Optional[bool]
 
 
-class PostText(MessageSegment):
-    if TYPE_CHECKING:
-        data: _PostTextData
-
-    @override
-    def __str__(self) -> str:
-        return f"<text:{self.data!r}>"
-
-
-class _PostAData(PostMessageNode, PostMessageNodeStylable):
+class PostA(PostMessageNode, PostMessageNodeStylable):
     text: str
     href: str
 
 
-class PostA(MessageSegment):
-    if TYPE_CHECKING:
-        data: _PostAData
-
-    @override
-    def __str__(self) -> str:
-        return f"<a:{self.data!r}>"
-
-
-class _PostAtData(PostMessageNode, PostMessageNodeStylable):
+class PostAt(PostMessageNode, PostMessageNodeStylable):
     user_id: str
     user_name: Optional[str]
 
 
-class PostAt(MessageSegment):
-    if TYPE_CHECKING:
-        data: _PostAtData
-
-    @override
-    def __str__(self) -> str:
-        return f"<at:{self.data!r}>"
-
-
-class _PostImgData(PostMessageNode):
+class PostImg(PostMessageNode):
     image_key: str
 
 
-class PostImg(MessageSegment):
-    if TYPE_CHECKING:
-        data: _PostImgData
-
-    @override
-    def __str__(self) -> str:
-        return f"<img:{self.data!r}>"
-
-
-class _PostMediaData(PostMessageNode):
+class PostMedia(PostMessageNode):
     file_key: str
     image_key: Optional[str]
 
 
-class PostMedia(MessageSegment):
-    if TYPE_CHECKING:
-        data: _PostMediaData
-
-    @override
-    def __str__(self) -> str:
-        return f"<media:{self.data!r}>"
-
-
-class _PostEmotionData(PostMessageNode):
+class PostEmotion(PostMessageNode):
     emoji_type: str
-
-
-class PostEmotion(MessageSegment):
-    if TYPE_CHECKING:
-        data: _PostEmotionData
-
-    @override
-    def __str__(self) -> str:
-        return f"<emotion:{self.data!r}>"
 
 
 class _PostData(TypedDict):
     title: str
-    content: List[List[MessageSegment]]
+    content: List[List[PostMessageNode]]
 
 
 @dataclass
@@ -597,10 +543,10 @@ class Message(BaseMessage[MessageSegment]):
         yield Text("text", {"text": msg})
 
     def serialize(self) -> Tuple[str, str]:
-        combined = {"zh_cn": {"title": "", "content": []}}
+        combined = {"zh_cn": {"title": "", "content": [[]]}}
         if len(self) >= 2:
             for seg in self:
-                combined["zh_cn"]["content"].append([{"tag": seg.type, **seg.data}])
+                combined["zh_cn"]["content"][0].append({"tag": seg.type, **seg.data})
 
             return "post", json.dumps(combined, ensure_ascii=False)
         else:
