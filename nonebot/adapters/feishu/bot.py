@@ -2,7 +2,6 @@ import re
 from typing_extensions import override
 from typing import TYPE_CHECKING, Any, List, Union, Callable
 
-import json
 from nonebot.message import handle_event
 from pydantic import Field, HttpUrl, BaseModel
 
@@ -10,7 +9,7 @@ from nonebot.adapters import Bot as BaseBot
 
 from .utils import log
 from .config import BotConfig
-from .message import Message, MessageSegment, At
+from .message import At, Message, MessageSegment
 from .event import Event, MessageEvent, GroupMessageEvent, PrivateMessageEvent
 
 if TYPE_CHECKING:
