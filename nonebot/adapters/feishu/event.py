@@ -135,7 +135,15 @@ class MessageEvent(Event):
     @override
     def get_message(self) -> Message:
         if not hasattr(self, "_message"):
-            setattr(self, "_message", Message.from_event_message(self.event))
+            setattr(
+                self,
+                "_message",
+                Message.deserialize(
+                    self.event.message.content,
+                    self.event.message.mentions,
+                    self.event.message.message_type,
+                ),
+            )
         return getattr(self, "_message")
 
     @override

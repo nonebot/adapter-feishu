@@ -20,7 +20,7 @@ from typing import (
 from nonebot.adapters import Message as BaseMessage
 from nonebot.adapters import MessageSegment as BaseMessageSegment
 
-from .models import MessageEventDetail
+from .models import Mention
 
 
 class MessageSegment(BaseMessageSegment["Message"]):
@@ -570,17 +570,19 @@ class Message(BaseMessage[MessageSegment]):
             return self[0].type, json.dumps(self[0].data, ensure_ascii=False)
 
     @classmethod
-    def from_event_message(cls, event: MessageEventDetail) -> "Message":
+    def deserialize(
+        cls, content: str, mentions: Optional[List[Mention]], message_type: str
+    ) -> "Message":
         msg = Message()
-        content = json.loads(event.message.content)
-        mentions = {
+        parsed_content = json.loads(content)
+        at_key_to_id = {
             # wipeout @ at the start of key
             mention.key[1:]: mention.id.open_id
-            for mention in (event.message.mentions or [])
+            for mention in (mentions or [])
         }
 
-        if event.message.message_type == "text":
-            text = content["text"]
+        if message_type == "text":
+            text = parsed_content["text"]
             text_begin = 0
 
             for embed in re.finditer(
@@ -595,7 +597,10 @@ class Message(BaseMessage[MessageSegment]):
                 if embed.group("type") == "@":
                     msg.extend(
                         Message(
-                            At("at", {"user_id": mentions.get(embed.group("key"), "")})
+                            At(
+                                "at",
+                                {"user_id": at_key_to_id.get(embed.group("key"), "")},
+                            )
                         )
                     )
 
@@ -603,8 +608,11 @@ class Message(BaseMessage[MessageSegment]):
             if matched:
                 msg.extend(Message(Text("text", {"text": text[text_begin:]})))
 
-        elif event.message.message_type == "post":
-            msg.append(Post("post", content))
+        elif message_type == "post":
+            msg.append(Post("post", parsed_content))
+
+        else:
+            msg.append(MessageSegment(message_type, parsed_content))
 
         return msg
 
