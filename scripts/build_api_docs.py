@@ -17,5 +17,4 @@ builder.write()
 
 for modname, path in builder.paths.items():
     text = path.read_text(encoding="utf-8")
-    text.replace("<factory>", "")
-    path.write_text(text, encoding="utf-8")
+    path.write_text(text.replace("<factory>", ""), encoding="utf-8")
