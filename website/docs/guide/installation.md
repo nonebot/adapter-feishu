@@ -4,8 +4,8 @@ description: 安装
 
 options:
   menu:
-    weight: 10
-    category: guide
+    - category: guide
+      weight: 20
 ---
 
 # 安装飞书适配器

@@ -1,11 +1,11 @@
 ---
-sidebar_position: 3
+sidebar_position: 2
 description: 配置连接
 
 options:
   menu:
-    weight: 20
-    category: guide
+    - category: guide
+      weight: 30
 ---
 
 # 配置连接
