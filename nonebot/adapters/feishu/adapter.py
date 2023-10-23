@@ -176,8 +176,8 @@ class Adapter(BaseAdapter):
                         content=data.get("content"),
                         data=data.get("data"),
                         files=data.get("files"),
-                        json=data.get("body"),
-                        params=data.get("query"),
+                        json=data.get("json") or data.get("body"),
+                        params=data.get("params") or data.get("query"),
                         headers=headers,
                     ),
                 )
