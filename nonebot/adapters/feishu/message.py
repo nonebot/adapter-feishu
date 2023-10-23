@@ -619,9 +619,9 @@ class Message(BaseMessage[MessageSegment]):
         else:
             return self[0].type, json.dumps(self[0].data, ensure_ascii=False)
 
-    @classmethod
+    @staticmethod
     def deserialize(
-        cls, content: str, mentions: Optional[List[Mention]], message_type: str
+        content: str, mentions: Optional[List[Mention]], message_type: str
     ) -> "Message":
         msg = Message()
         parsed_content = json.loads(content)
