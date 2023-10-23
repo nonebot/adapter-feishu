@@ -141,6 +141,10 @@ class MessageSegment(BaseMessageSegment["Message"]):
     def sticker(file_key: str) -> "MessageSegment":
         return Sticker("sticker", {"file_key": file_key})
 
+    def to_post(self):
+        if self.type == "image":
+            self.type = "img"
+
 
 class _TextData(TypedDict):
     text: str
@@ -547,6 +551,7 @@ class Message(BaseMessage[MessageSegment]):
         if len(self) >= 2:
             for seg in self:
                 if seg.type != "post":
+                    seg.to_post()
                     combined["zh_cn"]["content"][-1].append(
                         {"tag": seg.type, **seg.data}
                     )
