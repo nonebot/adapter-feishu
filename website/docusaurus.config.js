@@ -18,6 +18,8 @@ const navbar = {
     srcDark: "logo.png",
     href: "/",
     target: "_self",
+    height: 32,
+    width: 32,
   },
   hideOnScroll: false,
   items: [
