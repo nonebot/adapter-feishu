@@ -1,21 +1,41 @@
 {
-  "name": "feishu",
+  "name": "root",
   "private": true,
   "workspaces": [
     "website"
   ],
   "scripts": {
-    "archive": "yarn workspace website docusaurus docs:version",
-    "build": "yarn workspace website build",
-    "start": "yarn workspace website start",
-    "serve": "yarn workspace website serve",
-    "clear": "yarn workspace website clear",
+    "archive": "yarn workspace feishu docusaurus docs:version",
+    "build": "yarn workspace feishu build",
+    "build:plugin": "cross-env BASE_URL='/website/' yarn workspace feishu build",
+    "start": "yarn workspace feishu start",
+    "serve": "yarn workspace feishu serve",
+    "clear": "yarn workspace feishu clear",
     "prettier": "prettier --config ./.prettierrc --write \"./website/\"",
+    "lint": "yarn lint:js && yarn lint:style",
+    "lint:js": "eslint --cache --report-unused-disable-directives \"**/*.{js,jsx,ts,tsx,mjs}\"",
+    "lint:js:fix": "eslint --cache --report-unused-disable-directives --fix \"**/*.{js,jsx,ts,tsx,mjs}\"",
+    "lint:style": "stylelint \"**/*.css\"",
+    "lint:style:fix": "stylelint --fix \"**/*.css\"",
     "pyright": "pyright"
   },
   "devDependencies": {
+    "@typescript-eslint/eslint-plugin": "^6.6.0",
+    "@typescript-eslint/parser": "^6.6.0",
     "cross-env": "^7.0.3",
-    "prettier": "^2.5.0",
-    "pyright": "^1.1.317"
+    "eslint": "^8.48.0",
+    "eslint-config-prettier": "^9.0.0",
+    "eslint-import-resolver-typescript": "^3.6.0",
+    "eslint-plugin-import": "^2.28.1",
+    "eslint-plugin-jsx-a11y": "^6.7.1",
+    "eslint-plugin-prettier": "^5.0.0",
+    "eslint-plugin-react": "^7.33.2",
+    "eslint-plugin-react-hooks": "^4.6.0",
+    "eslint-plugin-regexp": "^1.15.0",
+    "prettier": "^3.0.3",
+    "pyright": "^1.1.317",
+    "stylelint": "^15.10.3",
+    "stylelint-config-standard": "^34.0.0",
+    "stylelint-prettier": "^4.0.2"
   }
 }
