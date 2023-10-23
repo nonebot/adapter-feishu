@@ -342,30 +342,36 @@ class PostMessageNodeStylable(TypedDict):
     style: Optional[List[Literal["bold", "underline", "lineThrough", "italic"]]]
 
 
+@dataclass
 class PostText(PostMessageNode, PostMessageNodeStylable):
     text: str
     un_escape: Optional[bool]
 
 
+@dataclass
 class PostA(PostMessageNode, PostMessageNodeStylable):
     text: str
     href: str
 
 
+@dataclass
 class PostAt(PostMessageNode, PostMessageNodeStylable):
     user_id: str
     user_name: Optional[str]
 
 
+@dataclass
 class PostImg(PostMessageNode):
     image_key: str
 
 
+@dataclass
 class PostMedia(PostMessageNode):
     file_key: str
     image_key: Optional[str]
 
 
+@dataclass
 class PostEmotion(PostMessageNode):
     emoji_type: str
 
