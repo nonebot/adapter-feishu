@@ -105,6 +105,37 @@ class MessageSegment(BaseMessageSegment["Message"]):
         )
 
     @staticmethod
+    def todo(task_id: str, summary: "_PostData", due_time: str):
+        return Todo(
+            "todo", {"task_id": task_id, "summary": summary, "due_time": due_time}
+        )
+
+    @staticmethod
+    def hongbao(text: str) -> "Hongbao":
+        return Hongbao("hongbao", {"text": text})
+
+    @staticmethod
+    def system(template: str, from_user: List[str], to_chatters: List[str]) -> "System":
+        return System(
+            "system",
+            {"template": template, "from_user": from_user, "to_chatters": to_chatters},
+        )
+
+    @staticmethod
+    def location(name: str, longitude: str, latitude: str) -> "Location":
+        return Location(
+            "location",
+            {"name": name, "longitude": longitude, "latitude": latitude},
+        )
+
+    @staticmethod
+    def video_chat(topic: str, start_time: str):
+        return VideoChat(
+            "video_chat",
+            {"topic": topic, "start_time": start_time},
+        )
+
+    @staticmethod
     def share_chat(chat_id: str) -> "MessageSegment":
         return ShareChat("share_chat", {"chat_id": chat_id})
 
@@ -119,7 +150,7 @@ class MessageSegment(BaseMessageSegment["Message"]):
     @staticmethod
     def media(
         file_key: str,
-        image_key: Optional[str],
+        image_key: Optional[str] = None,
         file_name: Optional[str] = None,
         duration: Optional[int] = None,
     ) -> "MessageSegment":
@@ -136,6 +167,10 @@ class MessageSegment(BaseMessageSegment["Message"]):
     @staticmethod
     def file(file_key: str, file_name: Optional[str] = None) -> "MessageSegment":
         return File("file", {"file_key": file_key, "file_name": file_name})
+
+    @staticmethod
+    def folder(file_key: str, file_name: str) -> "MessageSegment":
+        return Folder("folder", {"file_key": file_key, "file_name": file_name})
 
     @staticmethod
     def sticker(file_key: str) -> "MessageSegment":
@@ -199,7 +234,7 @@ class Image(MessageSegment):
 
     @override
     def __str__(self) -> str:
-        return f"<image:{self.data['image_key']!r}>"
+        return f"[image:{self.data['image_key']!r}]"
 
 
 class InteractiveHeaderTitle(TypedDict):
@@ -231,7 +266,7 @@ class Interactive(MessageSegment):
 
     @override
     def __str__(self) -> str:
-        return f"<interactive:{self.data!r}>"
+        return f"[interactive:{self.data!r}]"
 
 
 class _InteractiveTemplateData(TypedDict):
@@ -246,7 +281,7 @@ class InteractiveTemplate(MessageSegment):
 
     @override
     def __str__(self) -> str:
-        return f"<interactive_template:{self.data!r}>"
+        return f"[interactive_template:{self.data!r}]"
 
 
 class _ShareChatData(TypedDict):
@@ -260,7 +295,7 @@ class ShareChat(MessageSegment):
 
     @override
     def __str__(self) -> str:
-        return f"<share_chat:{self.data['chat_id']!r}>"
+        return f"[share_chat:{self.data['chat_id']!r}]"
 
 
 class _ShareUserData(TypedDict):
@@ -274,7 +309,7 @@ class ShareUser(MessageSegment):
 
     @override
     def __str__(self) -> str:
-        return f"<share_user:{self.data['user_id']!r}>"
+        return f"[share_user:{self.data['user_id']!r}]"
 
 
 class _AudioData(TypedDict):
@@ -289,7 +324,7 @@ class Audio(MessageSegment):
 
     @override
     def __str__(self) -> str:
-        return f"<audio:{self.data!r}>"
+        return f"[audio:{self.data!r}]"
 
 
 class _MediaData(TypedDict):
@@ -306,7 +341,7 @@ class Media(MessageSegment):
 
     @override
     def __str__(self) -> str:
-        return f"<media:{self.data['file_key']!r}>"
+        return f"[media:{self.data['file_key']!r}]"
 
 
 class _FileData(TypedDict):
@@ -321,7 +356,22 @@ class File(MessageSegment):
 
     @override
     def __str__(self) -> str:
-        return f"<file:{self.data!r}>"
+        return f"[file:{self.data!r}]"
+
+
+class _FolderData(TypedDict):
+    file_key: str
+    file_name: Optional[str]
+
+
+@dataclass
+class Folder(MessageSegment):
+    if TYPE_CHECKING:
+        data: _FolderData
+
+    @override
+    def __str__(self) -> str:
+        return f"[folder:{self.data!r}]"
 
 
 class _StickerData(TypedDict):
@@ -335,7 +385,7 @@ class Sticker(MessageSegment):
 
     @override
     def __str__(self) -> str:
-        return f"<sticker:{self.data['file_key']!r}>"
+        return f"[sticker:{self.data['file_key']!r}]"
 
 
 class PostMessageNode(TypedDict):
@@ -386,7 +436,7 @@ class Post(MessageSegment):
 
     @override
     def __str__(self) -> str:
-        return f"<post:{self.data!r}>"
+        return f"[post:{self.data!r}]"
 
 
 class _SystemData(TypedDict):
@@ -402,7 +452,7 @@ class System(MessageSegment):
 
     @override
     def __str__(self) -> str:
-        return f"<system:{self.data!r}>"
+        return f"[system:{self.data!r}]"
 
 
 class _LocationData(TypedDict):
@@ -418,7 +468,7 @@ class Location(MessageSegment):
 
     @override
     def __str__(self) -> str:
-        return f"<location:{self.data!r}>"
+        return f"[location:{self.data!r}]"
 
 
 class _VideoChatData(TypedDict):
@@ -433,7 +483,7 @@ class VideoChat(MessageSegment):
 
     @override
     def __str__(self) -> str:
-        return f"<video_chat:{self.data!r}>"
+        return f"[video_chat:{self.data!r}]"
 
 
 class _TodoData(TypedDict):
@@ -449,7 +499,7 @@ class Todo(MessageSegment):
 
     @override
     def __str__(self) -> str:
-        return f"<todo:{self.data!r}>"
+        return f"[todo:{self.data!r}]"
 
 
 class _VoteData(TypedDict):
@@ -464,7 +514,7 @@ class Vote(MessageSegment):
 
     @override
     def __str__(self) -> str:
-        return f"<vote:{self.data!r}>"
+        return f"[vote:{self.data!r}]"
 
 
 class _HongbaoData(TypedDict):
@@ -478,7 +528,7 @@ class Hongbao(MessageSegment):
 
     @override
     def __str__(self) -> str:
-        return f"<hongbao:{self.data['text']!r}>"
+        return f"[hongbao:{self.data['text']!r}]"
 
 
 class _CalendarData(TypedDict):
@@ -494,7 +544,7 @@ class ShareCalendarEvent(MessageSegment):
 
     @override
     def __str__(self) -> str:
-        return f"<share_calendar_event:{self.data!r}>"
+        return f"[share_calendar_event:{self.data!r}]"
 
 
 class Calendar:
@@ -503,7 +553,7 @@ class Calendar:
 
     @override
     def __str__(self) -> str:
-        return f"<calendar:{self.data!r}>"
+        return f"[calendar:{self.data!r}]"
 
 
 class GeneralCalendar:
@@ -512,7 +562,7 @@ class GeneralCalendar:
 
     @override
     def __str__(self) -> str:
-        return f"<general_calendar:{self.data!r}>"
+        return f"[general_calendar:{self.data!r}]"
 
 
 class Message(BaseMessage[MessageSegment]):
