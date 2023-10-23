@@ -606,13 +606,17 @@ class Message(BaseMessage[MessageSegment]):
 
             matched = text[text_begin:]
             if matched:
-                msg.extend(Message(Text("text", {"text": text[text_begin:]})))
+                msg.append(Text("text", {"text": text[text_begin:]}))
 
         elif message_type == "post":
             msg.append(Post("post", parsed_content))
 
         else:
-            msg.append(MessageSegment(message_type, parsed_content))
+            seg_builder = getattr(MessageSegment, message_type, None)
+            if seg_builder:
+                msg.append(seg_builder(**parsed_content))
+            else:
+                msg.append(MessageSegment(message_type, parsed_content))
 
         return msg
 
