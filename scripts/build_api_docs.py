@@ -14,3 +14,8 @@ config = Config(output_dir=str((Path(__file__).parent.parent / "build").resolve(
 module = ModuleManager("nonebot.adapters.feishu", config=config)
 builder = MarkdownBuilder(module)
 builder.write()
+
+for modname, path in builder.paths.items():
+    text = path.read_text(encoding="utf-8")
+    text.replace("<factory>", "")
+    path.write_text(text, encoding="utf-8")
