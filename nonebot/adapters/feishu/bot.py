@@ -74,8 +74,9 @@ def _check_at_me(bot: "Bot", event: "Event"):
             last_msg_seg = message[i]
 
         if _is_at_me_seg(last_msg_seg):
-            deleted = True
             del message[i:]
+            deleted = True
+            event.to_me = True
 
     if not message:
         message.append(MessageSegment.text(""))
