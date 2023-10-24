@@ -42,7 +42,7 @@ def _check_at_me(bot: "Bot", event: "Event"):
         isinstance(event, GroupMessageEvent)
         and event.event.message.mentions is not None
         and bot.bot_info.open_id
-        in [user.id.open_id for user in event.event.message.mentions]
+        in {user.id.open_id for user in event.event.message.mentions}
     ):
         event.to_me = True
 
@@ -55,6 +55,7 @@ def _check_at_me(bot: "Bot", event: "Event"):
     if _is_at_me_seg(message[0]):
         message.pop(0)
         deleted = True
+        event.to_me = True
         if message and message[0].type == "text":
             message[0].data["text"] = message[0].data["text"].lstrip()
             if not message[0].data["text"]:
