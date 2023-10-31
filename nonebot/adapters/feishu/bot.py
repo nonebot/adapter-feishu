@@ -39,6 +39,7 @@ async def _check_reply(bot: "Bot", event: "Event"):
                     message.sender.id_type == "app_id"
                     and message.sender.id == bot.bot_config.app_id
                 ):
+                    event.to_me = True
                     event.reply = message
 
         except Exception as e:
