@@ -1,6 +1,6 @@
 import re
 from typing_extensions import override
-from typing import TYPE_CHECKING, Any, Union, Callable
+from typing import TYPE_CHECKING, Any, Dict, List, Union, Literal, Callable, Optional
 
 from pydantic import parse_obj_as
 from nonebot.message import handle_event
@@ -170,16 +170,7 @@ async def send(
 
     msg_type, content = full_message.serialize()
 
-    return await bot.call_api(
-        "im/v1/messages",
-        method="POST",
-        params={"receive_id_type": receive_id_type},
-        json={
-            "receive_id": receive_id,
-            "content": content,
-            "msg_type": msg_type,
-        },
-    )
+    return await bot.send_msg(receive_id_type, receive_id, content, msg_type)
 
 
 class Bot(BaseBot):
@@ -199,6 +190,133 @@ class Bot(BaseBot):
         super().__init__(adapter, self_id)
         self.bot_config: BotConfig = bot_config
         self.bot_info: BotInfo = bot_info
+
+    async def get_msgs(
+        self, container_id_type: Literal["chat"], container_id: str, **params: Any
+    ):
+        return await self.call_api(
+            "im/v1/messages",
+            method="GET",
+            params={
+                "container_id_type": container_id_type,
+                "container_id": container_id,
+                **params,
+            },
+        )
+
+    async def get_msg_resource(
+        self, message_id: str, file_key: str, type_: Literal["image", "file"]
+    ):
+        return await self.call_api(
+            f"im/v1/messages/{message_id}/resources/{file_key}",
+            method="GET",
+            params={"type": type_},
+        )
+
+    async def get_msg(self, message_id: str):
+        return await self.call_api(
+            f"im/v1/messages/{message_id}",
+            method="GET",
+        )
+
+    async def get_msg_read_users(
+        self,
+        message_id: str,
+        user_id_type: str,
+        page_size: Optional[int] = None,
+        page_token: Optional[str] = None,
+    ):
+        params: Dict[str, Any] = {"user_id_type": user_id_type}
+        if page_size:
+            params.update({"page_size": page_size})
+
+        if page_token:
+            params.update({"page_token": page_token})
+
+        return await self.call_api(
+            f"im/v1/messages/{message_id}/read_users", method="GET", params=params
+        )
+
+    async def merge_forward_msg(
+        self,
+        receive_id_type: str,
+        receive_id: str,
+        message_id_list: List[str],
+        uuid: Optional[str] = None,
+    ):
+        params = {"receive_id_type": receive_id_type}
+        if uuid:
+            params.update({"uuid": uuid})
+
+        return await self.call_api(
+            "im/v1/messages/merge_forward",
+            method="POST",
+            params=params,
+            json={"receive_id": receive_id, "message_id_list": message_id_list},
+        )
+
+    async def forward_msg(
+        self,
+        message_id: str,
+        receive_id: str,
+        receive_id_type: str,
+        uuid: Optional[str] = None,
+    ):
+        params = {"receive_id_type": receive_id_type}
+        if uuid:
+            params.update({"uuid": uuid})
+
+        return await self.call_api(
+            f"im/v1/messages/{message_id}/forward",
+            method="POST",
+            params=params,
+            json={"receive_id": receive_id},
+        )
+
+    async def delete_msg(self, message_id: str):
+        return await self.call_api(f"im/v1/messages/{message_id}", method="DELETE")
+
+    async def edit_msg(self, message_id: str, content: str, msg_type: str):
+        return await self.call_api(
+            f"im/v1/messages/{message_id}",
+            method="PUT",
+            json={"msg_type": msg_type, "content": content},
+        )
+
+    async def reply_msg(
+        self, message_id: str, content: str, msg_type: str, uuid: Optional[str] = None
+    ):
+        json = {
+            "content": content,
+            "msg_type": msg_type,
+        }
+
+        if uuid:
+            json.update({"uuid": uuid})
+
+        return await self.call_api(
+            f"im/v1/messages/{message_id}/reply",
+            method="POST",
+            json=json,
+        )
+
+    async def send_msg(
+        self,
+        receive_id_type: Literal["chat_id", "open_id"],
+        receive_id: str,
+        content: str,
+        msg_type: str,
+    ):
+        return await self.call_api(
+            "im/v1/messages",
+            method="POST",
+            params={"receive_id_type": receive_id_type},
+            json={
+                "receive_id": receive_id,
+                "content": content,
+                "msg_type": msg_type,
+            },
+        )
 
     @override
     async def send(
