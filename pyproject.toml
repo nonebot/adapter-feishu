@@ -21,7 +21,6 @@ packages = [{ include = "nonebot" }]
 [tool.poetry.dependencies]
 python = "^3.8"
 pycryptodome = ">=3.18.0, <4.0.0"
-httpx = ">=0.20.0, <1.0.0"
 nonebot2 = "^2.1.0"
 cashews = ">=6.0.0, <7.0.0"
 
@@ -33,6 +32,7 @@ pre-commit = "^3.0.0"
 ruff = ">=0.0.272,<1.0.0"
 nonebot2 = { git = "https://github.com/nonebot/nonebot2.git", branch = "master", extras = [
   "fastapi",
+  "httpx",
 ] }
 
 [tool.poetry.group.test.dependencies]

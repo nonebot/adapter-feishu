@@ -1,19 +1,23 @@
 import re
 from typing_extensions import override
-from typing import TYPE_CHECKING, Any, List, Union, Callable
+from typing import TYPE_CHECKING, Any, Union, Callable
 
 from nonebot.message import handle_event
-from pydantic import Field, HttpUrl, BaseModel
 
 from nonebot.adapters import Bot as BaseBot
 
 from .utils import log
+from .models import BotInfo
 from .config import BotConfig
 from .message import At, Message, MessageSegment
 from .event import Event, MessageEvent, GroupMessageEvent, PrivateMessageEvent
 
 if TYPE_CHECKING:
     from .adapter import Adapter
+
+
+def _check_reply(bot: "Bot", event: "Event"):
+    ...
 
 
 def _check_at_me(bot: "Bot", event: "Event"):
@@ -151,14 +155,6 @@ async def send(
     }
 
     return await bot.call_api("im/v1/messages", **params)
-
-
-class BotInfo(BaseModel):
-    activate_status: int = Field(alias="activate_status")
-    app_name: str = Field(alias="app_name")
-    avatar_url: HttpUrl = Field(alias="avatar_url")
-    ip_white_list: List[str] = Field(alias="ip_white_list")
-    open_id: str = Field(alias="open_id")
 
 
 class Bot(BaseBot):
