@@ -1,3 +1,4 @@
+from copy import deepcopy
 from typing_extensions import override
 from typing import TYPE_CHECKING, Any, Dict, Literal, Optional
 
@@ -149,15 +150,17 @@ class MessageEvent(Event):
                 "_message",
                 deserialized,
             )
-
-        if not hasattr(self, "original_message"):
             setattr(
                 self,
                 "original_message",
-                getattr(self, "_message"),
+                deepcopy(deserialized),
             )
 
         return getattr(self, "_message")
+
+    @property
+    def message_id(self) -> str:
+        return self.event.message.message_id
 
     @override
     def get_plaintext(self) -> str:
