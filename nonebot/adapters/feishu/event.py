@@ -1,5 +1,5 @@
 from typing_extensions import override
-from typing import Any, Dict, Literal, Optional
+from typing import TYPE_CHECKING, Any, Dict, Literal, Optional
 
 from pydantic import Field
 from nonebot.utils import escape_tag
@@ -116,6 +116,10 @@ class MessageEvent(Event):
     """
     reply: Optional[Reply]
 
+    if TYPE_CHECKING:
+        _message: Message
+        original_message: Message
+
     @override
     def get_type(self) -> Literal["message"]:
         return "message"
@@ -135,15 +139,24 @@ class MessageEvent(Event):
     @override
     def get_message(self) -> Message:
         if not hasattr(self, "_message"):
+            deserialized = Message.deserialize(
+                self.event.message.content,
+                self.event.message.mentions,
+                self.event.message.message_type,
+            )
             setattr(
                 self,
                 "_message",
-                Message.deserialize(
-                    self.event.message.content,
-                    self.event.message.mentions,
-                    self.event.message.message_type,
-                ),
+                deserialized,
             )
+
+        if not hasattr(self, "original_message"):
+            setattr(
+                self,
+                "original_message",
+                getattr(self, "_message"),
+            )
+
         return getattr(self, "_message")
 
     @override
