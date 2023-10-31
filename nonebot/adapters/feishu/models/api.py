@@ -2,6 +2,8 @@ from typing import List
 
 from pydantic import HttpUrl, BaseModel
 
+from .common import Reply
+
 
 class BaseResponse(BaseModel):
     code: int
@@ -25,4 +27,19 @@ class BotInfoResponse(BaseResponse):
     bot: BotInfo
 
 
-__all__ = ["BaseResponse", "TenantAccessTokenResponse", "BotInfo", "BotInfoResponse"]
+class ReplyResponseItems(BaseModel):
+    items: List[Reply]
+
+
+class ReplyResponse(BaseResponse):
+    data: ReplyResponseItems
+
+
+__all__ = [
+    "BaseResponse",
+    "TenantAccessTokenResponse",
+    "BotInfo",
+    "BotInfoResponse",
+    "ReplyResponseItems",
+    "ReplyResponse",
+]

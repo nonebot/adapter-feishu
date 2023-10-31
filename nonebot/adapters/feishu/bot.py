@@ -2,13 +2,14 @@ import re
 from typing_extensions import override
 from typing import TYPE_CHECKING, Any, Union, Callable
 
+from pydantic import parse_obj_as
 from nonebot.message import handle_event
 
 from nonebot.adapters import Bot as BaseBot
 
 from .utils import log
-from .models import BotInfo
 from .config import BotConfig
+from .models import BotInfo, ReplyResponse
 from .message import At, Message, MessageSegment
 from .event import Event, MessageEvent, GroupMessageEvent, PrivateMessageEvent
 
@@ -16,8 +17,32 @@ if TYPE_CHECKING:
     from .adapter import Adapter
 
 
-def _check_reply(bot: "Bot", event: "Event"):
-    ...
+async def _check_reply(bot: "Bot", event: "Event"):
+    if not isinstance(event, MessageEvent):
+        return
+
+    if not event.event.message.parent_id:
+        return
+
+    if event.event.message.parent_id != event.event.message.message_id:
+        try:
+            response = await bot.call_api(
+                f"im/v1/messages/{event.event.message.parent_id}",
+                method="GET",
+            )
+            result = parse_obj_as(
+                ReplyResponse,
+                response,
+            )
+            for message in result.data.items:
+                if (
+                    message.sender.id_type == "app_id"
+                    and message.sender.id == bot.bot_config.app_id
+                ):
+                    event.reply = message
+
+        except Exception as e:
+            log("ERROR", "Failed to get reply message", e)
 
 
 def _check_at_me(bot: "Bot", event: "Event"):
@@ -144,17 +169,16 @@ async def send(
 
     msg_type, content = full_message.serialize()
 
-    params = {
-        "method": "POST",
-        "query": {"receive_id_type": receive_id_type},
-        "body": {
+    return await bot.call_api(
+        "im/v1/messages",
+        method="POST",
+        params={"receive_id_type": receive_id_type},
+        json={
             "receive_id": receive_id,
             "content": content,
             "msg_type": msg_type,
         },
-    }
-
-    return await bot.call_api("im/v1/messages", **params)
+    )
 
 
 class Bot(BaseBot):
@@ -217,5 +241,6 @@ class Bot(BaseBot):
         if isinstance(event, MessageEvent):
             _check_at_me(self, event)
             _check_nickname(self, event)
+            await _check_reply(self, event)
 
         await handle_event(self, event)
