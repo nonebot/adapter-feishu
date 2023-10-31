@@ -1,4 +1,5 @@
 from copy import deepcopy
+from datetime import datetime
 from typing_extensions import override
 from typing import TYPE_CHECKING, Any, Dict, Literal, Optional
 
@@ -103,6 +104,10 @@ class Event(BaseEvent):
     @override
     def is_tome(self) -> bool:
         return False
+
+    @property
+    def time(self) -> datetime:
+        return datetime.utcfromtimestamp(int(self.header.create_time) / 1000)
 
 
 class MessageEvent(Event):
