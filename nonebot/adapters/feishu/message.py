@@ -64,6 +64,10 @@ class MessageSegment(BaseMessageSegment["Message"]):
         return Text("text", {"text": str(text)})
 
     @staticmethod
+    def at(user_id: str):
+        return At("at", {"user_id": user_id})
+
+    @staticmethod
     def post(
         title: str, content: List[List["PostMessageNode"]], language: str = "zh_cn"
     ) -> "Post":
@@ -207,20 +211,6 @@ class At(MessageSegment):
     @override
     def __str__(self) -> str:
         return f"@{self.data['user_id']}"
-
-
-class _AtAllData(TypedDict):
-    user_id: Literal["all"]
-
-
-@dataclass
-class AtAll(MessageSegment):
-    if TYPE_CHECKING:
-        data: _AtAllData
-
-    @override
-    def __str__(self) -> str:
-        return "@all"
 
 
 class _ImageData(TypedDict):
