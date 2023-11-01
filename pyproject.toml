@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "nonebot-adapter-feishu"
-version = "2.2.1"
+version = "2.3.0"
 description = "feishu(larksuite) adapter for nonebot2"
 authors = ["StarHeartHunt <starheart233@gmail.com>"]
 license = "MIT"
@@ -20,9 +20,9 @@ packages = [{ include = "nonebot" }]
 
 [tool.poetry.dependencies]
 python = "^3.8"
-pycryptodome = ">=3.18.0, <4.0.0"
 nonebot2 = "^2.1.0"
 cashews = ">=6.0.0, <7.0.0"
+pycryptodome = ">=3.18.0, <4.0.0"
 
 [tool.poetry.group.dev.dependencies]
 isort = "^5.10.1"
@@ -79,6 +79,7 @@ executionEnvironments = [{ root = "./" }]
 
 typeCheckingMode = "basic"
 reportShadowedImports = false
+disableBytesTypePromotions = true
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
