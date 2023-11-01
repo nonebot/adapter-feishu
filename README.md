@@ -19,8 +19,8 @@ _✨ 飞书协议适配 ✨_
   <a href="https://raw.githubusercontent.com/nonebot/adapter-feishu/master/LICENSE">
     <img src="https://img.shields.io/github/license/nonebot/adapter-feishu" alt="license">
   </a>
-  <a href="https://pypi.python.org/pypi/nonebot-adapter-onebot">
-    <img src="https://img.shields.io/pypi/v/nonebot-adapter-onebot" alt="pypi">
+  <a href="https://pypi.python.org/pypi/nonebot-adapter-feishu">
+    <img src="https://img.shields.io/pypi/v/nonebot-adapter-feishu" alt="pypi">
   </a>
   <img src="https://img.shields.io/badge/python-3.8+-blue" alt="python">
   <a href="https://codecov.io/gh/nonebot/adapter-feishu">
