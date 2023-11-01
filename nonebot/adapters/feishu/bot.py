@@ -41,6 +41,10 @@ async def _check_reply(bot: "Bot", event: "Event"):
                 ):
                     event.to_me = True
                     event.reply = message
+                    return
+
+            if not event.reply and len(result.data.items) >= 1:
+                event.reply = result.data.items[0]
 
         except Exception as e:
             log("ERROR", "Failed to get reply message", e)
