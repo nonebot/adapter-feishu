@@ -54,6 +54,41 @@ class Adapter(BaseAdapter):
         """适配器名称: `Feishu`"""
         return "Feishu"
 
+    async def startup(self):
+        for bot_config in self.feishu_config.feishu_bots:
+            self.bot_apps[bot_config.app_id] = bot_config
+            result = await self.get_bot_info(bot_config)
+            if result.code != 0:
+                log(
+                    "ERROR",
+                    "<r><bg #f8bbd0>Failed to get bot info.</bg #f8bbd0></r> "
+                    f"Skipped Bot {bot_config.app_id} registration",
+                )
+                continue
+
+            if self.bots.get(bot_config.app_id):
+                continue
+
+            bot = Bot(
+                self,
+                bot_config.app_id,
+                bot_config=bot_config,
+                bot_info=result.bot,
+            )
+            self.bot_connect(bot)
+            log(
+                "INFO",
+                f"<y>Bot {escape_tag(bot_config.app_id)}</y> connected",
+            )
+
+            setup = HTTPServerSetup(
+                URL(f"/feishu/{bot.self_id}"),
+                "POST",
+                self.get_name(),
+                self._handle_http,
+            )
+            self.setup_http_server(setup)
+
     def setup(self) -> None:
         if not isinstance(self.driver, ASGIMixin):
             raise RuntimeError(
@@ -69,41 +104,7 @@ class Adapter(BaseAdapter):
                 f"{self.get_name()} Adapter needs a HTTPClient Driver to work."
             )
 
-        @self.driver.on_startup
-        async def _():
-            for bot_config in self.feishu_config.feishu_bots:
-                self.bot_apps[bot_config.app_id] = bot_config
-                result = await self.get_bot_info(bot_config)
-                if result.code != 0:
-                    log(
-                        "ERROR",
-                        "<r><bg #f8bbd0>Failed to get bot info.</bg #f8bbd0></r> "
-                        f"Skipped Bot {bot_config.app_id} registration",
-                    )
-                    continue
-
-                if self.bots.get(bot_config.app_id):
-                    continue
-
-                bot = Bot(
-                    self,
-                    bot_config.app_id,
-                    bot_config=bot_config,
-                    bot_info=result.bot,
-                )
-                self.bot_connect(bot)
-                log(
-                    "INFO",
-                    f"<y>Bot {escape_tag(bot_config.app_id)}</y> connected",
-                )
-
-                setup = HTTPServerSetup(
-                    URL(f"/feishu/{bot.self_id}"),
-                    "POST",
-                    self.get_name(),
-                    self._handle_http,
-                )
-                self.setup_http_server(setup)
+        self.driver.on_startup(self.startup)
 
     def get_api_url(self, bot_config: BotConfig, path: str):
         api_base = (
