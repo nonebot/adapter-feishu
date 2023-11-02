@@ -622,16 +622,16 @@ class Message(BaseMessage[MessageSegment]):
         }
 
         if message_type == "text":
-            text = parsed_content["text"]
+            text: str = parsed_content["text"]
             text_begin = 0
 
             for embed in re.finditer(
                 r"(?P<type>(?:@))(?P<key>\w+)",
                 text,
             ):
-                matched = text[text_begin : embed.pos + embed.start()]
+                matched: str = text[text_begin : embed.pos + embed.start()]
                 if matched:
-                    msg.extend(Message(Text("text", matched)))
+                    msg.extend(Message(Text("text", {"text": matched})))
 
                 text_begin = embed.pos + embed.end()
                 if embed.group("type") == "@":
