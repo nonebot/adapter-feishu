@@ -7,9 +7,12 @@ toc_max_heading_level: 2
 
 ## 最近更新
 
-### 💫 杂项
+### 🐛 Bug 修复
 
 - Fix: 序列化消息时检查消息长度 [@StarHeartHunt](https://github.com/StarHeartHunt) ([#89](https://github.com/nonebot/adapter-feishu/pull/89))
+
+### 💫 杂项
+
 - :arrow_up: auto update by pre-commit hooks [@pre-commit-ci](https://github.com/pre-commit-ci) ([#86](https://github.com/nonebot/adapter-feishu/pull/86))
 - :arrow_up: auto update by pre-commit hooks [@pre-commit-ci](https://github.com/pre-commit-ci) ([#84](https://github.com/nonebot/adapter-feishu/pull/84))
 - :arrow_up: auto update by pre-commit hooks [@pre-commit-ci](https://github.com/pre-commit-ci) ([#82](https://github.com/nonebot/adapter-feishu/pull/82))
