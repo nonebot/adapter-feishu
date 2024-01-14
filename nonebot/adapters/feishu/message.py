@@ -606,8 +606,10 @@ class Message(BaseMessage[MessageSegment]):
                     combined.update(seg.data)
 
             return "post", json.dumps(combined, ensure_ascii=False)
-        else:
+        elif len(self) == 1:
             return self[0].type, json.dumps(self[0].data, ensure_ascii=False)
+        else:
+            raise ValueError("Cannot serialize empty message")
 
     @staticmethod
     def deserialize(
