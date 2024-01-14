@@ -37,9 +37,9 @@ body:
   - type: input
     id: env-adapter
     attributes:
-      label: 适配器
-      description: 填写使用的适配器以及版本
-      placeholder: e.g. Feishu v11 2.2.2
+      label: 飞书适配器版本
+      description: 填写飞书适配器版本
+      placeholder: e.g. 2.0.0
     validations:
       required: true
 
