@@ -12,7 +12,7 @@ options:
 
 ## 配置驱动器
 
-飞书适配器需要同时启用正向驱动器及 ASGI 驱动器，例如安装 httpx（正向）和 fastapi（asgi）：
+飞书适配器需要同时启用正向驱动器及 ASGI 驱动器，例如安装 httpx（正向）和 fastapi（ASGI）：
 
 ```bash
 pip install nonebot[httpx] nonebot[fastapi]
