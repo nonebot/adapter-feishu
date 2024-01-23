@@ -1,6 +1,5 @@
 import re
 import json
-import itertools
 from dataclasses import dataclass
 from typing_extensions import override
 from typing import (
@@ -35,12 +34,13 @@ class MessageSegment(BaseMessageSegment["Message"]):
 
     @override
     def is_text(self) -> bool:
-        return self.type == "text"
+        return self.type == "text" or self.type == "post"
 
     @override
     def __str__(self) -> str:
         if self.is_text():
             return self.data.get("text", "")
+
         return ""
 
     @override
@@ -71,7 +71,7 @@ class MessageSegment(BaseMessageSegment["Message"]):
     def post(
         title: str, content: List[List["PostMessageNode"]], language: str = "zh_cn"
     ) -> "Post":
-        return Post("post", data={language: {"title": title, "content": content}})
+        return Post("post", data={"title": title, "content": content})
 
     @staticmethod
     def image(image_key: str) -> "Image":
@@ -422,11 +422,36 @@ class _PostData(TypedDict):
 @dataclass
 class Post(MessageSegment):
     if TYPE_CHECKING:
-        data: Dict[str, _PostData]  # i18n
+        data: _PostData
 
     @override
     def __str__(self) -> str:
-        return f"[post:{self.data!r}]"
+        content_string = ""
+        if self.data["title"]:
+            content_string += self.data["title"] + "\n"
+
+        for line in self.data["content"]:
+            for seg in line:
+                if seg["tag"] == "text":
+                    content_string += seg.get("text", "")
+                elif seg["tag"] == "a":
+                    content_string += seg.get("href", "") + " " + seg.get("text", "")
+                elif seg["tag"] == "at":
+                    content_string += "@" + seg.get("user_id", "")
+                else:
+                    curr_seg_str_list = []
+                    for key, value in seg.items():
+                        if key == "tag":
+                            continue
+                        curr_seg_str_list.append(f"{key}:{value}")
+                    curr_seg_str = ",".join(curr_seg_str_list)
+                    content_string += f"[{seg['tag']}:{curr_seg_str}]"
+
+            content_string += "\n"
+
+        content_string = content_string.strip()
+
+        return content_string
 
 
 class _SystemData(TypedDict):
@@ -607,6 +632,8 @@ class Message(BaseMessage[MessageSegment]):
 
             return "post", json.dumps(combined, ensure_ascii=False)
         elif len(self) == 1:
+            if self[0].type == "post":
+                return "post", json.dumps({"zh_cn": self[0].data}, ensure_ascii=False)
             return self[0].type, json.dumps(self[0].data, ensure_ascii=False)
         else:
             raise ValueError("Cannot serialize empty message")
@@ -668,11 +695,5 @@ class Message(BaseMessage[MessageSegment]):
         for seg in self:
             if seg.is_text():
                 text_list.append(str(seg))
-
-            elif seg.type == "post":
-                text_list.append(seg.data["title"])
-                for node in itertools.chain.from_iterable(seg.data["content"]):
-                    if node["tag"] == "text":
-                        text_list.append(node["text"])
 
         return "".join(text_list)
