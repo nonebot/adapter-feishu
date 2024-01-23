@@ -10,6 +10,20 @@ options:
 
 # 配置连接
 
+## 配置驱动器
+
+飞书适配器需要同时启用正向驱动器及 ASGI 驱动器，例如安装 httpx（正向）和 fastapi（asgi）：
+
+```bash
+pip install nonebot[httpx] nonebot[fastapi]
+```
+
+同时需要在 .env 配置文件中启用对应的驱动器，例如：
+
+```dotenv
+DRIVER=~fastapi+~httpx
+```
+
 ## 创建应用与启用应用“机器人”能力
 
 :::tip 提示
