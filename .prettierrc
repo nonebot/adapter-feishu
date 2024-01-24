@@ -8,7 +8,11 @@
   "semi": true,
   "overrides": [
     {
-      "files": ["devcontainer.json", "**/tsconfig.json", "**/tsconfig.*.json"],
+      "files": [
+        "**/devcontainer.json",
+        "**/tsconfig.json",
+        "**/tsconfig.*.json"
+      ],
       "options": {
         "parser": "json"
       }
