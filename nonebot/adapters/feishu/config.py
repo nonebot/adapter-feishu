@@ -39,6 +39,3 @@ class Config(BaseModel):
     feishu_api_base: HttpUrl = Field("https://open.feishu.cn/open-apis/")
     feishu_lark_api_base: HttpUrl = Field("https://open.larksuite.com/open-apis/")
     feishu_bots: List[BotConfig] = Field(default_factory=list)
-
-    class Config:
-        extra = "ignore"

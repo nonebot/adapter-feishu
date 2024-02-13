@@ -2,8 +2,8 @@ import re
 from typing_extensions import override
 from typing import TYPE_CHECKING, Any, Dict, List, Union, Literal, Callable, Optional
 
-from pydantic import parse_obj_as
 from nonebot.message import handle_event
+from nonebot.compat import type_validate_python
 
 from nonebot.adapters import Bot as BaseBot
 
@@ -30,7 +30,7 @@ async def _check_reply(bot: "Bot", event: "Event"):
                 f"im/v1/messages/{event.event.message.parent_id}",
                 method="GET",
             )
-            result = parse_obj_as(
+            result = type_validate_python(
                 ReplyResponse,
                 response,
             )

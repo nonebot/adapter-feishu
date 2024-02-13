@@ -5,8 +5,8 @@ from typing_extensions import override
 from typing import Any, Dict, List, Type, Union, Callable, Optional, cast
 
 from pygtrie import StringTrie
-from pydantic import parse_obj_as
 from nonebot.utils import escape_tag
+from nonebot.compat import type_validate_python
 from nonebot.drivers import (
     URL,
     Driver,
@@ -17,6 +17,7 @@ from nonebot.drivers import (
     HTTPServerSetup,
 )
 
+from nonebot import get_plugin_config
 from nonebot.adapters import Adapter as BaseAdapter
 
 from . import event
@@ -44,7 +45,7 @@ class Adapter(BaseAdapter):
     def __init__(self, driver: Driver, **kwargs: Any):
         super().__init__(driver, **kwargs)
         """飞书适配器配置"""
-        self.feishu_config: Config = Config(**self.config.dict())
+        self.feishu_config: Config = get_plugin_config(Config)
         self.bot_apps: Dict[str, BotConfig] = {}
         self.setup()
 
@@ -127,7 +128,7 @@ class Adapter(BaseAdapter):
                 },
             ),
         )
-        result = parse_obj_as(BotInfoResponse, response)
+        result = type_validate_python(BotInfoResponse, response)
 
         return result
 
@@ -147,7 +148,7 @@ class Adapter(BaseAdapter):
                 },
             ),
         )
-        result = parse_obj_as(TenantAccessTokenResponse, response)
+        result = type_validate_python(TenantAccessTokenResponse, response)
 
         expire = result.expire
         if expire > 30 * 60:
@@ -290,12 +291,12 @@ class Adapter(BaseAdapter):
             models = cls.get_event_model(event_type)
             for model in models:
                 try:
-                    event = model.parse_obj(json_data)
+                    event = type_validate_python(model, json_data)
                     break
                 except Exception as e:
                     log("DEBUG", "Event Parser Error", e)
             else:
-                event = Event.parse_obj(json_data)
+                event = type_validate_python(Event, json_data)
 
             return event
 
