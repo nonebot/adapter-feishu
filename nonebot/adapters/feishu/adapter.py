@@ -108,7 +108,7 @@ class Adapter(BaseAdapter):
         self.driver.on_startup(self.startup)
 
     def get_api_url(self, bot_config: BotConfig, path: str):
-        api_base = (
+        api_base = str(
             self.feishu_config.feishu_lark_api_base
             if bot_config.is_lark
             else self.feishu_config.feishu_api_base
