@@ -7,6 +7,10 @@ toc_max_heading_level: 2
 
 ## 最近更新
 
+### 🚀 新功能
+
+- Feat: 添加 pydantic v2 兼容支持 [@he0119](https://github.com/he0119) ([#94](https://github.com/nonebot/adapter-feishu/pull/94))
+
 ### 💫 杂项
 
 - :arrow_up: auto update by pre-commit hooks [@pre-commit-ci](https://github.com/pre-commit-ci) ([#93](https://github.com/nonebot/adapter-feishu/pull/93))
