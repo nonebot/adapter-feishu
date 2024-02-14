@@ -75,7 +75,7 @@ mark-parentheses = false
 [tool.pyright]
 pythonVersion = "3.8"
 pythonPlatform = "All"
-executionEnvironments = [{ root = "./" }]
+defineConstant = { PYDANTIC_V2 = true }
 
 typeCheckingMode = "basic"
 reportShadowedImports = false
