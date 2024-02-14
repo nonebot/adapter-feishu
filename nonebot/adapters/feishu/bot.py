@@ -178,9 +178,9 @@ async def send(
 
 
 class Bot(BaseBot):
-    send_handler: Callable[
-        ["Bot", Event, Union[str, Message, MessageSegment]], Any
-    ] = send
+    send_handler: Callable[["Bot", Event, Union[str, Message, MessageSegment]], Any] = (
+        send
+    )
 
     @override
     def __init__(
