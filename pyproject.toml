@@ -20,7 +20,7 @@ packages = [{ include = "nonebot" }]
 
 [tool.poetry.dependencies]
 python = "^3.8"
-nonebot2 = "^2.1.0"
+nonebot2 = "^2.2.0"
 cashews = ">=6.0.0, <7.0.0"
 pycryptodome = ">=3.18.0, <4.0.0"
 
@@ -75,7 +75,7 @@ mark-parentheses = false
 [tool.pyright]
 pythonVersion = "3.8"
 pythonPlatform = "All"
-executionEnvironments = [{ root = "./" }]
+defineConstant = { PYDANTIC_V2 = true }
 
 typeCheckingMode = "basic"
 reportShadowedImports = false

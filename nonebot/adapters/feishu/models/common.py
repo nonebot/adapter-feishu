@@ -1,6 +1,7 @@
 from typing import List, Literal, Optional
 
 from pydantic import BaseModel
+from nonebot.compat import PYDANTIC_V2, ConfigDict
 
 
 class EventHeader(BaseModel):
@@ -13,8 +14,12 @@ class EventHeader(BaseModel):
     resource_id: Optional[str]
     user_list: Optional[List[dict]]
 
-    class Config:
-        extra = "allow"
+    if PYDANTIC_V2:
+        model_config = ConfigDict(extra="allow")
+    else:
+
+        class Config(ConfigDict):
+            extra = "allow"
 
 
 class UserId(BaseModel):
@@ -118,8 +123,12 @@ class Reply(BaseModel):
     mentions: List[ReplyMention]
     upper_message_id: Optional[str]
 
-    class Config:
-        extra = "allow"
+    if PYDANTIC_V2:
+        model_config = ConfigDict(extra="allow")
+    else:
+
+        class Config(ConfigDict):
+            extra = "allow"
 
 
 class EventMessage(BaseModel):
@@ -133,8 +142,12 @@ class EventMessage(BaseModel):
     content: str
     mentions: Optional[List[Mention]]
 
-    class Config:
-        extra = "allow"
+    if PYDANTIC_V2:
+        model_config = ConfigDict(extra="allow")
+    else:
+
+        class Config(ConfigDict):
+            extra = "allow"
 
 
 class GroupEventMessage(EventMessage):

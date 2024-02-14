@@ -5,6 +5,7 @@ from typing import TYPE_CHECKING, Any, Dict, Literal, Optional
 
 from pydantic import Field
 from nonebot.utils import escape_tag
+from nonebot.compat import model_dump
 
 from nonebot.adapters import Event as BaseEvent
 
@@ -83,7 +84,7 @@ class Event(BaseEvent):
 
     @override
     def get_event_description(self) -> str:
-        return escape_tag(str(self.dict()))
+        return escape_tag(str(model_dump(self)))
 
     @override
     def get_message(self) -> Message:
@@ -214,7 +215,7 @@ class NoticeEvent(Event):
 
     @override
     def get_event_description(self) -> str:
-        return escape_tag(str(self.dict()))
+        return escape_tag(str(model_dump(self)))
 
     @override
     def get_message(self) -> Message:
