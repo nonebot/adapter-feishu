@@ -11,8 +11,8 @@ class EventHeader(BaseModel):
     token: str
     app_id: str
     tenant_key: str
-    resource_id: Optional[str]
-    user_list: Optional[List[dict]]
+    resource_id: Optional[str] = None
+    user_list: Optional[List[dict]] = None
 
     if PYDANTIC_V2:
         model_config = ConfigDict(extra="allow")
@@ -30,17 +30,17 @@ class UserId(BaseModel):
 
 class MeetingUser(BaseModel):
     id: UserId
-    user_role: Optional[int]
-    user_type: Optional[int]
+    user_role: Optional[int] = None
+    user_type: Optional[int] = None
 
 
 class Meeting(BaseModel):
     id: str
     topic: str
     meeting_no: str
-    start_time: Optional[str]
-    end_time: Optional[str]
-    host_user: Optional[MeetingUser]
+    start_time: Optional[str] = None
+    end_time: Optional[str] = None
+    host_user: Optional[MeetingUser] = None
     owner: MeetingUser
 
 
@@ -110,8 +110,8 @@ class MessageBody(BaseModel):
 
 class Reply(BaseModel):
     message_id: str
-    root_id: Optional[str]
-    parent_id: Optional[str]
+    root_id: Optional[str] = None
+    parent_id: Optional[str] = None
     msg_type: str
     create_time: str
     update_time: str
@@ -121,7 +121,7 @@ class Reply(BaseModel):
     sender: ReplySender
     body: MessageBody
     mentions: List[ReplyMention]
-    upper_message_id: Optional[str]
+    upper_message_id: Optional[str] = None
 
     if PYDANTIC_V2:
         model_config = ConfigDict(extra="allow")
@@ -133,14 +133,14 @@ class Reply(BaseModel):
 
 class EventMessage(BaseModel):
     message_id: str
-    root_id: Optional[str]
-    parent_id: Optional[str]
+    root_id: Optional[str] = None
+    parent_id: Optional[str] = None
     create_time: str
     chat_id: str
     chat_type: str
     message_type: str
     content: str
-    mentions: Optional[List[Mention]]
+    mentions: Optional[List[Mention]] = None
 
     if PYDANTIC_V2:
         model_config = ConfigDict(extra="allow")
@@ -192,7 +192,7 @@ class AttendanceUserFlowCreatedEventDetail(BaseModel):
     latitude: float
     location_name: str
     longitude: float
-    photo_urls: Optional[List[str]]
+    photo_urls: Optional[List[str]] = None
     record_id: str
     ssid: str
     type: int
@@ -386,7 +386,7 @@ class ContactUser(BaseModel):
     gender: int
     avatar: AvatarInfo
     status: UserStatus
-    department_ids: Optional[List[str]]
+    department_ids: Optional[List[str]] = None
     leader_user_id: str
     city: str
     country: str
@@ -394,7 +394,7 @@ class ContactUser(BaseModel):
     join_time: int
     employee_no: str
     employee_type: int
-    orders: Optional[List[UserOrder]]
+    orders: Optional[List[UserOrder]] = None
     custom_attrs: List[UserCustomAttr]
 
 
