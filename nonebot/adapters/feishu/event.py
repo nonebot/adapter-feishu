@@ -121,7 +121,7 @@ class MessageEvent(Event):
 
     :类型: ``bool``
     """
-    reply: Optional[Reply]
+    reply: Optional[Reply] = None
 
     if TYPE_CHECKING:
         _message: Message
