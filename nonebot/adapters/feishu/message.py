@@ -68,9 +68,7 @@ class MessageSegment(BaseMessageSegment["Message"]):
         return At("at", {"user_id": user_id})
 
     @staticmethod
-    def post(
-        title: str, content: List[List["PostMessageNode"]], language: str = "zh_cn"
-    ) -> "Post":
+    def post(title: str, content: List[List["PostMessageNode"]]) -> "Post":
         return Post("post", data={"title": title, "content": content})
 
     @staticmethod
@@ -434,16 +432,20 @@ class Post(MessageSegment):
             for seg in line:
                 if seg["tag"] == "text":
                     content_string += seg.get("text", "")
+
                 elif seg["tag"] == "a":
                     content_string += seg.get("href", "") + " " + seg.get("text", "")
+
                 elif seg["tag"] == "at":
                     content_string += "@" + seg.get("user_id", "")
+
                 else:
                     curr_seg_str_list = []
                     for key, value in seg.items():
                         if key == "tag":
                             continue
                         curr_seg_str_list.append(f"{key}:{value}")
+
                     curr_seg_str = ",".join(curr_seg_str_list)
                     content_string += f"[{seg['tag']}:{curr_seg_str}]"
 
@@ -613,27 +615,28 @@ class Message(BaseMessage[MessageSegment]):
 
     def serialize(self) -> Tuple[str, str]:
         combined = {"zh_cn": {"title": "", "content": [[]]}}
+
         if len(self) >= 2:
             for seg in self:
-                if seg.type != "post":
+                if isinstance(seg, Post):
+                    combined["zh_cn"]["title"] = seg.data["title"]
+                    combined["zh_cn"]["content"] = [
+                        *combined["zh_cn"]["content"],
+                        *seg.data["content"],
+                    ]
+
+                else:
                     seg.to_post()
                     combined["zh_cn"]["content"][-1].append(
                         {"tag": seg.type, **seg.data}
                     )
-                else:
-                    zh_cn_data = seg.data.pop("zh_cn", None)
-                    if zh_cn_data:
-                        combined["zh_cn"]["title"] = zh_cn_data["title"]
-                        combined["zh_cn"]["content"] = [
-                            *combined["zh_cn"]["content"],
-                            *zh_cn_data["content"],
-                        ]
-                    combined.update(seg.data)
 
             return "post", json.dumps(combined, ensure_ascii=False)
+
         elif len(self) == 1:
             if self[0].type == "post":
                 return "post", json.dumps({"zh_cn": self[0].data}, ensure_ascii=False)
+
             return self[0].type, json.dumps(self[0].data, ensure_ascii=False)
         else:
             raise ValueError("Cannot serialize empty message")
