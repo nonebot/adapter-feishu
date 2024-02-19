@@ -1,5 +1,10 @@
 [
   {
+    "challenge": "3aa29899-c46f-4b99-85fe-72689474a4b5",
+    "token": "CAkCyz5aOEBAMM7ugdQbtfNwxKj1Fk5J",
+    "type": "url_verification"
+  },
+  {
     "_model": "GroupMessageEvent",
     "schema": "2.0",
     "header": {
