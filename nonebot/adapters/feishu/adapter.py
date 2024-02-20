@@ -107,14 +107,14 @@ class Adapter(BaseAdapter):
 
         self.driver.on_startup(self.startup)
 
-    def get_api_url(self, bot_config: BotConfig, path: str):
-        api_base = str(
-            self.feishu_config.feishu_lark_api_base
-            if bot_config.is_lark
-            else self.feishu_config.feishu_api_base
-        )
+    def get_api_base(self, bot_config: BotConfig) -> URL:
+        if bot_config.is_lark:
+            return URL(str(self.feishu_config.feishu_lark_api_base))
+        else:
+            return URL(str(self.feishu_config.feishu_api_base))
 
-        return api_base + path
+    def get_api_url(self, bot_config: BotConfig, path: str):
+        return self.get_api_base(bot_config).joinpath("open-apis", path)
 
     async def get_bot_info(self, bot_config: BotConfig):
         token = await self.get_tenant_access_token(bot_config)
@@ -141,7 +141,7 @@ class Adapter(BaseAdapter):
         response = await self.send_request(
             Request(
                 "POST",
-                self.get_api_url(bot_config, "auth/v3/tenant_access_token/internal/"),
+                self.get_api_url(bot_config, "auth/v3/tenant_access_token/internal"),
                 json={
                     "app_id": bot_config.app_id,
                     "app_secret": bot_config.app_secret,
