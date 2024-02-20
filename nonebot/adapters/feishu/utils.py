@@ -1,42 +1,13 @@
 import base64
 import hashlib
-from typing import Any, Dict, Optional
 
 from cashews import cache
 from Crypto.Cipher import AES
 from nonebot.utils import logger_wrapper
 
-from .exception import ActionFailed
-
 log = logger_wrapper("FEISHU")
 
 cache.setup("mem://")
-
-
-def _handle_api_result(result: Optional[Dict[str, Any]]) -> Any:
-    """
-    :说明:
-
-      处理 API 请求返回值。
-
-    :参数:
-
-      * ``result: Optional[Dict[str, Any]]``: API 返回数据
-
-    :返回:
-
-        - ``Any``: API 调用返回数据
-
-    :异常:
-
-        - ``ActionFailed``: API 调用失败
-    """
-    if isinstance(result, dict):
-        if result.get("code") != 0:
-            raise ActionFailed(**result)
-        return result.get("data")
-    else:
-        return result
 
 
 class AESCipher:
