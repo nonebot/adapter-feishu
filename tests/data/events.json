@@ -1,14 +1,13 @@
 [
   {
-    "_model": "GroupMessageEvent",
     "schema": "2.0",
     "header": {
       "event_id": "0a67****6a9953c",
       "token": "CAkC****1Fk5J",
       "create_time": "1708251664941",
       "event_type": "im.message.receive_v1",
-      "tenant_key": "123456789",
-      "app_id": "cli_123456789"
+      "tenant_key": "tenant_key",
+      "app_id": "app_id_tome"
     },
     "event": {
       "message": {
@@ -28,6 +27,49 @@
         },
         "sender_type": "user",
         "tenant_key": "123456789"
+      }
+    }
+  },
+  {
+    "schema": "2.0",
+    "header": {
+      "event_id": "746*****d335b08",
+      "token": "CAkC****k5J",
+      "create_time": "1708399533117",
+      "event_type": "im.message.receive_v1",
+      "tenant_key": "tenant_key",
+      "app_id": "app_id_tome"
+    },
+    "event": {
+      "message": {
+        "chat_id": "chat_id",
+        "chat_type": "group",
+        "content": "{\"text\":\"@_user_1 /say 34567\"}",
+        "create_time": "1708399532591",
+        "mentions": [
+          {
+            "id": {
+              "open_id": "open_id",
+              "union_id": "union_id",
+              "user_id": "user_id"
+            },
+            "key": "@_user_1",
+            "name": "bot",
+            "tenant_key": "tenant_key"
+          }
+        ],
+        "message_id": "message_id",
+        "message_type": "text",
+        "update_time": "1708399532591"
+      },
+      "sender": {
+        "sender_id": {
+          "open_id": "sender_open_id",
+          "union_id": "sender_union_id",
+          "user_id": "sender_user_id"
+        },
+        "sender_type": "user",
+        "tenant_key": "13cb691f67cf575d"
       }
     }
   }
