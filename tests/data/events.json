@@ -1,5 +1,6 @@
 [
   {
+    "_model": "GroupMessageEvent",
     "schema": "2.0",
     "header": {
       "event_id": "0a67****6a9953c",
@@ -31,6 +32,7 @@
     }
   },
   {
+    "_model": "GroupMessageEvent",
     "schema": "2.0",
     "header": {
       "event_id": "746*****d335b08",

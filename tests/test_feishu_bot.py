@@ -29,6 +29,7 @@ async def test_check_tome(app: App, server_url: str):
     ) as f:
         test_events = json.load(f)
     event_data = test_events[0]
+    event_data.pop("_model", None)
     event = Adapter.json_to_event(event_data)
     assert isinstance(event, GroupMessageEvent)
 
@@ -44,6 +45,7 @@ async def test_check_tome(app: App, server_url: str):
     assert not event.to_me
 
     event_data = test_events[1]
+    event_data.pop("_model", None)
     event = Adapter.json_to_event(event_data)
     _check_at_me(bot, event)
     assert event.to_me
