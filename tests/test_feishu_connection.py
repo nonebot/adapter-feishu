@@ -3,6 +3,7 @@ from pathlib import Path
 
 import pytest
 from nonebug import App
+from nonebot.drivers import URL
 
 import nonebot
 from nonebot.adapters.feishu import Adapter
@@ -16,11 +17,12 @@ bot_id = test_bot["app_id"]
 
 @pytest.mark.asyncio
 @pytest.mark.parametrize("endpoints", [f"/feishu/{bot_id}"])
-async def test_http(app: App, endpoints: str):
+async def test_http(app: App, endpoints: str, server_url: URL):
     with (Path(__file__).parent / "events.json").open("r") as f:
         test_events = json.load(f)
 
     adapter = nonebot.get_adapter(Adapter)
+    adapter.feishu_config.feishu_api_base = str(server_url)
 
     async with app.test_server() as ctx:
         client = ctx.get_client()
