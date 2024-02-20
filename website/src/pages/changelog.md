@@ -5,6 +5,12 @@ toc_max_heading_level: 2
 
 # 更新日志
 
+## 最近更新
+
+### 💫 杂项
+
+- CI: 添加测试 [@StarHeartHunt](https://github.com/StarHeartHunt) ([#96](https://github.com/nonebot/adapter-feishu/pull/96))
+
 ## v2.4.0
 
 ### 🚀 新功能
