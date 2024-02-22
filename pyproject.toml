@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "nonebot-adapter-feishu"
-version = "2.4.1"
+version = "2.4.2"
 description = "feishu(larksuite) adapter for nonebot2"
 authors = ["StarHeartHunt <starheart233@gmail.com>"]
 license = "MIT"
