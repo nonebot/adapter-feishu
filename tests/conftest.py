@@ -28,6 +28,7 @@ def pytest_configure(config: pytest.Config) -> None:
         "driver": "~fastapi+~httpx",
         "log_level": "DEBUG",
         "feishu_bots": feishu_bots,
+        "nickname": ["bot"],
     }
 
 

@@ -14,7 +14,7 @@
       "message": {
         "chat_id": "oc_b5fc2808***5970",
         "chat_type": "group",
-        "content": "{\"text\":\"/say 12345\"}",
+        "content": "{\"text\":\"bot /say 12345\"}",
         "create_time": "1708251664735",
         "message_id": "om_b9c9da5***7d74a",
         "message_type": "text",
