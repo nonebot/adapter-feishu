@@ -21,13 +21,14 @@ from nonebot.adapters.feishu import Adapter as FeishuAdapter
 
 
 def pytest_configure(config: pytest.Config) -> None:
-    with (Path(__file__).parent / "bots.json").open("r") as f:
+    with (Path(__file__).parent.joinpath("data", "bots.json")).open("r") as f:
         feishu_bots = json.load(f)
 
     config.stash[NONEBOT_INIT_KWARGS] = {
         "driver": "~fastapi+~httpx",
         "log_level": "DEBUG",
         "feishu_bots": feishu_bots,
+        "nickname": ["bot"],
     }
 
 

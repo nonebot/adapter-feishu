@@ -1,0 +1,11 @@
+{
+  "code": 0,
+  "msg": "ok",
+  "bot": {
+    "activate_status": 2,
+    "app_name": "app_name",
+    "avatar_url": "https://s1-imfile.feishucdn.com/static-resource/v1/da5xxxx14b16113",
+    "ip_white_list": [],
+    "open_id": "open_id"
+  }
+}

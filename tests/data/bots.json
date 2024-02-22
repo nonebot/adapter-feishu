@@ -1,0 +1,12 @@
+[
+  {
+    "app_id": "app_id_connection",
+    "app_secret": "app_secret_connection",
+    "verification_token": "verification_token_connection"
+  },
+  {
+    "app_id": "app_id_tome",
+    "app_secret": "app_secret_tome",
+    "verification_token": "verification_token_tome"
+  }
+]

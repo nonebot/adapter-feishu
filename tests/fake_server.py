@@ -1,5 +1,6 @@
 import json
 import base64
+from pathlib import Path
 from typing import Dict, List, Union, TypeVar
 
 from werkzeug import Request, Response
@@ -84,20 +85,11 @@ def handle_get_tenant_access_token():
 
 
 def handle_get_bot_info():
+    with open(Path(__file__).parent.joinpath("data", "bots_info.json")) as f:
+        bots_info = json.load(f)
+
     return Response(
-        json.dumps(
-            {
-                "code": 0,
-                "msg": "ok",
-                "bot": {
-                    "activate_status": 2,
-                    "app_name": "name",
-                    "avatar_url": "https://s1-imfile.feishucdn.com/static-resource/v1/da5xxxx14b16113",
-                    "ip_white_list": [],
-                    "open_id": "open_id",
-                },
-            }
-        ),
+        json.dumps(bots_info),
         status=200,
         content_type="application/json",
     )
