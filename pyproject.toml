@@ -79,6 +79,12 @@ mark-parentheses = false
 pythonVersion = "3.8"
 pythonPlatform = "All"
 defineConstant = { PYDANTIC_V2 = true }
+executionEnvironments = [
+  { root = "./tests", extraPaths = [
+    "./",
+  ] },
+  { root = "./" },
+]
 
 typeCheckingMode = "basic"
 reportShadowedImports = false
