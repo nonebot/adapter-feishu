@@ -68,7 +68,7 @@ class MessageSegment(BaseMessageSegment["Message"]):
         return At("at", {"user_id": user_id})
 
     @staticmethod
-    def post(title: str, content: List[List["PostMessageNode"]]) -> "Post":
+    def post(title: str, content: List[List[Dict[str, Any]]]) -> "Post":
         return Post("post", data={"title": title, "content": content})
 
     @staticmethod
@@ -414,7 +414,7 @@ class PostEmotion(PostMessageNode):
 
 class _PostData(TypedDict):
     title: str
-    content: List[List[PostMessageNode]]
+    content: List[List[Dict[str, Any]]]
 
 
 @dataclass
