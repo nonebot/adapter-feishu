@@ -25,7 +25,7 @@ cashews = "^7.0.0"
 pycryptodome = ">=3.18.0, <4.0.0"
 
 [tool.poetry.group.dev.dependencies]
-ruff = "^0.2.0"
+ruff = "^0.3.0"
 isort = "^5.10.1"
 black = "^24.0.0"
 nonemoji = "^0.1.2"
