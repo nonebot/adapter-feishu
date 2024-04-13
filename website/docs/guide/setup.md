@@ -41,7 +41,7 @@ DRIVER=~fastapi+~httpx
 
 如果不需要启用加密功能，请将配置项中的 `encrypt_key` 键值对删去，或将 `encrypt_key` 置为 `null`。
 
-对于[Lark(飞书平台海外版)](https://www.larksuite.com) 的用户，飞书适配器也提供**实验性**支持，仅需要在配置文件中将 `is_lark` 改为 `true`。
+对于[Lark(飞书平台海外版)](https://www.larksuite.com)的用户，需要在配置文件中将 `is_lark` 改为 `true`。
 
 ```bash
 FEISHU_BOTS='
@@ -52,6 +52,23 @@ FEISHU_BOTS='
     "verification_token": "<your app_verification_token>",
     "encrypt_key": "<your encrypt_key>",
     "is_lark": false
+  }
+]
+'
+```
+
+对于企业自建飞书平台的用户，可以使用 `api_base` 分 Bot 指定 API 调用地址。
+
+```bash
+FEISHU_BOTS='
+[
+  {
+    "app_id": "<your app_id>",
+    "app_secret": "<your app_secret>",
+    "verification_token": "<your app_verification_token>",
+    "encrypt_key": "<your encrypt_key>",
+    "is_lark": false,
+    "api_base":"<your feishu domain>"
   }
 ]
 '
