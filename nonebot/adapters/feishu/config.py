@@ -22,6 +22,7 @@ class BotConfig(BaseModel):
     encrypt_key: Optional[str] = None
     verification_token: str
     is_lark: bool = False
+    api_base: Optional[HttpUrl] = None
 
 
 class Config(BaseModel):
