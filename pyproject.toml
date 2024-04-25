@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "nonebot-adapter-feishu"
-version = "2.5.0"
+version = "2.6.0"
 description = "feishu(larksuite) adapter for nonebot2"
 authors = ["StarHeartHunt <starheart233@gmail.com>"]
 license = "MIT"
@@ -19,13 +19,13 @@ classifiers = [
 packages = [{ include = "nonebot" }]
 
 [tool.poetry.dependencies]
-python = "^3.8"
+python = "^3.9"
 nonebot2 = "^2.2.0"
 cashews = "^7.0.0"
 pycryptodome = ">=3.18.0, <4.0.0"
 
 [tool.poetry.group.dev.dependencies]
-ruff = "^0.3.0"
+ruff = "^0.4.0"
 isort = "^5.10.1"
 black = "^24.0.0"
 nonemoji = "^0.1.2"
@@ -38,7 +38,7 @@ nonebot2 = { git = "https://github.com/nonebot/nonebot2.git", branch = "master",
 [tool.poetry.group.test.dependencies]
 nonebug = "^0.3.0"
 wsproto = "^1.2.0"
-pytest-cov = "^4.0.0"
+pytest-cov = "^5.0.0"
 pytest-asyncio = "^0.23.0"
 werkzeug = ">=2.3.6,<4.0.0"
 
