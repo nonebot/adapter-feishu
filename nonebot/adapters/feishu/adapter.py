@@ -2,7 +2,7 @@ import json
 import asyncio
 import inspect
 from typing_extensions import override
-from typing import Any, Dict, List, Type, Union, Callable, Optional, cast
+from typing import Any, Union, Callable, Optional, cast
 
 from pygtrie import StringTrie
 from nonebot.utils import escape_tag
@@ -46,7 +46,7 @@ class Adapter(BaseAdapter):
         super().__init__(driver, **kwargs)
         """飞书适配器配置"""
         self.feishu_config: Config = get_plugin_config(Config)
-        self.bot_apps: Dict[str, BotConfig] = {}
+        self.bot_apps: dict[str, BotConfig] = {}
         self.setup()
 
     @classmethod
@@ -316,7 +316,7 @@ class Adapter(BaseAdapter):
             )
 
     @classmethod
-    def add_custom_model(cls, model: Type[Event]) -> None:
+    def add_custom_model(cls, model: type[Event]) -> None:
         """插入或覆盖一个自定义的 Event 类型。
         需提供 `__event__` 属性，进行事件模型索引，
         格式为 `{post_type}[.{sub_type}]`，如: `message.private`。
@@ -328,7 +328,7 @@ class Adapter(BaseAdapter):
         cls.event_models["." + model.__event__] = model
 
     @classmethod
-    def get_event_model(cls, event_name: str) -> List[Type[Event]]:
+    def get_event_model(cls, event_name: str) -> list[type[Event]]:
         """根据事件名获取对应 `Event Model` 及 `FallBack Event Model` 列表，
         不包括基类 `Event`。
         """

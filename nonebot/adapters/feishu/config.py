@@ -1,4 +1,4 @@
-from typing import List, Optional
+from typing import Optional
 
 from pydantic import Field, HttpUrl, BaseModel
 
@@ -39,4 +39,4 @@ class Config(BaseModel):
 
     feishu_api_base: HttpUrl = Field("https://open.feishu.cn")
     feishu_lark_api_base: HttpUrl = Field("https://open.larksuite.com")
-    feishu_bots: List[BotConfig] = Field(default_factory=list)
+    feishu_bots: list[BotConfig] = Field(default_factory=list)

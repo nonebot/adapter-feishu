@@ -22,7 +22,7 @@ _✨ 飞书协议适配 ✨_
   <a href="https://pypi.python.org/pypi/nonebot-adapter-feishu">
     <img src="https://img.shields.io/pypi/v/nonebot-adapter-feishu" alt="pypi">
   </a>
-  <img src="https://img.shields.io/badge/python-3.8+-blue" alt="python">
+  <img src="https://img.shields.io/badge/python-3.9+-blue" alt="python">
   <a href="https://codecov.io/gh/nonebot/adapter-feishu">
     <img src="https://codecov.io/gh/nonebot/adapter-feishu/branch/master/graph/badge.svg?token=45OH1IVM9C"/>
   </a>

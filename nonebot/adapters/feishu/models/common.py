@@ -1,4 +1,4 @@
-from typing import List, Literal, Optional
+from typing import Literal, Optional
 
 from pydantic import BaseModel
 from nonebot.compat import PYDANTIC_V2, ConfigDict
@@ -12,7 +12,7 @@ class EventHeader(BaseModel):
     app_id: str
     tenant_key: str
     resource_id: Optional[str] = None
-    user_list: Optional[List[dict]] = None
+    user_list: Optional[list[dict]] = None
 
     if PYDANTIC_V2:
         model_config = ConfigDict(extra="allow")
@@ -120,7 +120,7 @@ class Reply(BaseModel):
     chat_id: str
     sender: ReplySender
     body: MessageBody
-    mentions: List[ReplyMention]
+    mentions: list[ReplyMention]
     upper_message_id: Optional[str] = None
 
     if PYDANTIC_V2:
@@ -140,7 +140,7 @@ class EventMessage(BaseModel):
     chat_type: str
     message_type: str
     content: str
-    mentions: Optional[List[Mention]] = None
+    mentions: Optional[list[Mention]] = None
 
     if PYDANTIC_V2:
         model_config = ConfigDict(extra="allow")
@@ -192,7 +192,7 @@ class AttendanceUserFlowCreatedEventDetail(BaseModel):
     latitude: float
     location_name: str
     longitude: float
-    photo_urls: Optional[List[str]] = None
+    photo_urls: Optional[list[str]] = None
     record_id: str
     ssid: str
     type: int
@@ -213,7 +213,7 @@ class AttendanceUserTaskUpdatedEventDetail(BaseModel):
     employee_no: str
     group_id: str
     shift_id: str
-    status_changes: List[AttendanceUserTaskStatusDiff]
+    status_changes: list[AttendanceUserTaskStatusDiff]
     task_id: str
     time_zone: str
 
@@ -246,8 +246,8 @@ class MeetingRoomCreatedEventDetail(BaseModel):
 class DriveFileEditedEventDetail(BaseModel):
     file_token: str
     file_type: str
-    operator_id_list: List[UserId]
-    subscriber_id_list: List[UserId]
+    operator_id_list: list[UserId]
+    subscriber_id_list: list[UserId]
 
 
 class DriveFileDeletedEventDetail(BaseModel):
@@ -263,19 +263,19 @@ class DriveFileTrashedEventDetail(BaseModel):
 
 
 class DriveFilePermissionMemberRemovedEventDetail(BaseModel):
-    chat_list: List[str]
+    chat_list: list[str]
     file_token: str
     file_type: str
     operator_id: UserId
-    user_list: List[UserId]
+    user_list: list[UserId]
 
 
 class DriveFilePermissionMemberAddedEventDetail(BaseModel):
-    chat_list: List[str]
+    chat_list: list[str]
     file_token: str
     file_type: str
     operator_id: UserId
-    user_list: List[UserId]
+    user_list: list[UserId]
 
 
 class DriveFileTitleUpdatedEventDetail(BaseModel):
@@ -287,7 +287,7 @@ class DriveFileTitleUpdatedEventDetail(BaseModel):
 class DriveFileReadEventDetail(BaseModel):
     file_token: str
     file_type: str
-    operator_id_list: List[UserId]
+    operator_id_list: list[UserId]
 
 
 class CalendarEventChangedEventDetail(BaseModel):
@@ -386,7 +386,7 @@ class ContactUser(BaseModel):
     gender: int
     avatar: AvatarInfo
     status: UserStatus
-    department_ids: Optional[List[str]] = None
+    department_ids: Optional[list[str]] = None
     leader_user_id: str
     city: str
     country: str
@@ -394,12 +394,12 @@ class ContactUser(BaseModel):
     join_time: int
     employee_no: str
     employee_type: int
-    orders: Optional[List[UserOrder]] = None
-    custom_attrs: List[UserCustomAttr]
+    orders: Optional[list[UserOrder]] = None
+    custom_attrs: list[UserCustomAttr]
 
 
 class OldContactUser(BaseModel):
-    department_ids: List[str]
+    department_ids: list[str]
     open_id: str
 
 
@@ -428,7 +428,7 @@ class GroupMemberUserDeletedEventDetail(BaseModel):
     operator_id: UserId
     external: bool
     operator_tenant_key: str
-    users: List[ChatMemberUser]
+    users: list[ChatMemberUser]
 
 
 class GroupMemberUserWithdrawnEventDetail(BaseModel):
@@ -436,7 +436,7 @@ class GroupMemberUserWithdrawnEventDetail(BaseModel):
     operator_id: UserId
     external: bool
     operator_tenant_key: str
-    users: List[ChatMemberUser]
+    users: list[ChatMemberUser]
 
 
 class GroupMemberUserAddedEventDetail(BaseModel):
@@ -444,7 +444,7 @@ class GroupMemberUserAddedEventDetail(BaseModel):
     operator_id: UserId
     external: bool
     operator_tenant_key: str
-    users: List[ChatMemberUser]
+    users: list[ChatMemberUser]
 
 
 class GroupMemberBotDeletedEventDetail(BaseModel):
@@ -538,7 +538,7 @@ class MessageReader(BaseModel):
 
 class MessageReadEventDetail(BaseModel):
     reader: MessageReader
-    message_id_list: List[str]
+    message_id_list: list[str]
 
 
 __all__ = [

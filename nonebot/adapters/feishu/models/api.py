@@ -1,5 +1,3 @@
-from typing import List
-
 from pydantic import HttpUrl, BaseModel
 
 from .common import Reply
@@ -19,7 +17,7 @@ class BotInfo(BaseModel):
     activate_status: int
     app_name: str
     avatar_url: HttpUrl
-    ip_white_list: List[str]
+    ip_white_list: list[str]
     open_id: str
 
 
@@ -28,7 +26,7 @@ class BotInfoResponse(BaseResponse):
 
 
 class ReplyResponseItems(BaseModel):
-    items: List[Reply]
+    items: list[Reply]
 
 
 class ReplyResponse(BaseResponse):

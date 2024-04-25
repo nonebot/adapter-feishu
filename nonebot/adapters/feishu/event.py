@@ -1,7 +1,7 @@
 from copy import deepcopy
 from datetime import datetime
 from typing_extensions import override
-from typing import TYPE_CHECKING, Any, Dict, Literal, Optional
+from typing import TYPE_CHECKING, Any, Literal, Optional
 
 from pydantic import Field
 from nonebot.utils import escape_tag
@@ -203,7 +203,7 @@ class PrivateMessageEvent(MessageEvent):
 
 
 class NoticeEvent(Event):
-    event: Dict[str, Any]
+    event: dict[str, Any]
 
     @override
     def get_type(self) -> Literal["notice"]:

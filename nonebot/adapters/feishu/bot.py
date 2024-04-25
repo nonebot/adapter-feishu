@@ -1,6 +1,6 @@
 import re
 from typing_extensions import override
-from typing import TYPE_CHECKING, Any, Dict, List, Union, Literal, Callable, Optional
+from typing import TYPE_CHECKING, Any, Union, Literal, Callable, Optional
 
 from nonebot.message import handle_event
 from nonebot.compat import type_validate_python
@@ -230,7 +230,7 @@ class Bot(BaseBot):
         page_size: Optional[int] = None,
         page_token: Optional[str] = None,
     ):
-        params: Dict[str, Any] = {"user_id_type": user_id_type}
+        params: dict[str, Any] = {"user_id_type": user_id_type}
         if page_size:
             params.update({"page_size": page_size})
 
@@ -245,7 +245,7 @@ class Bot(BaseBot):
         self,
         receive_id_type: str,
         receive_id: str,
-        message_id_list: List[str],
+        message_id_list: list[str],
         uuid: Optional[str] = None,
     ):
         params = {"receive_id_type": receive_id_type}

@@ -1,20 +1,9 @@
 import re
 import json
 from dataclasses import dataclass
+from collections.abc import Iterable
 from typing_extensions import override
-from typing import (
-    TYPE_CHECKING,
-    Any,
-    Dict,
-    List,
-    Type,
-    Tuple,
-    Union,
-    Literal,
-    Iterable,
-    Optional,
-    TypedDict,
-)
+from typing import TYPE_CHECKING, Any, Union, Literal, Optional, TypedDict
 
 from nonebot.adapters import Message as BaseMessage
 from nonebot.adapters import MessageSegment as BaseMessageSegment
@@ -29,7 +18,7 @@ class MessageSegment(BaseMessageSegment["Message"]):
 
     @classmethod
     @override
-    def get_message_class(cls) -> Type["Message"]:
+    def get_message_class(cls) -> type["Message"]:
         return Message
 
     @override
@@ -68,7 +57,7 @@ class MessageSegment(BaseMessageSegment["Message"]):
         return At("at", {"user_id": user_id})
 
     @staticmethod
-    def post(title: str, content: List[List[Dict[str, Any]]]) -> "Post":
+    def post(title: str, content: list[list[dict[str, Any]]]) -> "Post":
         return Post("post", data={"title": title, "content": content})
 
     @staticmethod
@@ -79,8 +68,8 @@ class MessageSegment(BaseMessageSegment["Message"]):
     def interactive(
         header: "InteractiveHeader",
         config: "InteractiveConfig",
-        elements: Optional[List[Dict[str, Any]]] = None,
-        i18n_elements: Optional[List[Dict[str, Any]]] = None,
+        elements: Optional[list[dict[str, Any]]] = None,
+        i18n_elements: Optional[list[dict[str, Any]]] = None,
     ):
         elements_key = "elements" if elements else "i18n_elements"
         elements_value = elements or i18n_elements
@@ -96,7 +85,7 @@ class MessageSegment(BaseMessageSegment["Message"]):
 
     @staticmethod
     def interactive_template(
-        template_id: str, template_variable: Dict[str, Any]
+        template_id: str, template_variable: dict[str, Any]
     ) -> "InteractiveTemplate":
         return InteractiveTemplate(
             "interactive",
@@ -117,7 +106,7 @@ class MessageSegment(BaseMessageSegment["Message"]):
         return Hongbao("hongbao", {"text": text})
 
     @staticmethod
-    def system(template: str, from_user: List[str], to_chatters: List[str]) -> "System":
+    def system(template: str, from_user: list[str], to_chatters: list[str]) -> "System":
         return System(
             "system",
             {"template": template, "from_user": from_user, "to_chatters": to_chatters},
@@ -228,7 +217,7 @@ class Image(MessageSegment):
 class InteractiveHeaderTitle(TypedDict):
     tag: Literal["plain_text"]
     content: Optional[str]
-    i18n: Optional[Dict[str, str]]
+    i18n: Optional[dict[str, str]]
     template: Optional[str]
 
 
@@ -243,8 +232,8 @@ class InteractiveConfig(TypedDict):
 
 class _InteractiveData(TypedDict):
     header: InteractiveHeader
-    elements: Optional[List[Dict[str, Any]]]
-    i18n_elements: Optional[List[Dict[str, Any]]]
+    elements: Optional[list[dict[str, Any]]]
+    i18n_elements: Optional[list[dict[str, Any]]]
     config: InteractiveConfig
 
 
@@ -259,7 +248,7 @@ class Interactive(MessageSegment):
 
 class _InteractiveTemplateData(TypedDict):
     template_id: str
-    template_variable: Dict[str, Any]
+    template_variable: dict[str, Any]
 
 
 @dataclass
@@ -381,7 +370,7 @@ class PostMessageNode(TypedDict):
 
 
 class PostMessageNodeStylable(TypedDict):
-    style: Optional[List[Literal["bold", "underline", "lineThrough", "italic"]]]
+    style: Optional[list[Literal["bold", "underline", "lineThrough", "italic"]]]
 
 
 class PostText(PostMessageNode, PostMessageNodeStylable):
@@ -414,7 +403,7 @@ class PostEmotion(PostMessageNode):
 
 class _PostData(TypedDict):
     title: str
-    content: List[List[Dict[str, Any]]]
+    content: list[list[dict[str, Any]]]
 
 
 @dataclass
@@ -458,8 +447,8 @@ class Post(MessageSegment):
 
 class _SystemData(TypedDict):
     template: str
-    from_user: List[str]
-    to_chatters: List[str]
+    from_user: list[str]
+    to_chatters: list[str]
 
 
 @dataclass
@@ -521,7 +510,7 @@ class Todo(MessageSegment):
 
 class _VoteData(TypedDict):
     topic: str
-    options: List[str]
+    options: list[str]
 
 
 @dataclass
@@ -589,7 +578,7 @@ class Message(BaseMessage[MessageSegment]):
 
     @classmethod
     @override
-    def get_segment_class(cls) -> Type[MessageSegment]:
+    def get_segment_class(cls) -> type[MessageSegment]:
         return MessageSegment
 
     @override
@@ -613,7 +602,7 @@ class Message(BaseMessage[MessageSegment]):
     def _construct(msg: str) -> Iterable[MessageSegment]:
         yield Text("text", {"text": msg})
 
-    def serialize(self) -> Tuple[str, str]:
+    def serialize(self) -> tuple[str, str]:
         combined = {"zh_cn": {"title": "", "content": [[]]}}
 
         if len(self) >= 2:
@@ -643,7 +632,7 @@ class Message(BaseMessage[MessageSegment]):
 
     @staticmethod
     def deserialize(
-        content: str, mentions: Optional[List[Mention]], message_type: str
+        content: str, mentions: Optional[list[Mention]], message_type: str
     ) -> "Message":
         msg = Message()
         parsed_content = json.loads(content)
@@ -694,7 +683,7 @@ class Message(BaseMessage[MessageSegment]):
 
     @override
     def extract_plain_text(self) -> str:
-        text_list: List[str] = []
+        text_list: list[str] = []
         for seg in self:
             if seg.is_text():
                 text_list.append(str(seg))
