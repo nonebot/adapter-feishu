@@ -162,6 +162,7 @@ class Adapter(BaseAdapter):
         return result.tenant_access_token
 
     async def send_request(self, request: Request, **data: Any):
+        return_response = data.get("_return_response", False)
         timeout: float = data.get("_timeout", self.config.api_timeout)
         request.timeout = timeout
 
@@ -174,6 +175,9 @@ class Adapter(BaseAdapter):
             if 200 <= response.status_code < 300:
                 if not response.content:
                     raise ValueError("Empty response")
+
+                if return_response:
+                    return response
 
                 if response.headers["Content-Type"].find("application/json") != -1:
                     result = json.loads(response.content)
