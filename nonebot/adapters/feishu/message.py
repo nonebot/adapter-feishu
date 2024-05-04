@@ -90,8 +90,12 @@ class MessageSegment(BaseMessageSegment["Message"]):
         return InteractiveTemplate(
             "interactive",
             {
-                "template_id": template_id,
-                "template_variable": template_variable,
+                "type": "template",
+                "data":
+                {
+                    "template_id": template_id,
+                    "template_variable": template_variable,
+                }
             },
         )
 
