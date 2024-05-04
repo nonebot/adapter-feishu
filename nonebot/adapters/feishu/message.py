@@ -91,11 +91,10 @@ class MessageSegment(BaseMessageSegment["Message"]):
             "interactive",
             {
                 "type": "template",
-                "data":
-                {
+                "data": {
                     "template_id": template_id,
                     "template_variable": template_variable,
-                }
+                },
             },
         )
 
