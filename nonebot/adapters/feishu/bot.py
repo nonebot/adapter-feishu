@@ -1,4 +1,6 @@
 import re
+from io import BytesIO
+from pathlib import Path
 from typing_extensions import override
 from typing import TYPE_CHECKING, Any, Union, Literal, Callable, Optional
 
@@ -7,7 +9,7 @@ from nonebot.compat import type_validate_python
 
 from nonebot.adapters import Bot as BaseBot
 
-from .utils import log
+from .utils import f2b, log
 from .config import BotConfig
 from .models import BotInfo, ReplyResponse
 from .message import At, Message, MessageSegment
@@ -328,6 +330,29 @@ class Bot(BaseBot):
         )
 
         return response.content
+
+    async def post_file(
+        self,
+        file_type: Literal["opus", "mp4", "pdf", "doc", "xls", "ppt", "stream"],
+        file_name: str,
+        file: Union[str, bytes, BytesIO, Path],
+        duration: Optional[int] = None,
+    ):
+        data: dict[str, Union[str, int]] = {
+            "file_type": file_type,
+            "file_name": file_name,
+        }
+
+        files = {"file": f2b(file)}
+
+        if duration:
+            data["duration"] = duration
+
+        response = await self.call_api(
+            "im/v1/files", method="POST", data=data, files=files
+        )
+
+        return response
 
     @override
     async def send(
