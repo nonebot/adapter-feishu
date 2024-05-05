@@ -249,9 +249,14 @@ class Interactive(MessageSegment):
         return f"[interactive:{self.data!r}]"
 
 
-class _InteractiveTemplateData(TypedDict):
+class _InteractiveTemplateDetail(TypedDict):
     template_id: str
     template_variable: dict[str, Any]
+
+
+class _InteractiveTemplateData(TypedDict):
+    type: Literal["template"]
+    data: _InteractiveTemplateDetail
 
 
 @dataclass
