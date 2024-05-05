@@ -5,6 +5,12 @@ toc_max_heading_level: 2
 
 # 更新日志
 
+## 最近更新
+
+### 🐛 Bug 修复
+
+- :bug: fix Interactive Template structure [@shilapi](https://github.com/shilapi) ([#104](https://github.com/nonebot/adapter-feishu/pull/104))
+
 ## v2.6.0
 
 ### 💫 杂项
