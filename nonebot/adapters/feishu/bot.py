@@ -322,6 +322,13 @@ class Bot(BaseBot):
             },
         )
 
+    async def get_file(self, file_key: str):
+        response = await self.call_api(
+            f"im/v1/files/{file_key}", method="GET", _return_response=True
+        )
+
+        return response.content
+
     @override
     async def send(
         self,
