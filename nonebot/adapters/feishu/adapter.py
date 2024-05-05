@@ -188,7 +188,7 @@ class Adapter(BaseAdapter):
             raise NetworkError(
                 f"HTTP request received unexpected "
                 f"status code: {response.status_code}, "
-                f"response: {response.content}"
+                f"response content: {response.content}"
             )
 
         except FeishuAdapterException:
