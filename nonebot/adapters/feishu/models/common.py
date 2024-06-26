@@ -120,7 +120,7 @@ class Reply(BaseModel):
     chat_id: str
     sender: ReplySender
     body: MessageBody
-    mentions: list[ReplyMention]
+    mentions: list[ReplyMention] = []
     upper_message_id: Optional[str] = None
 
     if PYDANTIC_V2:
