@@ -112,6 +112,7 @@ class Reply(BaseModel):
     message_id: str
     root_id: Optional[str] = None
     parent_id: Optional[str] = None
+    thread_id: Optional[str] = None
     msg_type: str
     create_time: str
     update_time: str
