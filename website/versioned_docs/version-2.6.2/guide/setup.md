@@ -127,7 +127,8 @@ http://$HOST:$PORT/feishu/$app_id
 ```python
 from nonebot.plugin import on_command
 from nonebot.typing import T_State
-from nonebot.adapters.feishu import Bot as FeishuBot, MessageEvent
+from nonebot.params import CommandArg
+from nonebot.adapters.feishu import Bot as FeishuBot, MessageEvent, Message
 
 helper = on_command("say")
 
