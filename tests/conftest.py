@@ -18,7 +18,6 @@ nonebot.adapters.__path__.append(  # type: ignore
 )
 
 from nonebot.adapters.feishu import Adapter as FeishuAdapter
-from nonebot.adapters.feishu.config import Config as FeishuConfig
 
 
 def pytest_configure(config: pytest.Config) -> None:
