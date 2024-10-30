@@ -3,7 +3,6 @@ from pathlib import Path
 
 import pytest
 from nonebug import App
-from nonebot.drivers import URL
 
 import nonebot
 from nonebot.adapters.feishu import Adapter
