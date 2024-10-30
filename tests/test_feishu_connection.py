@@ -16,12 +16,11 @@ bot_id = feishu_bots[0]["app_id"]
 
 @pytest.mark.asyncio
 @pytest.mark.parametrize("endpoints", [f"/feishu/{bot_id}"])
-async def test_http(app: App, endpoints: str, server_url: URL):
+async def test_http(app: App, endpoints: str):
     with (Path(__file__).parent.joinpath("data", "payloads.json")).open("r") as f:
         test_payloads = json.load(f)
 
     adapter = nonebot.get_adapter(Adapter)
-    adapter.feishu_config.feishu_api_base = str(server_url)  # type: ignore
 
     async with app.test_server() as ctx:
         client = ctx.get_client()

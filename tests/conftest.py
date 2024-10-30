@@ -18,11 +18,13 @@ nonebot.adapters.__path__.append(  # type: ignore
 )
 
 from nonebot.adapters.feishu import Adapter as FeishuAdapter
+from nonebot.adapters.feishu.config import Config as FeishuConfig
 
 
-def pytest_configure(config: pytest.Config) -> None:
+def pytest_configure(config: pytest.Config, server_url: URL) -> None:
     with (Path(__file__).parent.joinpath("data", "bots.json")).open("r") as f:
         feishu_bots = json.load(f)
+    print(server_url)
 
     config.stash[NONEBOT_INIT_KWARGS] = {
         "driver": "~fastapi+~httpx",
@@ -50,6 +52,13 @@ def server_url(server: BaseWSGIServer) -> URL:
 
 
 @pytest.fixture(scope="session", autouse=True)
-def _init_adapter(nonebug_init: None):
-    driver = nonebot.get_driver()
-    driver.register_adapter(FeishuAdapter)
+async def after_nonebot_init(after_nonebot_init: None, server_url: URL):
+    with pytest.MonkeyPatch.context() as m:
+
+        def _get_api_base(*args, **kwargs):
+            return server_url
+
+        m.setattr(FeishuAdapter, "get_api_base", _get_api_base)
+        driver = nonebot.get_driver()
+        driver.register_adapter(FeishuAdapter)
+        yield
