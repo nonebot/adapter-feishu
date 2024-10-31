@@ -34,7 +34,7 @@ nonebot2 = { git = "https://github.com/nonebot/nonebot2.git", branch = "master",
   "fastapi",
   "httpx",
 ] }
-nonebug = { git = "https://github.com/nonebot/nonebug.git", branch = "fix/test-server" }
+nonebug = { git = "https://github.com/nonebot/nonebug.git", branch = "master" }
 
 [tool.poetry.group.test.dependencies]
 nonebug = "^0.4.0"

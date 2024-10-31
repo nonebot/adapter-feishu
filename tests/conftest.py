@@ -50,7 +50,7 @@ def server_url(server: BaseWSGIServer) -> URL:
 
 
 @pytest.fixture(scope="session", autouse=True)
-def after_nonebot_init(after_nonebot_init: None, server_url: URL):
+async def after_nonebot_init(after_nonebot_init: None, server_url: URL):
     with pytest.MonkeyPatch.context() as m:
 
         def _get_api_base(*args, **kwargs):
