@@ -47,6 +47,7 @@ class Adapter(BaseAdapter):
         """飞书适配器配置"""
         self.feishu_config: Config = get_plugin_config(Config)
         self.bot_apps: dict[str, BotConfig] = {}
+        self.tasks: set["asyncio.Task"] = set()
         self.setup()
 
     @classmethod
@@ -271,7 +272,10 @@ class Adapter(BaseAdapter):
                 raise RuntimeError("Corresponding Bot instance not found")
 
             if event := self.json_to_event(data):
-                asyncio.create_task(cast(Bot, bot).handle_event(event))
+                bot = cast(Bot, bot)
+                task = asyncio.create_task(bot.handle_event(event))
+                task.add_done_callback(self.tasks.discard)
+                self.tasks.add(task)
 
         return Response(200)
 
