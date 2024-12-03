@@ -35,9 +35,9 @@ class ReplyResponse(BaseResponse):
 
 __all__ = [
     "BaseResponse",
-    "TenantAccessTokenResponse",
     "BotInfo",
     "BotInfoResponse",
-    "ReplyResponseItems",
     "ReplyResponse",
+    "ReplyResponseItems",
+    "TenantAccessTokenResponse",
 ]
