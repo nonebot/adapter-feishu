@@ -13,6 +13,7 @@ toc_max_heading_level: 2
 
 ### 💫 杂项
 
+- :arrow_up: auto update by pre-commit hooks [@[pre-commit-ci[bot]](https://github.com/apps/pre-commit-ci)](<https://github.com/[pre-commit-ci[bot]](https://github.com/apps/pre-commit-ci)>) ([#115](https://github.com/nonebot/adapter-feishu/pull/115))
 - :arrow_up: auto update by pre-commit hooks [@[pre-commit-ci[bot]](https://github.com/apps/pre-commit-ci)](<https://github.com/[pre-commit-ci[bot]](https://github.com/apps/pre-commit-ci)>) ([#114](https://github.com/nonebot/adapter-feishu/pull/114))
 - :arrow_up: auto update by pre-commit hooks [@[pre-commit-ci[bot]](https://github.com/apps/pre-commit-ci)](<https://github.com/[pre-commit-ci[bot]](https://github.com/apps/pre-commit-ci)>) ([#112](https://github.com/nonebot/adapter-feishu/pull/112))
 - :arrow_up: auto update by pre-commit hooks [@[pre-commit-ci[bot]](https://github.com/apps/pre-commit-ci)](<https://github.com/[pre-commit-ci[bot]](https://github.com/apps/pre-commit-ci)>) ([#108](https://github.com/nonebot/adapter-feishu/pull/108))
