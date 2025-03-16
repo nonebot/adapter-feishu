@@ -1,9 +1,9 @@
-import re
-import json
-from dataclasses import dataclass
 from collections.abc import Iterable
+from dataclasses import dataclass
+import json
+import re
+from typing import TYPE_CHECKING, Any, Literal, Optional, TypedDict, Union
 from typing_extensions import override
-from typing import TYPE_CHECKING, Any, Union, Literal, Optional, TypedDict
 
 from nonebot.adapters import Message as BaseMessage
 from nonebot.adapters import MessageSegment as BaseMessageSegment

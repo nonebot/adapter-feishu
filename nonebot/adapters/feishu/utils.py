@@ -6,6 +6,7 @@ from typing import Union
 
 from cashews import cache
 from Crypto.Cipher import AES
+
 from nonebot.utils import logger_wrapper
 
 log = logger_wrapper("FEISHU")

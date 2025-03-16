@@ -1,15 +1,15 @@
-import json
-import threading
-from pathlib import Path
 from collections.abc import Generator
+import json
+from pathlib import Path
+import threading
 
-import pytest
-from nonebot.drivers import URL
 from nonebug import NONEBOT_INIT_KWARGS
+import pytest
 from werkzeug.serving import BaseWSGIServer, make_server
 
 import nonebot
 import nonebot.adapters
+from nonebot.drivers import URL
 
 from .fake_server import request_handler
 

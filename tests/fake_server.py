@@ -1,7 +1,7 @@
-import json
 import base64
+import json
 from pathlib import Path
-from typing import Union, TypeVar
+from typing import TypeVar, Union
 
 from werkzeug import Request, Response
 from werkzeug.datastructures import MultiDict

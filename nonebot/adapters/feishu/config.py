@@ -1,6 +1,6 @@
 from typing import Optional
 
-from pydantic import Field, HttpUrl, BaseModel
+from pydantic import BaseModel, Field, HttpUrl
 
 
 class BotConfig(BaseModel):

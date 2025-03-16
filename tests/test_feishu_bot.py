@@ -1,16 +1,16 @@
 import json
 from pathlib import Path
 
-import pytest
 from nonebug import App
-from nonebot.compat import type_validate_python
+import pytest
 
 import nonebot
 from nonebot.adapters.feishu import Adapter
-from nonebot.adapters.feishu.models import BotInfo
+from nonebot.adapters.feishu.bot import Bot, _check_at_me, _check_nickname, _check_reply
 from nonebot.adapters.feishu.config import BotConfig
 from nonebot.adapters.feishu.event import GroupMessageEvent
-from nonebot.adapters.feishu.bot import Bot, _check_at_me, _check_reply, _check_nickname
+from nonebot.adapters.feishu.models import BotInfo
+from nonebot.compat import type_validate_python
 
 with (Path(__file__).parent.joinpath("data", "bots.json")).open("r") as f:
     feishu_bots = json.load(f)

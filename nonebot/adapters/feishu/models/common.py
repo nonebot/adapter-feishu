@@ -1,6 +1,7 @@
 from typing import Literal, Optional
 
 from pydantic import BaseModel
+
 from nonebot.compat import PYDANTIC_V2, ConfigDict
 
 

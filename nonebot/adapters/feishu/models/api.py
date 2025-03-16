@@ -1,4 +1,4 @@
-from pydantic import HttpUrl, BaseModel
+from pydantic import BaseModel, HttpUrl
 
 from .common import Reply
 

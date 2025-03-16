@@ -1,8 +1,8 @@
 from pathlib import Path
 
 from nb_autodoc import ModuleManager
-from nb_autodoc.config import Config
 from nb_autodoc.builders.markdown import MarkdownBuilder
+from nb_autodoc.config import Config
 
 import nonebot.adapters
 

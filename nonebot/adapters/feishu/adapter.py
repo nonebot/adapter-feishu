@@ -1,33 +1,33 @@
-import json
 import asyncio
 import inspect
+import json
+from typing import Any, Callable, Optional, Union, cast
 from typing_extensions import override
-from typing import Any, Union, Callable, Optional, cast
 
 from pygtrie import StringTrie
-from nonebot.utils import escape_tag
-from nonebot.compat import type_validate_python
-from nonebot.drivers import (
-    URL,
-    Driver,
-    Request,
-    Response,
-    ASGIMixin,
-    HTTPClientMixin,
-    HTTPServerSetup,
-)
 
 from nonebot import get_plugin_config
 from nonebot.adapters import Adapter as BaseAdapter
+from nonebot.compat import type_validate_python
+from nonebot.drivers import (
+    URL,
+    ASGIMixin,
+    Driver,
+    HTTPClientMixin,
+    HTTPServerSetup,
+    Request,
+    Response,
+)
+from nonebot.utils import escape_tag
 
 from . import event
 from .bot import Bot
+from .config import BotConfig, Config
 from .event import Event
-from .config import Config, BotConfig
-from .utils import AESCipher, log, cache
+from .exception import ApiNotAvailable, FeishuAdapterException, NetworkError
 from .message import Message, MessageSegment
 from .models import BotInfoResponse, TenantAccessTokenResponse
-from .exception import NetworkError, ApiNotAvailable, FeishuAdapterException
+from .utils import AESCipher, cache, log
 
 
 class Adapter(BaseAdapter):

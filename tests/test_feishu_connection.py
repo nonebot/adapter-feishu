@@ -1,8 +1,8 @@
 import json
 from pathlib import Path
 
-import pytest
 from nonebug import App
+import pytest
 
 import nonebot
 from nonebot.adapters.feishu import Adapter

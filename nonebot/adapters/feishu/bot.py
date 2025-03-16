@@ -1,19 +1,18 @@
-import re
 from io import BytesIO
 from pathlib import Path
+import re
+from typing import TYPE_CHECKING, Any, Callable, Literal, Optional, Union
 from typing_extensions import override
-from typing import TYPE_CHECKING, Any, Union, Literal, Callable, Optional
-
-from nonebot.message import handle_event
-from nonebot.compat import type_validate_python
 
 from nonebot.adapters import Bot as BaseBot
+from nonebot.compat import type_validate_python
+from nonebot.message import handle_event
 
-from .utils import f2b, log
 from .config import BotConfig
-from .models import BotInfo, ReplyResponse
+from .event import Event, GroupMessageEvent, MessageEvent, PrivateMessageEvent
 from .message import At, Message, MessageSegment
-from .event import Event, MessageEvent, GroupMessageEvent, PrivateMessageEvent
+from .models import BotInfo, ReplyResponse
+from .utils import f2b, log
 
 if TYPE_CHECKING:
     from .adapter import Adapter
