@@ -26,9 +26,7 @@ documentation = "https://feishu.adapters.nonebot.dev/"
 packages = [{ include = "nonebot" }]
 
 [tool.poetry.group.dev.dependencies]
-ruff = "^0.7.0"
-isort = "^5.10.1"
-black = "^24.0.0"
+ruff = "^0.11.0"
 nonemoji = "^0.1.2"
 pre-commit = "^4.0.0"
 nonebot2 = { git = "https://github.com/nonebot/nonebot2.git", branch = "master", extras = [
@@ -40,8 +38,8 @@ nonebug = { git = "https://github.com/nonebot/nonebug.git", branch = "master" }
 [tool.poetry.group.test.dependencies]
 nonebug = "^0.4.0"
 wsproto = "^1.2.0"
-pytest-cov = "^5.0.0"
-pytest-asyncio = "^0.24.0"
+pytest-cov = "^6.0.0"
+pytest-asyncio = "^0.25.0"
 werkzeug = ">=2.3.6,<4.0.0"
 
 [tool.poetry.group.docs.dependencies]
@@ -74,6 +72,7 @@ select = [
   "PYI",   # flake8-pyi
   "PT",    # flake8-pytest-style
   "Q",     # flake8-quotes
+  "TC",    # flake8-type-checking
   "TID",   # flake8-tidy-imports
   "RUF",   # Ruff-specific rules
 ]
