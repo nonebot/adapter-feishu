@@ -140,7 +140,7 @@ class Adapter(BaseAdapter):
         key = f"feishu_tenant_access_token_{bot_config.app_id}"
 
         if token := await cache.get(key):
-            return cast(str, token)
+            return cast("str", token)
 
         response = await self.send_request(
             Request(
@@ -272,7 +272,7 @@ class Adapter(BaseAdapter):
                 raise RuntimeError("Corresponding Bot instance not found")
 
             if event := self.json_to_event(data):
-                bot = cast(Bot, bot)
+                bot = cast("Bot", bot)
                 task = asyncio.create_task(bot.handle_event(event))
                 task.add_done_callback(self.tasks.discard)
                 self.tasks.add(task)
