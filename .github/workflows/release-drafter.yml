@@ -18,7 +18,7 @@ jobs:
       group: pull-request-changelog
       cancel-in-progress: true
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with:
           token: ${{ secrets.GH_TOKEN }}
 
@@ -56,7 +56,7 @@ jobs:
       id-token: write
       contents: write
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: Setup Python Environment
         uses: ./.github/actions/setup-python
