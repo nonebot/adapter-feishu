@@ -52,7 +52,7 @@ module-name = "nonebot.adapters.feishu"
 module-root = ""
 
 [tool.pytest.ini_options]
-addopts = ["--cov=nonebot/adapters/feishu", "--cov-report=term-missing"]
+addopts = ["--cov=nonebot.adapters.feishu", "--cov-report=term-missing"]
 filterwarnings = ["error", "ignore::DeprecationWarning"]
 
 [tool.ruff]
