@@ -3,8 +3,9 @@ name = "nonebot-adapter-feishu"
 version = "2.6.2"
 description = "feishu(larksuite) adapter for nonebot2"
 authors = [{ name = "StarHeartHunt", email = "starheart233@gmail.com" }]
-license = { text = "MIT" }
+requires-python = ">=3.9, <4.0"
 readme = "README.md"
+license = { text = "MIT" }
 keywords = ["bot", "feishu", "larksuite"]
 classifiers = [
   "Development Status :: 5 - Production/Stable",
@@ -13,8 +14,6 @@ classifiers = [
   "Operating System :: OS Independent",
   "Programming Language :: Python :: 3",
 ]
-
-requires-python = ">=3.9, <4.0"
 dependencies = ["nonebot2 ~=2.2", "cashews ~=7.0", "pycryptodome ~=3.18"]
 
 [project.urls]
@@ -22,33 +21,38 @@ homepage = "https://feishu.adapters.nonebot.dev/"
 repository = "https://github.com/nonebot/adapter-feishu"
 documentation = "https://feishu.adapters.nonebot.dev/"
 
-[tool.poetry]
-packages = [{ include = "nonebot" }]
+[dependency-groups]
+dev = [
+  "ruff>=0.11.0,<0.12",
+  "nonemoji>=0.1.2,<0.2",
+  "pre-commit>=4.0.0,<5",
+  "nonebot2[fastapi, httpx]",
+  "nonebug",
+]
+test = [
+  "trio >=0.27.0",
+  "nonebug >=0.4.1, <0.5.0",
+  "wsproto >=1.2.0, <2.0.0",
+  "werkzeug >=2.3.6, <4.0.0",
+  "pytest-cov >=6.0.0, <7.0.0",
+  "pytest-xdist >=3.0.2, <4.0.0",
+  "coverage-conditional-plugin >=0.9.0, <0.10.0",
+]
+docs = ["nb-autodoc >=1.0.0a5, <2.0.0"]
 
-[tool.poetry.group.dev.dependencies]
-ruff = "^0.11.0"
-nonemoji = "^0.1.2"
-pre-commit = "^4.0.0"
-nonebot2 = { git = "https://github.com/nonebot/nonebot2.git", branch = "master", extras = [
-  "fastapi",
-  "httpx",
-] }
+[tool.uv]
+default-groups = ["dev", "test", "docs"]
+
+[tool.uv.sources]
+nonebot2 = { git = "https://github.com/nonebot/nonebot2.git", branch = "master" }
 nonebug = { git = "https://github.com/nonebot/nonebug.git", branch = "master" }
 
-[tool.poetry.group.test.dependencies]
-nonebug = "^0.4.0"
-wsproto = "^1.2.0"
-pytest-cov = "^6.0.0"
-pytest-asyncio = "^0.25.0"
-werkzeug = ">=2.3.6,<4.0.0"
-
-[tool.poetry.group.docs.dependencies]
-nb-autodoc = { git = "https://github.com/nonebot/nb-autodoc.git" }
+[tool.uv.build-backend]
+module-name = "nonebot.adapters.feishu"
+module-root = ""
 
 [tool.pytest.ini_options]
-asyncio_mode = "auto"
-asyncio_default_fixture_loop_scope = "session"
-addopts = ["--cov=nonebot/adapters/feishu", "--cov-report=term-missing"]
+addopts = ["--cov=nonebot.adapters.feishu", "--cov-report=term-missing"]
 filterwarnings = ["error", "ignore::DeprecationWarning"]
 
 [tool.ruff]
@@ -72,7 +76,6 @@ select = [
   "PYI",   # flake8-pyi
   "PT",    # flake8-pytest-style
   "Q",     # flake8-quotes
-  "TC",    # flake8-type-checking
   "TID",   # flake8-tidy-imports
   "RUF",   # Ruff-specific rules
 ]
@@ -112,5 +115,5 @@ reportShadowedImports = false
 disableBytesTypePromotions = true
 
 [build-system]
-requires = ["poetry-core>=2.0.0,<3.0.0"]
-build-backend = "poetry.core.masonry.api"
+requires = ["uv_build >=0.8.3, <0.9.0"]
+build-backend = "uv_build"

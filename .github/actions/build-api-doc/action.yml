@@ -5,7 +5,7 @@ runs:
   using: "composite"
   steps:
     - run: |
-        poetry run python scripts/build_api_docs.py
+        uv run --no-sync python scripts/build_api_docs.py
         cp -r ./build/nonebot/adapters/feishu/* ./website/docs/api/
         yarn prettier
       shell: bash

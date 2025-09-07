@@ -16,14 +16,14 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python-version: ["3.9", "3.10", "3.11", "3.12"]
+        python-version: ["3.9", "3.10", "3.11", "3.12", "3.13"]
         os: [ubuntu-latest, windows-latest, macos-latest]
     env:
       OS: ${{ matrix.os }}
       PYTHON_VERSION: ${{ matrix.python-version }}
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: Setup Python environment
         uses: ./.github/actions/setup-python
@@ -32,13 +32,23 @@ jobs:
 
       - name: Run Pytest
         run: |
-          poetry run pytest --cov-report xml
+          uv run --no-sync bash ./scripts/run-tests.sh
+
+      - name: Upload test results
+        uses: codecov/test-results-action@v1
+        with:
+          env_vars: OS,PYTHON_VERSION
+          files: ./tests/junit.xml
+          flags: unittests
+        env:
+          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
 
       - name: Upload coverage report
         uses: codecov/codecov-action@v5
         with:
           env_vars: OS,PYTHON_VERSION
-          files: ./coverage.xml
+          files: ./tests/coverage.xml
           flags: unittests
+          fail_ci_if_error: true
         env:
           CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}

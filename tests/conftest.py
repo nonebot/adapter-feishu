@@ -2,22 +2,26 @@ from collections.abc import Generator
 import json
 from pathlib import Path
 import threading
+from typing import TypeVar
+from typing_extensions import ParamSpec
 
 from nonebug import NONEBOT_INIT_KWARGS
 import pytest
 from werkzeug.serving import BaseWSGIServer, make_server
 
+from fake_server import request_handler
 import nonebot
 import nonebot.adapters
 from nonebot.drivers import URL
-
-from .fake_server import request_handler
 
 nonebot.adapters.__path__.append(  # type: ignore
     str((Path(__file__).parent.parent / "nonebot" / "adapters").resolve())
 )
 
 from nonebot.adapters.feishu import Adapter as FeishuAdapter
+
+P = ParamSpec("P")
+R = TypeVar("R")
 
 
 def pytest_configure(config: pytest.Config) -> None:
@@ -30,6 +34,12 @@ def pytest_configure(config: pytest.Config) -> None:
         "feishu_bots": feishu_bots,
         "nickname": ["bot"],
     }
+
+
+# pytest.param("trio"): not supported
+@pytest.fixture(scope="session", params=[pytest.param("asyncio")])
+def anyio_backend(request: pytest.FixtureRequest):
+    return request.param
 
 
 @pytest.fixture(scope="session", autouse=True)

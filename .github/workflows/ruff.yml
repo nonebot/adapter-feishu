@@ -14,8 +14,12 @@ jobs:
   ruff:
     name: Ruff Lint
     runs-on: ubuntu-latest
+    concurrency:
+      group: ruff-${{ github.ref }}
+      cancel-in-progress: true
+
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: Run Ruff Lint
-        uses: chartboost/ruff-action@v1
+        uses: astral-sh/ruff-action@v3
