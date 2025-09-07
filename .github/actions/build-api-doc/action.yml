@@ -5,5 +5,7 @@ runs:
   using: "composite"
   steps:
     - run: |
-        uv run --no-sync bash ./scripts/build-api-docs.sh
+        uv run --no-sync python scripts/build_api_docs.py
+        cp -r ./build/nonebot/adapters/feishu/* ./website/docs/api/
+        yarn prettier
       shell: bash
