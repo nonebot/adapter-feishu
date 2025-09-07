@@ -5,19 +5,15 @@ inputs:
   python-version:
     description: Python version
     required: false
-    default: "3.11"
+    default: "3.12"
 
 runs:
   using: "composite"
   steps:
-    - name: Install poetry
-      run: pipx install poetry
-      shell: bash
-
-    - uses: actions/setup-python@v6
+    - uses: astral-sh/setup-uv@v6
       with:
         python-version: ${{ inputs.python-version }}
-        cache: "poetry"
 
-    - run: poetry install
+    - run: |
+        uv sync --all-extras --locked --group ${{ inputs.env-group }}
       shell: bash

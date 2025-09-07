@@ -6,11 +6,9 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with:
-          ref: master
           token: ${{ secrets.GH_TOKEN }}
 
       - name: Setup Python Environment
@@ -22,7 +20,7 @@ jobs:
       - name: Build API Doc
         uses: ./.github/actions/build-api-doc
 
-      - run: echo "TAG_NAME=v$(poetry version -s)" >> $GITHUB_ENV
+      - run: echo "TAG_NAME=v$(uv version --short)" >> $GITHUB_ENV
 
       - name: Archive Changelog
         uses: docker://ghcr.io/nonebot/auto-changelog:master
@@ -34,7 +32,7 @@ jobs:
 
       - name: Archive Files
         run: |
-          yarn archive $(poetry version -s)
+          yarn archive $(uv version --short)
           yarn prettier
 
       - name: Push Tag
@@ -42,6 +40,6 @@ jobs:
           git config user.name github-actions[bot]
           git config user.email github-actions[bot]@users.noreply.github.com
           git add .
-          git commit -m ":bookmark: Release $(poetry version -s)"
+          git commit -m ":bookmark: Release $(uv version --short)"
           git tag ${{ env.TAG_NAME }}
           git push && git push --tags

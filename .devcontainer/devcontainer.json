@@ -1,19 +1,21 @@
 {
-  "name": "Default Linux Universal",
-  "image": "mcr.microsoft.com/devcontainers/universal:2-linux",
+  "name": "Ubuntu",
+  "image": "mcr.microsoft.com/devcontainers/base:ubuntu",
   "features": {
-    "ghcr.io/devcontainers-contrib/features/poetry:2": {}
+    "ghcr.io/jsburckhardt/devcontainer-features/uv:1": {},
+    "ghcr.io/devcontainers/features/node:1": {},
+    "ghcr.io/meaningful-ooo/devcontainer-features/fish:2": {}
   },
-  "postCreateCommand": "poetry config virtualenvs.in-project true && poetry install -E all && poetry run pre-commit install && yarn install",
+  "postCreateCommand": "./scripts/setup-envs.sh",
   "customizations": {
     "vscode": {
       "settings": {
         "python.analysis.diagnosticMode": "workspace",
-        "python.analysis.typeCheckingMode": "basic",
         "[python]": {
-          "editor.defaultFormatter": "ms-python.black-formatter",
+          "editor.defaultFormatter": "charliermarsh.ruff",
           "editor.codeActionsOnSave": {
-            "source.organizeImports": true
+            "source.fixAll.ruff": "explicit",
+            "source.organizeImports": "explicit"
           }
         },
         "[javascript]": {
@@ -42,8 +44,7 @@
       "extensions": [
         "ms-python.python",
         "ms-python.vscode-pylance",
-        "ms-python.isort",
-        "ms-python.black-formatter",
+        "charliermarsh.ruff",
         "EditorConfig.EditorConfig",
         "esbenp.prettier-vscode",
         "bradlc.vscode-tailwindcss"
