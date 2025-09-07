@@ -35,6 +35,7 @@ def pytest_configure(config: pytest.Config) -> None:
         "nickname": ["bot"],
     }
 
+
 # pytest.param("trio"): not supported
 @pytest.fixture(scope="session", params=[pytest.param("asyncio")])
 def anyio_backend(request: pytest.FixtureRequest):
