@@ -15,5 +15,5 @@ runs:
         python-version: ${{ inputs.python-version }}
 
     - run: |
-        uv sync --all-extras --locked --group ${{ inputs.env-group }}
+        uv sync --all-extras --locked
       shell: bash
