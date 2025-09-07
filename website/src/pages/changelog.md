@@ -13,6 +13,7 @@ toc_max_heading_level: 2
 
 ### 💫 杂项
 
+- Refactor: 使用 uv [@StarHeartHunt](https://github.com/StarHeartHunt) ([#129](https://github.com/nonebot/adapter-feishu/pull/129))
 - :arrow_up: auto update by pre-commit hooks [@[pre-commit-ci[bot]](https://github.com/apps/pre-commit-ci)](<https://github.com/[pre-commit-ci[bot]](https://github.com/apps/pre-commit-ci)>) ([#126](https://github.com/nonebot/adapter-feishu/pull/126))
 - :arrow_up: auto update by pre-commit hooks [@[pre-commit-ci[bot]](https://github.com/apps/pre-commit-ci)](<https://github.com/[pre-commit-ci[bot]](https://github.com/apps/pre-commit-ci)>) ([#124](https://github.com/nonebot/adapter-feishu/pull/124))
 - :arrow_up: auto update by pre-commit hooks [@[pre-commit-ci[bot]](https://github.com/apps/pre-commit-ci)](<https://github.com/[pre-commit-ci[bot]](https://github.com/apps/pre-commit-ci)>) ([#123](https://github.com/nonebot/adapter-feishu/pull/123))
