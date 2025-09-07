@@ -30,13 +30,15 @@ dev = [
   "nonebug",
 ]
 test = [
-  "nonebug>=0.4.0,<0.5",
-  "wsproto>=1.2.0,<2",
-  "pytest-cov>=6.0.0,<7",
-  "pytest-asyncio>=0.25.0,<0.26",
-  "werkzeug>=2.3.6,<4.0.0",
+  "trio >=0.27.0",
+  "nonebug >=0.4.1, <0.5.0",
+  "wsproto >=1.2.0, <2.0.0",
+  "werkzeug >=2.3.6, <4.0.0",
+  "pytest-cov >=6.0.0, <7.0.0",
+  "pytest-xdist >=3.0.2, <4.0.0",
+  "coverage-conditional-plugin >=0.9.0, <0.10.0",
 ]
-docs = ["nb-autodoc"]
+docs = ["nb-autodoc >=1.0.0a5, <2.0.0"]
 
 [tool.uv]
 default-groups = ["dev", "test", "docs"]
@@ -44,15 +46,12 @@ default-groups = ["dev", "test", "docs"]
 [tool.uv.sources]
 nonebot2 = { git = "https://github.com/nonebot/nonebot2.git", branch = "master" }
 nonebug = { git = "https://github.com/nonebot/nonebug.git", branch = "master" }
-nb-autodoc = { git = "https://github.com/nonebot/nb-autodoc.git" }
 
 [tool.uv.build-backend]
 module-name = "nonebot.adapters.feishu"
 module-root = ""
 
 [tool.pytest.ini_options]
-asyncio_mode = "auto"
-asyncio_default_fixture_loop_scope = "session"
 addopts = ["--cov=nonebot/adapters/feishu", "--cov-report=term-missing"]
 filterwarnings = ["error", "ignore::DeprecationWarning"]
 

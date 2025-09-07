@@ -13,7 +13,7 @@ with (Path(__file__).parent.joinpath("data", "bots.json")).open("r") as f:
 bot_id = feishu_bots[0]["app_id"]
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 @pytest.mark.parametrize("endpoints", [f"/feishu/{bot_id}"])
 async def test_http(app: App, endpoints: str):
     with (Path(__file__).parent.joinpath("data", "payloads.json")).open("r") as f:

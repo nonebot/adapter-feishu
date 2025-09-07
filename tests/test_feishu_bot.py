@@ -27,7 +27,7 @@ with (Path(__file__).parent.joinpath("data", "events.json")).open(
     test_events = json.load(f)
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_check_tome(server_url: str):
     event_data = test_events[0]
     event_data.pop("_model", None)
@@ -52,7 +52,7 @@ async def test_check_tome(server_url: str):
     assert event.to_me
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_check_reply(server_url: str):
     event_data = test_events[0]
     event_data.pop("_model", None)
@@ -71,7 +71,7 @@ async def test_check_reply(server_url: str):
     assert not event.reply
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_check_nickname(app: App, server_url: str):
     event_data = test_events[0]
     event_data.pop("_model", None)

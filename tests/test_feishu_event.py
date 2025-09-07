@@ -7,7 +7,7 @@ import pytest
 from nonebot.adapters.feishu import Adapter
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_event():
     with (Path(__file__).parent.joinpath("data", "events.json")).open("r") as f:
         test_events: list[dict[str, Any]] = json.load(f)
