@@ -62,7 +62,7 @@ addopts = ["--cov=nonebot.adapters.feishu", "--cov-report=term-missing"]
 filterwarnings = ["error", "ignore::DeprecationWarning"]
 
 [tool.ruff]
-line-length = 88
+line-length = 120
 target-version = "py39"
 
 [tool.ruff.format]

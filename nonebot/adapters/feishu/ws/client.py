@@ -78,6 +78,7 @@ class WsClient:
         self._ping_task: Optional[asyncio.Task[None]] = None
         self._cache: dict[str, list[FrameSegment]] = {}
         self._ws: Optional[ClientConnection] = None
+        self._tasks: set[asyncio.Task] = set()
 
     def _get_ws_endpoint_url(self) -> str:
         """获取「获取 WebSocket 端点」的 HTTP URL"""
@@ -144,11 +145,13 @@ class WsClient:
             method=FrameType.CONTROL,
             headers=[Header(key="type", value=MessageType.PING)],
         )
-        asyncio.create_task(self._send_frame_async(frame))
+        task = asyncio.create_task(self._send_frame_async(frame))
+        task.add_done_callback(self._tasks.discard)
+        self._tasks.add(task)
 
     def _retrieve(self, seg: FrameSegment) -> Optional[bytes]:
         """重组分片；若已收齐则返回完整 payload 并清除缓存。"""
-        mid, total, seq, data = seg.message_id, seg.sum, seg.seq, seg.data
+        mid, total, data = seg.message_id, seg.sum, seg.data
         if total == 1:
             return data
         if mid not in self._cache:

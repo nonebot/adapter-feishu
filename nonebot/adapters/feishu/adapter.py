@@ -94,7 +94,7 @@ class Adapter(BaseAdapter):
                         except Exception as e:
                             log(
                                 "ERROR",
-                                "<r><bg #f8bbd0>Feishu WS connection error.</bg #f8bbd0></r> "  # noqa: E501
+                                "<r><bg #f8bbd0>Feishu WS connection error.</bg #f8bbd0></r> "
                                 f"{escape_tag(str(e))}",
                             )
                         await asyncio.sleep(5)
