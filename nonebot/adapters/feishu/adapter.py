@@ -28,6 +28,7 @@ from .exception import ApiNotAvailable, FeishuAdapterException, NetworkError
 from .message import Message, MessageSegment
 from .models import BotInfoResponse, TenantAccessTokenResponse
 from .utils import AESCipher, cache, log
+from .ws import WsClient
 
 
 class Adapter(BaseAdapter):
@@ -83,13 +84,32 @@ class Adapter(BaseAdapter):
                 f"<y>Bot {escape_tag(bot_config.app_id)}</y> connected",
             )
 
-            setup = HTTPServerSetup(
-                URL(f"/feishu/{bot.self_id}"),
-                "POST",
-                self.get_name(),
-                self._handle_http,
-            )
-            self.setup_http_server(setup)
+            if bot_config.protocol == "ws":
+                client = WsClient(self, bot, bot_config)
+
+                async def run_ws() -> None:
+                    while True:
+                        try:
+                            await client.run()
+                        except Exception as e:
+                            log(
+                                "ERROR",
+                                "<r><bg #f8bbd0>Feishu WS connection error.</bg #f8bbd0></r> "  # noqa: E501
+                                f"{escape_tag(str(e))}",
+                            )
+                        await asyncio.sleep(5)
+
+                task = asyncio.create_task(run_ws())
+                task.add_done_callback(self.tasks.discard)
+                self.tasks.add(task)
+            else:
+                setup = HTTPServerSetup(
+                    URL(f"/feishu/{bot.self_id}"),
+                    "POST",
+                    self.get_name(),
+                    self._handle_http,
+                )
+                self.setup_http_server(setup)
 
     def setup(self) -> None:
         if not isinstance(self.driver, ASGIMixin):
@@ -199,7 +219,8 @@ class Adapter(BaseAdapter):
             raise NetworkError("HTTP request failed") from e
 
     @override
-    async def _call_api(self, bot: Bot, api: str, **data: Any) -> Any:
+    async def _call_api(self, bot, api: str, **data: Any) -> Any:
+        bot = cast("Bot", bot)
         token = await self.get_tenant_access_token(bot.bot_config)
         headers = {**data.get("headers", {}), "Authorization": f"Bearer {token}"}
 

@@ -1,15 +1,23 @@
 from io import BytesIO
 from pathlib import Path
 import re
-from typing import TYPE_CHECKING, Any, Callable, Literal, Optional, Union
+from typing import TYPE_CHECKING, Any, Callable, Literal, Optional, Union, cast
 from typing_extensions import override
 
 from nonebot.adapters import Bot as BaseBot
+from nonebot.adapters import Event as BaseEvent
+from nonebot.adapters import Message as BaseMessage
+from nonebot.adapters import MessageSegment as BaseMessageSegment
 from nonebot.compat import type_validate_python
 from nonebot.message import handle_event
 
 from .config import BotConfig
-from .event import Event, GroupMessageEvent, MessageEvent, PrivateMessageEvent
+from .event import (
+    Event,
+    GroupMessageEvent,
+    MessageEvent,
+    PrivateMessageEvent,
+)
 from .message import At, Message, MessageSegment
 from .models import BotInfo, ReplyResponse
 from .utils import f2b, log
@@ -151,14 +159,18 @@ def _check_nickname(bot: "Bot", event: "Event"):
 
 async def send(
     bot: "Bot",
-    event: Event,
-    message: Union[str, Message, MessageSegment],
+    event: BaseEvent,
+    message: str | BaseMessage | BaseMessageSegment,
     at_sender: bool = False,
     **kwargs: Any,
 ) -> Any:
     """默认回复消息处理函数。"""
 
-    message = message if isinstance(message, Message) else Message(message)
+    message = (
+        message
+        if isinstance(message, Message)
+        else Message(cast(str | MessageSegment, message))
+    )
 
     if isinstance(event, GroupMessageEvent):
         receive_id, receive_id_type = event.event.message.chat_id, "chat_id"
@@ -179,9 +191,9 @@ async def send(
 
 
 class Bot(BaseBot):
-    send_handler: Callable[["Bot", Event, Union[str, Message, MessageSegment]], Any] = (
-        send
-    )
+    send_handler: Callable[
+        ["Bot", BaseEvent, str | BaseMessage | BaseMessageSegment], Any
+    ] = send
 
     @override
     def __init__(
@@ -356,8 +368,8 @@ class Bot(BaseBot):
     @override
     async def send(
         self,
-        event: Event,
-        message: Union[str, Message, MessageSegment],
+        event: BaseEvent,
+        message: str | BaseMessage | BaseMessageSegment,
         **kwargs: Any,
     ) -> Any:
         """根据 `event` 向触发事件的主体回复消息。

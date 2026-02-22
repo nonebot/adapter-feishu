@@ -1,4 +1,4 @@
-from typing import Literal, Optional
+from typing import Any, Literal, Optional
 
 from pydantic import BaseModel
 
@@ -139,7 +139,7 @@ class EventMessage(BaseModel):
     parent_id: Optional[str] = None
     create_time: str
     chat_id: str
-    chat_type: str
+    chat_type: Any
     message_type: str
     content: str
     mentions: Optional[list[Mention]] = None
@@ -162,7 +162,7 @@ class PrivateEventMessage(EventMessage):
 
 class MessageEventDetail(BaseModel):
     sender: Sender
-    message: EventMessage
+    message: Any
 
 
 class GroupMessageEventDetail(MessageEventDetail):
