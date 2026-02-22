@@ -42,9 +42,7 @@ def http_echo(request: Request) -> Response:
                 "url": request.url,
                 "method": request.method,
                 "origin": request.headers.get("X-Forwarded-For", request.remote_addr),
-                "headers": flattern(
-                    MultiDict((k, v) for k, v in request.headers.items())
-                ),
+                "headers": flattern(MultiDict((k, v) for k, v in request.headers.items())),
                 "args": flattern(request.args),
                 "form": flattern(request.form),
                 "data": json_safe(request.data),
@@ -55,8 +53,7 @@ def http_echo(request: Request) -> Response:
                             k,
                             json_safe(
                                 v.read(),
-                                request.files[k].content_type
-                                or "application/octet-stream",
+                                request.files[k].content_type or "application/octet-stream",
                             ),
                         )
                         for k, v in request.files.items()

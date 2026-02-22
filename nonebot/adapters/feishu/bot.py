@@ -44,10 +44,7 @@ async def _check_reply(bot: "Bot", event: "Event"):
                 response,
             )
             for message in result.data.items:
-                if (
-                    message.sender.id_type == "app_id"
-                    and message.sender.id == bot.bot_config.app_id
-                ):
+                if message.sender.id_type == "app_id" and message.sender.id == bot.bot_config.app_id:
                     event.to_me = True
                     event.reply = message
                     return
@@ -84,15 +81,12 @@ def _check_at_me(bot: "Bot", event: "Event"):
     if (
         isinstance(event, GroupMessageEvent)
         and event.event.message.mentions is not None
-        and bot.bot_info.open_id
-        in {user.id.open_id for user in event.event.message.mentions}
+        and bot.bot_info.open_id in {user.id.open_id for user in event.event.message.mentions}
     ):
         event.to_me = True
 
     def _is_at_me_seg(segment: MessageSegment) -> bool:
-        return (
-            segment.type == "at" and segment.data.get("user_id") == bot.bot_info.open_id
-        )
+        return segment.type == "at" and segment.data.get("user_id") == bot.bot_info.open_id
 
     deleted = False
     if _is_at_me_seg(message[0]):
@@ -108,11 +102,7 @@ def _check_at_me(bot: "Bot", event: "Event"):
         # wipe out last empty text segment
         i = -1
         last_msg_seg = message[i]
-        if (
-            last_msg_seg.type == "text"
-            and not last_msg_seg.data["text"].strip()
-            and len(message) >= 2
-        ):
+        if last_msg_seg.type == "text" and not last_msg_seg.data["text"].strip() and len(message) >= 2:
             i -= 1
             last_msg_seg = message[i]
 
@@ -166,11 +156,7 @@ async def send(
 ) -> Any:
     """默认回复消息处理函数。"""
 
-    message = (
-        message
-        if isinstance(message, Message)
-        else Message(cast(str | MessageSegment, message))
-    )
+    message = message if isinstance(message, Message) else Message(cast(str | MessageSegment, message))
 
     if isinstance(event, GroupMessageEvent):
         receive_id, receive_id_type = event.event.message.chat_id, "chat_id"
@@ -191,9 +177,7 @@ async def send(
 
 
 class Bot(BaseBot):
-    send_handler: Callable[
-        ["Bot", BaseEvent, str | BaseMessage | BaseMessageSegment], Any
-    ] = send
+    send_handler: Callable[["Bot", BaseEvent, str | BaseMessage | BaseMessageSegment], Any] = send
 
     @override
     def __init__(
@@ -208,9 +192,7 @@ class Bot(BaseBot):
         self.bot_config: BotConfig = bot_config
         self.bot_info: BotInfo = bot_info
 
-    async def get_msgs(
-        self, container_id_type: Literal["chat"], container_id: str, **params: Any
-    ):
+    async def get_msgs(self, container_id_type: Literal["chat"], container_id: str, **params: Any):
         return await self.call_api(
             "im/v1/messages",
             method="GET",
@@ -221,9 +203,7 @@ class Bot(BaseBot):
             },
         )
 
-    async def get_msg_resource(
-        self, message_id: str, file_key: str, type_: Literal["image", "file"]
-    ):
+    async def get_msg_resource(self, message_id: str, file_key: str, type_: Literal["image", "file"]):
         return await self.call_api(
             f"im/v1/messages/{message_id}/resources/{file_key}",
             method="GET",
@@ -250,9 +230,7 @@ class Bot(BaseBot):
         if page_token:
             params.update({"page_token": page_token})
 
-        return await self.call_api(
-            f"im/v1/messages/{message_id}/read_users", method="GET", params=params
-        )
+        return await self.call_api(f"im/v1/messages/{message_id}/read_users", method="GET", params=params)
 
     async def merge_forward_msg(
         self,
@@ -300,9 +278,7 @@ class Bot(BaseBot):
             json={"msg_type": msg_type, "content": content},
         )
 
-    async def reply_msg(
-        self, message_id: str, content: str, msg_type: str, uuid: Optional[str] = None
-    ):
+    async def reply_msg(self, message_id: str, content: str, msg_type: str, uuid: Optional[str] = None):
         json = {
             "content": content,
             "msg_type": msg_type,
@@ -336,9 +312,7 @@ class Bot(BaseBot):
         )
 
     async def get_file(self, file_key: str):
-        response = await self.call_api(
-            f"im/v1/files/{file_key}", method="GET", _return_response=True
-        )
+        response = await self.call_api(f"im/v1/files/{file_key}", method="GET", _return_response=True)
 
         return response.content
 
@@ -359,9 +333,7 @@ class Bot(BaseBot):
         if duration:
             data["duration"] = duration
 
-        response = await self.call_api(
-            "im/v1/files", method="POST", data=data, files=files
-        )
+        response = await self.call_api("im/v1/files", method="POST", data=data, files=files)
 
         return response
 

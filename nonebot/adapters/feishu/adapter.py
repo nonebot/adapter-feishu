@@ -94,8 +94,7 @@ class Adapter(BaseAdapter):
                         except Exception as e:
                             log(
                                 "ERROR",
-                                "<r><bg #f8bbd0>Feishu WS connection error.</bg #f8bbd0></r> "
-                                f"{escape_tag(str(e))}",
+                                f"<r><bg #f8bbd0>Feishu WS connection error.</bg #f8bbd0></r> {escape_tag(str(e))}",
                             )
                         await asyncio.sleep(5)
 
@@ -246,9 +245,7 @@ class Adapter(BaseAdapter):
         if (data := request.content) is not None:
             if bot_config.encrypt_key is not None:
                 if (encrypted := json.loads(data).get("encrypt")) is not None:
-                    decrypted = AESCipher(bot_config.encrypt_key).decrypt_string(
-                        encrypted
-                    )
+                    decrypted = AESCipher(bot_config.encrypt_key).decrypt_string(encrypted)
                     data = json.loads(decrypted)
             else:
                 data = json.loads(data)
@@ -336,8 +333,7 @@ class Adapter(BaseAdapter):
         except Exception as e:
             log(
                 "ERROR",
-                "<r><bg #f8bbd0>Failed to parse event. "
-                f"Raw: {escape_tag(str(json_data))}</bg #f8bbd0></r>",
+                f"<r><bg #f8bbd0>Failed to parse event. Raw: {escape_tag(str(json_data))}</bg #f8bbd0></r>",
                 e,
             )
 
@@ -358,9 +354,7 @@ class Adapter(BaseAdapter):
         """根据事件名获取对应 `Event Model` 及 `FallBack Event Model` 列表，
         不包括基类 `Event`。
         """
-        return [model.value for model in cls.event_models.prefixes("." + event_name)][
-            ::-1
-        ]
+        return [model.value for model in cls.event_models.prefixes("." + event_name)][::-1]
 
     @classmethod
     def custom_send(

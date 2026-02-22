@@ -21,9 +21,7 @@ bot_id = test_bot["app_id"]
 with (Path(__file__).parent.joinpath("data", "bots_info.json")).open("r") as f:
     bots_info = json.load(f)
 
-with (Path(__file__).parent.joinpath("data", "events.json")).open(
-    "r", encoding="utf8"
-) as f:
+with (Path(__file__).parent.joinpath("data", "events.json")).open("r", encoding="utf8") as f:
     test_events = json.load(f)
 
 
