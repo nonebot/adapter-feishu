@@ -7,6 +7,10 @@ toc_max_heading_level: 2
 
 ## 最近更新
 
+### 🚀 新功能
+
+- :sparkles: Add WebSocket support for Feishu adapter [@StarHeartHunt](https://github.com/StarHeartHunt) ([#142](https://github.com/nonebot/adapter-feishu/pull/142))
+
 ### 📝 文档
 
 - :memo: Docs: 修复文档中的示例插件 [@NoNormalCreeper](https://github.com/NoNormalCreeper) ([#111](https://github.com/nonebot/adapter-feishu/pull/111))
