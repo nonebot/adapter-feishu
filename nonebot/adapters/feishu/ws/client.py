@@ -8,7 +8,7 @@ from nonebot.drivers import URL, Request, WebSocket
 from nonebot.utils import escape_tag
 
 from ..utils import log
-from .frame import Frame, Header
+from . import frame_pb2
 from .models import (
     FrameSegment,
     FrameType,
@@ -86,24 +86,26 @@ class WsClient:
             client_config=data.client_config,
         )
 
-    def _headers_to_dict(self, headers: list[Header]) -> dict[str, str]:
+    def _headers_to_dict(self, headers: list) -> dict[str, str]:
         """将 Frame 的 headers 转为 dict。"""
         return {h.key: h.value for h in headers}
 
-    async def _send_frame_async(self, frame: Frame) -> None:
+    async def _send_frame_async(self, frame) -> None:
         if self._ws is None:
             return
-        await self._ws.send_bytes(bytes(frame))
+        await self._ws.send(frame.SerializeToString())
 
     def _ping(self) -> None:
         """构造并发送 ping 帧"""
-        frame = Frame(
-            seq_id=0,
-            log_id=0,
-            service=self._service_id,
-            method=FrameType.CONTROL,
-            headers=[Header(key="type", value=MessageType.PING)],
-        )
+        frame = frame_pb2.Frame()  # pyright: ignore[reportAttributeAccessIssue]
+        frame.seq_id = 0
+        frame.log_id = 0
+        frame.service = self._service_id
+        frame.method = FrameType.CONTROL
+        header = frame.headers.add()  # pyright: ignore[reportAttributeAccessIssue]
+        header.key = "type"
+        header.value = MessageType.PING
+
         task = asyncio.create_task(self._send_frame_async(frame))
         task.add_done_callback(self._tasks.discard)
         self._tasks.add(task)
@@ -126,13 +128,14 @@ class WsClient:
     async def _handle_message(self, raw: bytes) -> None:
         """处理一条二进制消息。"""
         try:
-            frame = Frame().parse(raw)
+            instance = frame_pb2.Frame()  # pyright: ignore[reportAttributeAccessIssue]
+            instance.ParseFromString(raw)
         except Exception as e:
             log("WARNING", f"Failed to parse frame: {e!r}, raw_hex={raw.hex()!r}")
             return
-        headers_dict = self._headers_to_dict(frame.headers)
+        headers_dict = self._headers_to_dict(instance.headers)
         msg_type = headers_dict.get("type", "")
-        method = frame.method
+        method = instance.method
 
         if method == FrameType.CONTROL and msg_type == MessageType.PONG:
             return
@@ -150,7 +153,7 @@ class WsClient:
                 message_id=message_id,
                 sum=total,
                 seq=seq,
-                data=frame.payload or b"",
+                data=instance.payload or b"",
             )
             payload_bytes = self._retrieve(seg)
             if payload_bytes is None:
@@ -168,15 +171,16 @@ class WsClient:
                 task.add_done_callback(self._adapter.tasks.discard)
                 self._adapter.tasks.add(task)
             # ack：原样回传 frame，并加上 biz_rt: 0，payload 为 {"code": 200}
-            ack_headers = [*list(frame.headers), Header(key="biz_rt", value="0")]
-            ack_frame = Frame(
-                seq_id=frame.seq_id,
-                log_id=frame.log_id,
-                service=frame.service,
-                method=frame.method,
-                headers=ack_headers,
-                payload=json.dumps({"code": 200}).encode("utf-8"),
-            )
+            ack_frame = frame_pb2.Frame()  # pyright: ignore[reportAttributeAccessIssue]
+            ack_frame.seq_id = instance.seq_id
+            ack_frame.log_id = instance.log_id
+            ack_frame.service = instance.service
+            ack_frame.method = instance.method
+            for header in instance.headers:
+                ack_frame.headers.add(key=header.key, value=header.value)
+            ack_frame.headers.add(key="biz_rt", value="0")
+            ack_frame.payload = json.dumps({"code": 200}).encode("utf-8")
+
             await self._send_frame_async(ack_frame)
 
     async def run(self) -> None:

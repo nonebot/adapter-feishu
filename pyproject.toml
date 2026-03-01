@@ -15,10 +15,10 @@ classifiers = [
   "Programming Language :: Python :: 3",
 ]
 dependencies = [
-  "nonebot2 ~=2.2",
-  "cashews ~=7.0",
-  "pycryptodome ~=3.18",
-  "betterproto ~=1.2",
+    "nonebot2 ~=2.2",
+    "cashews ~=7.0",
+    "pycryptodome ~=3.18",
+    "protobuf ~=7.34",
 ]
 
 [project.urls]
@@ -28,7 +28,6 @@ documentation = "https://feishu.adapters.nonebot.dev/"
 
 [dependency-groups]
 dev = [
-  "betterproto[compiler] ~=1.2",
   "ruff>=0.11.0,<0.12",
   "nonemoji>=0.1.2,<0.2",
   "pre-commit>=4.0.0,<5",
