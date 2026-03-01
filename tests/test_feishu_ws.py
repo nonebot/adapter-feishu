@@ -2,7 +2,6 @@
 
 import asyncio
 import json
-from pathlib import Path
 from unittest.mock import AsyncMock, MagicMock
 
 import pytest
@@ -69,9 +68,7 @@ def test_frame_pb2_with_payload():
 def mock_adapter():
     adapter = MagicMock()
     adapter.get_api_base.return_value = MagicMock()
-    adapter.get_api_base.return_value.joinpath.return_value = (
-        "https://open.feishu.cn/callback/ws/endpoint"
-    )
+    adapter.get_api_base.return_value.joinpath.return_value = "https://open.feishu.cn/callback/ws/endpoint"
     adapter.tasks = set()
     return adapter
 
@@ -101,13 +98,12 @@ def test_ws_client_get_ws_endpoint_url(ws_client, mock_adapter):
     url = ws_client._get_ws_endpoint_url()
     assert url == "https://open.feishu.cn/callback/ws/endpoint"
     mock_adapter.get_api_base.assert_called_once_with(ws_client._bot_config)
-    mock_adapter.get_api_base.return_value.joinpath.assert_called_once_with(
-        "callback/ws/endpoint"
-    )
+    mock_adapter.get_api_base.return_value.joinpath.assert_called_once_with("callback/ws/endpoint")
 
 
 def test_ws_client_headers_to_dict(ws_client):
     """_headers_to_dict 将 headers 转为 dict。"""
+
     class H:
         def __init__(self, key, value):
             self.key = key
@@ -209,9 +205,7 @@ async def test_ws_client_fetch_endpoint_non_dict_raises(ws_client, mock_adapter)
 @pytest.mark.anyio
 async def test_ws_client_fetch_endpoint_code_not_zero_raises(ws_client, mock_adapter):
     """_fetch_endpoint code != 0 时抛出 RuntimeError。"""
-    mock_adapter.send_request = AsyncMock(
-        return_value={"code": 1, "msg": "error", "data": None}
-    )
+    mock_adapter.send_request = AsyncMock(return_value={"code": 1, "msg": "error", "data": None})
     with pytest.raises(RuntimeError, match="Failed to get gateway url"):
         await ws_client._fetch_endpoint()
 
@@ -219,9 +213,7 @@ async def test_ws_client_fetch_endpoint_code_not_zero_raises(ws_client, mock_ada
 @pytest.mark.anyio
 async def test_ws_client_fetch_endpoint_data_none_raises(ws_client, mock_adapter):
     """_fetch_endpoint data 为 None 时抛出 RuntimeError。"""
-    mock_adapter.send_request = AsyncMock(
-        return_value={"code": 0, "msg": "ok", "data": None}
-    )
+    mock_adapter.send_request = AsyncMock(return_value={"code": 0, "msg": "ok", "data": None})
     with pytest.raises(RuntimeError, match="data missing"):
         await ws_client._fetch_endpoint()
 
@@ -238,7 +230,9 @@ def _make_control_frame(msg_type: str) -> bytes:
     return frame.SerializeToString()
 
 
-def _make_data_event_frame(seq_id: int, payload: bytes, message_id: str = "mid1", sum_val: int = 1, seq: int = 0) -> bytes:
+def _make_data_event_frame(
+    seq_id: int, payload: bytes, message_id: str = "mid1", sum_val: int = 1, seq: int = 0
+) -> bytes:
     frame = frame_pb2.Frame()
     frame.seq_id = seq_id
     frame.log_id = 0
@@ -271,11 +265,19 @@ async def test_ws_client_handle_message_parse_error(ws_client):
 @pytest.mark.anyio
 async def test_ws_client_handle_message_event_dispatch_and_ack(ws_client, mock_adapter):
     """DATA + EVENT 有效 body 时派发事件并发送 ack。"""
-    event_payload = json.dumps({
-        "schema": "2.0",
-        "header": {"event_id": "e1", "event_type": "im.message.receive_v1", "create_time": "0", "token": "", "app_id": ""},
-        "event": {},
-    }).encode("utf-8")
+    event_payload = json.dumps(
+        {
+            "schema": "2.0",
+            "header": {
+                "event_id": "e1",
+                "event_type": "im.message.receive_v1",
+                "create_time": "0",
+                "token": "",
+                "app_id": "",
+            },
+            "event": {},
+        }
+    ).encode("utf-8")
     raw = _make_data_event_frame(seq_id=42, payload=event_payload)
     mock_event = MagicMock()
     mock_adapter.json_to_event.return_value = mock_event
@@ -319,11 +321,13 @@ async def test_ws_client_handle_message_event_invalid_json(ws_client):
 @pytest.mark.anyio
 async def test_ws_client_handle_message_event_json_to_event_none(ws_client, mock_adapter):
     """json_to_event 返回 None 时不调用 handle_event，但仍发送 ack。"""
-    event_payload = json.dumps({
-        "schema": "2.0",
-        "header": {"event_id": "e1", "event_type": "unknown", "create_time": "0", "token": "", "app_id": ""},
-        "event": {},
-    }).encode("utf-8")
+    event_payload = json.dumps(
+        {
+            "schema": "2.0",
+            "header": {"event_id": "e1", "event_type": "unknown", "create_time": "0", "token": "", "app_id": ""},
+            "event": {},
+        }
+    ).encode("utf-8")
     raw = _make_data_event_frame(seq_id=1, payload=event_payload)
     mock_adapter.json_to_event.return_value = None
     ws_client._ws = AsyncMock()
