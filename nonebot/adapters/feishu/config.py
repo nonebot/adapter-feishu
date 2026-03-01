@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Literal, Optional
 
 from pydantic import BaseModel, Field, HttpUrl
 
@@ -14,6 +14,7 @@ class BotConfig(BaseModel):
       - ``encrypt_key``: 飞书开放平台后台“事件订阅”处设置的 Encrypt Key
       - ``verification_token``: 飞书开放平台后台“事件订阅”处设置的 Verification Token
       - ``is_lark``: 是否使用 Lark（飞书海外版），默认为 false
+      - ``protocol``: 连接方式，`http` 为 Webhook 回调，`ws` 为 WebSocket 长连接（仅企业自建应用）
 
     """
 
@@ -23,6 +24,7 @@ class BotConfig(BaseModel):
     verification_token: str
     is_lark: bool = False
     api_base: Optional[HttpUrl] = None
+    protocol: Literal["http", "ws"] = "http"
 
 
 class Config(BaseModel):
@@ -37,6 +39,6 @@ class Config(BaseModel):
 
     """
 
-    feishu_api_base: HttpUrl = Field("https://open.feishu.cn")
-    feishu_lark_api_base: HttpUrl = Field("https://open.larksuite.com")
+    feishu_api_base: HttpUrl = Field(HttpUrl("https://open.feishu.cn"))
+    feishu_lark_api_base: HttpUrl = Field(HttpUrl("https://open.larksuite.com"))
     feishu_bots: list[BotConfig] = Field(default_factory=list)

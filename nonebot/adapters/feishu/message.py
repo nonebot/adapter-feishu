@@ -33,20 +33,12 @@ class MessageSegment(BaseMessageSegment["Message"]):
         return ""
 
     @override
-    def __add__(
-        self, other: Union[str, "MessageSegment", Iterable["MessageSegment"]]
-    ) -> "Message":
-        return Message(self) + (
-            MessageSegment.text(other) if isinstance(other, str) else other
-        )
+    def __add__(self, other: Union[str, "MessageSegment", Iterable["MessageSegment"]]) -> "Message":
+        return Message(self) + (MessageSegment.text(other) if isinstance(other, str) else other)
 
     @override
-    def __radd__(
-        self, other: Union[str, "MessageSegment", Iterable["MessageSegment"]]
-    ) -> "Message":
-        return (
-            MessageSegment.text(other) if isinstance(other, str) else Message(other)
-        ) + self
+    def __radd__(self, other: Union[str, "MessageSegment", Iterable["MessageSegment"]]) -> "Message":
+        return (MessageSegment.text(other) if isinstance(other, str) else Message(other)) + self
 
     @staticmethod
     def text(text: str) -> "Text":
@@ -84,9 +76,7 @@ class MessageSegment(BaseMessageSegment["Message"]):
         )
 
     @staticmethod
-    def interactive_template(
-        template_id: str, template_variable: dict[str, Any]
-    ) -> "InteractiveTemplate":
+    def interactive_template(template_id: str, template_variable: dict[str, Any]) -> "InteractiveTemplate":
         return InteractiveTemplate(
             "interactive",
             {
@@ -100,9 +90,7 @@ class MessageSegment(BaseMessageSegment["Message"]):
 
     @staticmethod
     def todo(task_id: str, summary: "_PostData", due_time: str):
-        return Todo(
-            "todo", {"task_id": task_id, "summary": summary, "due_time": due_time}
-        )
+        return Todo("todo", {"task_id": task_id, "summary": summary, "due_time": due_time})
 
     @staticmethod
     def hongbao(text: str) -> "Hongbao":
@@ -590,20 +578,12 @@ class Message(BaseMessage[MessageSegment]):
         return MessageSegment
 
     @override
-    def __add__(
-        self, other: Union[str, "MessageSegment", Iterable["MessageSegment"]]
-    ) -> "Message":
-        return super().__add__(
-            MessageSegment.text(other) if isinstance(other, str) else other
-        )
+    def __add__(self, other: Union[str, "MessageSegment", Iterable["MessageSegment"]]) -> "Message":
+        return super().__add__(MessageSegment.text(other) if isinstance(other, str) else other)
 
     @override
-    def __radd__(
-        self, other: Union[str, "MessageSegment", Iterable["MessageSegment"]]
-    ) -> "Message":
-        return super().__radd__(
-            MessageSegment.text(other) if isinstance(other, str) else other
-        )
+    def __radd__(self, other: Union[str, "MessageSegment", Iterable["MessageSegment"]]) -> "Message":
+        return super().__radd__(MessageSegment.text(other) if isinstance(other, str) else other)
 
     @staticmethod
     @override
@@ -624,9 +604,7 @@ class Message(BaseMessage[MessageSegment]):
 
                 else:
                     seg.to_post()
-                    combined["zh_cn"]["content"][-1].append(
-                        {"tag": seg.type, **seg.data}
-                    )
+                    combined["zh_cn"]["content"][-1].append({"tag": seg.type, **seg.data})
 
             return "post", json.dumps(combined, ensure_ascii=False)
 
@@ -639,9 +617,7 @@ class Message(BaseMessage[MessageSegment]):
             raise ValueError("Cannot serialize empty message")
 
     @staticmethod
-    def deserialize(
-        content: str, mentions: Optional[list[Mention]], message_type: str
-    ) -> "Message":
+    def deserialize(content: str, mentions: Optional[list[Mention]], message_type: str) -> "Message":
         msg = Message()
         parsed_content = json.loads(content)
         at_key_to_id = {

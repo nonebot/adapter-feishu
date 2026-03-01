@@ -27,9 +27,7 @@ class ActionFailed(BaseActionFailed, FeishuAdapterException):
         self.info = kwargs
 
     def __repr__(self):
-        return (
-            "<ActionFailed " + ", ".join(f"{k}={v}" for k, v in self.info.items()) + ">"
-        )
+        return "<ActionFailed " + ", ".join(f"{k}={v}" for k, v in self.info.items()) + ">"
 
     def __str__(self):
         return self.__repr__()

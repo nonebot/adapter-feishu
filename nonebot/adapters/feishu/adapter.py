@@ -17,7 +17,9 @@ from nonebot.drivers import (
     HTTPServerSetup,
     Request,
     Response,
+    WebSocketClientMixin,
 )
+from nonebot.exception import WebSocketClosed
 from nonebot.utils import escape_tag
 
 from . import event
@@ -28,6 +30,9 @@ from .exception import ApiNotAvailable, FeishuAdapterException, NetworkError
 from .message import Message, MessageSegment
 from .models import BotInfoResponse, TenantAccessTokenResponse
 from .utils import AESCipher, cache, log
+from .ws import WsClient
+
+RECONNECT_INTERVAL = 3.0
 
 
 class Adapter(BaseAdapter):
@@ -83,13 +88,26 @@ class Adapter(BaseAdapter):
                 f"<y>Bot {escape_tag(bot_config.app_id)}</y> connected",
             )
 
-            setup = HTTPServerSetup(
-                URL(f"/feishu/{bot.self_id}"),
-                "POST",
-                self.get_name(),
-                self._handle_http,
-            )
-            self.setup_http_server(setup)
+            if bot_config.protocol == "ws":
+                if not isinstance(self.driver, WebSocketClientMixin):
+                    log(
+                        "WARNING",
+                        f"Current driver does not support WebSocket client. "
+                        f"Skipped WS for Bot {escape_tag(bot_config.app_id)}.",
+                    )
+                else:
+                    client = WsClient(self, bot, bot_config)
+                    task = asyncio.create_task(self._run_ws(client, bot_config))
+                    task.add_done_callback(self.tasks.discard)
+                    self.tasks.add(task)
+            else:
+                setup = HTTPServerSetup(
+                    URL(f"/feishu/{bot.self_id}"),
+                    "POST",
+                    self.get_name(),
+                    self._handle_http,
+                )
+                self.setup_http_server(setup)
 
     def setup(self) -> None:
         if not isinstance(self.driver, ASGIMixin):
@@ -107,6 +125,38 @@ class Adapter(BaseAdapter):
             )
 
         self.driver.on_startup(self.startup)
+        self.driver.on_shutdown(self._stop)
+
+    async def _stop(self) -> None:
+        """取消所有 WS 任务并等待结束（shutdown 时调用）。"""
+        for task in self.tasks:
+            if not task.done():
+                task.cancel()
+        await asyncio.gather(
+            *(asyncio.wait_for(task, timeout=10) for task in self.tasks),
+            return_exceptions=True,
+        )
+
+    async def _run_ws(self, client: WsClient, bot_config: BotConfig) -> None:
+        """单 Bot 的 WebSocket 长连接循环：异常时记录并按间隔重连。"""
+        app_id = bot_config.app_id
+        while True:
+            try:
+                await client.run()
+            except WebSocketClosed as e:
+                log(
+                    "WARNING",
+                    f"Feishu WebSocket for Bot <y>{escape_tag(app_id)}</y> closed by peer",
+                    e,
+                )
+            except Exception as e:
+                log(
+                    "ERROR",
+                    "<r><bg #f8bbd0>Error while processing Feishu WebSocket for bot "
+                    f"<y>{escape_tag(app_id)}</y>. Trying to reconnect...</bg #f8bbd0></r>",
+                    e,
+                )
+            await asyncio.sleep(RECONNECT_INTERVAL)
 
     def get_api_base(self, bot_config: BotConfig) -> URL:
         if bot_config.api_base:
@@ -199,7 +249,8 @@ class Adapter(BaseAdapter):
             raise NetworkError("HTTP request failed") from e
 
     @override
-    async def _call_api(self, bot: Bot, api: str, **data: Any) -> Any:
+    async def _call_api(self, bot, api: str, **data: Any) -> Any:
+        bot = cast("Bot", bot)
         token = await self.get_tenant_access_token(bot.bot_config)
         headers = {**data.get("headers", {}), "Authorization": f"Bearer {token}"}
 
@@ -225,9 +276,7 @@ class Adapter(BaseAdapter):
         if (data := request.content) is not None:
             if bot_config.encrypt_key is not None:
                 if (encrypted := json.loads(data).get("encrypt")) is not None:
-                    decrypted = AESCipher(bot_config.encrypt_key).decrypt_string(
-                        encrypted
-                    )
+                    decrypted = AESCipher(bot_config.encrypt_key).decrypt_string(encrypted)
                     data = json.loads(decrypted)
             else:
                 data = json.loads(data)
@@ -315,8 +364,7 @@ class Adapter(BaseAdapter):
         except Exception as e:
             log(
                 "ERROR",
-                "<r><bg #f8bbd0>Failed to parse event. "
-                f"Raw: {escape_tag(str(json_data))}</bg #f8bbd0></r>",
+                f"<r><bg #f8bbd0>Failed to parse event. Raw: {escape_tag(str(json_data))}</bg #f8bbd0></r>",
                 e,
             )
 
@@ -337,9 +385,7 @@ class Adapter(BaseAdapter):
         """根据事件名获取对应 `Event Model` 及 `FallBack Event Model` 列表，
         不包括基类 `Event`。
         """
-        return [model.value for model in cls.event_models.prefixes("." + event_name)][
-            ::-1
-        ]
+        return [model.value for model in cls.event_models.prefixes("." + event_name)][::-1]
 
     @classmethod
     def custom_send(
