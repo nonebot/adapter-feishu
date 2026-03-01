@@ -17,7 +17,9 @@ from nonebot.drivers import (
     HTTPServerSetup,
     Request,
     Response,
+    WebSocketClientMixin,
 )
+from nonebot.exception import WebSocketClosed
 from nonebot.utils import escape_tag
 
 from . import event
@@ -29,6 +31,8 @@ from .message import Message, MessageSegment
 from .models import BotInfoResponse, TenantAccessTokenResponse
 from .utils import AESCipher, cache, log
 from .ws import WsClient
+
+RECONNECT_INTERVAL = 3.0
 
 
 class Adapter(BaseAdapter):
@@ -85,22 +89,17 @@ class Adapter(BaseAdapter):
             )
 
             if bot_config.protocol == "ws":
-                client = WsClient(self, bot, bot_config)
-
-                async def run_ws() -> None:
-                    while True:
-                        try:
-                            await client.run()
-                        except Exception as e:
-                            log(
-                                "ERROR",
-                                f"<r><bg #f8bbd0>Feishu WS connection error.</bg #f8bbd0></r> {escape_tag(str(e))}",
-                            )
-                        await asyncio.sleep(5)
-
-                task = asyncio.create_task(run_ws())
-                task.add_done_callback(self.tasks.discard)
-                self.tasks.add(task)
+                if not isinstance(self.driver, WebSocketClientMixin):
+                    log(
+                        "WARNING",
+                        f"Current driver does not support WebSocket client. "
+                        f"Skipped WS for Bot {escape_tag(bot_config.app_id)}.",
+                    )
+                else:
+                    client = WsClient(self, bot, bot_config)
+                    task = asyncio.create_task(self._run_ws(client, bot_config))
+                    task.add_done_callback(self.tasks.discard)
+                    self.tasks.add(task)
             else:
                 setup = HTTPServerSetup(
                     URL(f"/feishu/{bot.self_id}"),
@@ -126,6 +125,38 @@ class Adapter(BaseAdapter):
             )
 
         self.driver.on_startup(self.startup)
+        self.driver.on_shutdown(self._stop)
+
+    async def _stop(self) -> None:
+        """取消所有 WS 任务并等待结束（shutdown 时调用）。"""
+        for task in self.tasks:
+            if not task.done():
+                task.cancel()
+        await asyncio.gather(
+            *(asyncio.wait_for(task, timeout=10) for task in self.tasks),
+            return_exceptions=True,
+        )
+
+    async def _run_ws(self, client: WsClient, bot_config: BotConfig) -> None:
+        """单 Bot 的 WebSocket 长连接循环：异常时记录并按间隔重连。"""
+        app_id = bot_config.app_id
+        while True:
+            try:
+                await client.run()
+            except WebSocketClosed as e:
+                log(
+                    "WARNING",
+                    f"Feishu WebSocket for Bot <y>{escape_tag(app_id)}</y> closed by peer",
+                    e,
+                )
+            except Exception as e:
+                log(
+                    "ERROR",
+                    "<r><bg #f8bbd0>Error while processing Feishu WebSocket for bot "
+                    f"<y>{escape_tag(app_id)}</y>. Trying to reconnect...</bg #f8bbd0></r>",
+                    e,
+                )
+            await asyncio.sleep(RECONNECT_INTERVAL)
 
     def get_api_base(self, bot_config: BotConfig) -> URL:
         if bot_config.api_base:

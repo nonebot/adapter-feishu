@@ -7,11 +7,13 @@ from dataclasses import dataclass
 from enum import IntEnum
 import json
 from typing import TYPE_CHECKING, Optional
-from urllib.parse import parse_qs, urlparse
 
-from websockets.asyncio.client import ClientConnection, connect
+from nonebot.drivers import URL, Request, WebSocket
+from nonebot.utils import escape_tag
 
+from ..utils import log
 from .frame import Frame, Header
+from .models import WsEndpointApiResponse, WsEndpointResponse
 
 if TYPE_CHECKING:
     from feishu.adapter import Adapter
@@ -45,16 +47,6 @@ class FrameSegment:
     data: bytes
 
 
-@dataclass
-class WsEndpointResponse:
-    """获取 WebSocket 端点 API 的响应。"""
-
-    url: str
-    device_id: str
-    service_id: int
-    ping_interval_ms: int
-
-
 class WsClient:
     """
     飞书 WebSocket 长连接客户端。
@@ -74,57 +66,48 @@ class WsClient:
         self._bot_config = bot_config
         self._device_id: str = ""
         self._service_id: int = 0
-        self._ping_interval_ms: int = 90_000
+        self._ping_interval_seconds: int = 90
         self._ping_task: Optional[asyncio.Task[None]] = None
         self._cache: dict[str, list[FrameSegment]] = {}
-        self._ws: Optional[ClientConnection] = None
+        self._ws: Optional[WebSocket] = None
         self._tasks: set[asyncio.Task] = set()
 
     def _get_ws_endpoint_url(self) -> str:
         """获取「获取 WebSocket 端点」的 HTTP URL"""
         base = self._adapter.get_api_base(self._bot_config)
-        return str(base).rstrip("/") + "/callback/ws/endpoint"
+        return str(base.joinpath("callback/ws/endpoint"))
 
     async def _fetch_endpoint(self) -> WsEndpointResponse:
-        """请求 WebSocket 端点 URL 与配置。"""
+        """请求 WebSocket 端点 URL 与配置。
+
+        响应由 Pydantic 解析；device_id 与 service_id 从 data.URL 的查询参数解析。
+        """
         url = self._get_ws_endpoint_url()
-        # 请求体使用 AppID / AppSecret
         body = {
             "AppID": self._bot_config.app_id,
             "AppSecret": self._bot_config.app_secret,
         }
-        from nonebot.drivers import Request
-
         req = Request("POST", url, json=body)
         response = await self._adapter.send_request(req)
         if not isinstance(response, dict):
             raise RuntimeError("Ws endpoint response is not dict")
-        code = response.get("code", -1)
-        if code != 0:
-            msg = response.get("msg", "unknown")
-            raise RuntimeError(f"Failed to get gateway url: {code} {msg}")
-        data = response.get("data")
-        if not data or not isinstance(data, dict):
+        result = WsEndpointApiResponse.model_validate(response)
+        if result.code != 0:
+            raise RuntimeError(f"Failed to get gateway url: {result.code} {result.msg}")
+        if result.data is None:
             raise RuntimeError("Ws endpoint data missing")
-        ws_url = data.get("URL")
-        if not ws_url or not isinstance(ws_url, str):
-            raise RuntimeError("Ws endpoint URL missing")
-        parsed = urlparse(ws_url)
-        params = parse_qs(parsed.query)
-        device_id = (params.get("device_id") or [""])[0]
-        service_id_str = (params.get("service_id") or ["0"])[0]
-        service_id = int(service_id_str)
-        client_config = data.get("ClientConfig") or {}
-        if isinstance(client_config, dict):
-            ping_interval_sec = client_config.get("PingInterval", 90)
-        else:
-            ping_interval_sec = 90
-        ping_interval_ms = int(ping_interval_sec) * 1000
+        data = result.data
+        # device_id、service_id 从 URL 查询参数读取
+        parsed = URL(data.url)
+        device_id = parsed.query.get("device_id") or ""
+        service_id = int(parsed.query.get("service_id") or "0")
+
         return WsEndpointResponse(
-            url=ws_url,
+            url=data.url,
             device_id=device_id,
             service_id=service_id,
-            ping_interval_ms=ping_interval_ms,
+            ping_interval_seconds=data.client_config.ping_interval,
+            client_config=data.client_config,
         )
 
     def _headers_to_dict(self, headers: list[Header]) -> dict[str, str]:
@@ -134,10 +117,10 @@ class WsClient:
     async def _send_frame_async(self, frame: Frame) -> None:
         if self._ws is None:
             return
-        await self._ws.send(bytes(frame))
+        await self._ws.send_bytes(bytes(frame))
 
     def _ping(self) -> None:
-        """构造并发送 ping 帧（不 await，由调用方在循环里 send）。"""
+        """构造并发送 ping 帧"""
         frame = Frame(
             seq_id=0,
             log_id=0,
@@ -168,7 +151,8 @@ class WsClient:
         """处理一条二进制消息。"""
         try:
             frame = Frame().parse(raw)
-        except Exception:
+        except Exception as e:
+            log("WARNING", f"Failed to parse frame: {e!r}, raw_hex={raw.hex()!r}")
             return
         headers_dict = self._headers_to_dict(frame.headers)
         msg_type = headers_dict.get("type", "")
@@ -220,26 +204,32 @@ class WsClient:
             await self._send_frame_async(ack_frame)
 
     async def run(self) -> None:
-        """拉取端点、连接 WebSocket、循环收发并维持 ping。"""
+        """拉取端点、通过 NoneBot Driver 建立 WebSocket 连接，循环收发并维持 ping。"""
         resp = await self._fetch_endpoint()
         self._device_id = resp.device_id
         self._service_id = resp.service_id
-        self._ping_interval_ms = resp.ping_interval_ms
+        self._ping_interval_seconds = resp.ping_interval_seconds
         url = resp.url
 
         async def ping_loop() -> None:
             while True:
-                await asyncio.sleep(self._ping_interval_ms / 1000.0)
+                await asyncio.sleep(self._ping_interval_seconds)
                 if self._ws is None:
                     break
                 self._ping()
 
-        async with connect(url) as ws:
+        request = Request("GET", url, timeout=30.0)
+        async with self._adapter.websocket(request) as ws:
             self._ws = ws
+            log(
+                "INFO",
+                f"<y>Bot {escape_tag(self._bot_config.app_id)}</y> WebSocket connected",
+            )
             self._ping_task = asyncio.create_task(ping_loop())
             try:
                 self._ping()
-                async for raw in ws:
+                while True:
+                    raw = await ws.receive()
                     if isinstance(raw, bytes):
                         await self._handle_message(raw)
             finally:
