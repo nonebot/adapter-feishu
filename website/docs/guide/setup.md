@@ -39,6 +39,26 @@ DRIVER=~fastapi+~httpx
 
 当 `encrypt_key` 存在且不为空时，飞书适配器会认为用户启用了加密机制，并对事件上报中的密文进行解密。
 
+protocol 字段可以控制使用 Websocket 长连接或者 HTTP Webhook 接收飞书事件，`http` 为 HTTP Webhook，`ws` 为 Websocket 长连接。
+
+```bash
+FEISHU_BOTS='
+[
+  {
+    "app_id": "<your app_id>",
+    "app_secret": "<your app_secret>",
+    "verification_token": "<your app_verification_token>",
+    "protocol": "ws"
+  },
+  {
+    "app_id": "<your app_id2>",
+    "app_secret": "<your app_secret2>",
+    "verification_token": "<your app_verification_token2>",
+    "protocol": "http"
+  }
+]
+```
+
 如果不需要启用加密功能，请将配置项中的 `encrypt_key` 键值对删去，或将 `encrypt_key` 置为 `null`。
 
 对于[Lark(飞书平台海外版)](https://www.larksuite.com)的用户，需要在配置文件中将 `is_lark` 改为 `true`。
