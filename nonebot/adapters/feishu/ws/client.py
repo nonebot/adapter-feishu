@@ -1,10 +1,6 @@
 """飞书 WebSocket 长连接客户端"""
 
-from __future__ import annotations
-
 import asyncio
-from dataclasses import dataclass
-from enum import IntEnum
 import json
 from typing import TYPE_CHECKING, Optional
 
@@ -13,38 +9,18 @@ from nonebot.utils import escape_tag
 
 from ..utils import log
 from .frame import Frame, Header
-from .models import WsEndpointApiResponse, WsEndpointResponse
+from .models import (
+    FrameSegment,
+    FrameType,
+    MessageType,
+    WsEndpointApiResponse,
+    WsEndpointResponse,
+)
 
 if TYPE_CHECKING:
-    from feishu.adapter import Adapter
-    from feishu.bot import Bot
-    from feishu.config import BotConfig
-
-
-class FrameType(IntEnum):
-    """帧类型。"""
-
-    CONTROL = 0
-    DATA = 1
-
-
-class MessageType:
-    """消息类型字符串。"""
-
-    EVENT = "event"
-    CARD = "card"
-    PING = "ping"
-    PONG = "pong"
-
-
-@dataclass
-class FrameSegment:
-    """分片消息片段，用于重组。"""
-
-    message_id: str
-    sum: int
-    seq: int
-    data: bytes
+    from ..adapter import Adapter
+    from ..bot import Bot
+    from ..config import BotConfig
 
 
 class WsClient:
@@ -57,9 +33,9 @@ class WsClient:
 
     def __init__(
         self,
-        adapter: Adapter,
-        bot: Bot,
-        bot_config: BotConfig,
+        adapter: "Adapter",
+        bot: "Bot",
+        bot_config: "BotConfig",
     ) -> None:
         self._adapter = adapter
         self._bot = bot

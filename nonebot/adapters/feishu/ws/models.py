@@ -1,8 +1,37 @@
 """WebSocket 相关 API 响应模型。"""
 
+from dataclasses import dataclass
+from enum import IntEnum
+
 from pydantic import BaseModel, Field
 
 from nonebot.compat import PYDANTIC_V2, ConfigDict
+
+
+class FrameType(IntEnum):
+    """帧类型。"""
+
+    CONTROL = 0
+    DATA = 1
+
+
+class MessageType:
+    """消息类型字符串。"""
+
+    EVENT = "event"
+    CARD = "card"
+    PING = "ping"
+    PONG = "pong"
+
+
+@dataclass
+class FrameSegment:
+    """分片消息片段，用于重组。"""
+
+    message_id: str
+    sum: int
+    seq: int
+    data: bytes
 
 
 class WsEndpointClientConfig(BaseModel):
