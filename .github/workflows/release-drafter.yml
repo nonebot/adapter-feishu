@@ -25,7 +25,7 @@ jobs:
       - name: Setup Node Environment
         uses: ./.github/actions/setup-node
 
-      - uses: release-drafter/release-drafter@v6
+      - uses: release-drafter/release-drafter@v7
         id: release-drafter
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -78,7 +78,7 @@ jobs:
         if: steps.version.outputs.VERSION != steps.version.outputs.TAG_VERSION
         run: exit 1
 
-      - uses: release-drafter/release-drafter@v6
+      - uses: release-drafter/release-drafter@v7
         with:
           name: Release ${{ steps.version.outputs.TAG_NAME }} 🌈
           tag: ${{ steps.version.outputs.TAG_NAME }}
