@@ -835,7 +835,7 @@ wheels = [
 
 [[package]]
 name = "nonebot-adapter-feishu"
-version = "2.7.1"
+version = "2.7.2"
 source = { editable = "." }
 dependencies = [
     { name = "cashews" },
