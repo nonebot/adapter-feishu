@@ -631,9 +631,7 @@ class Message(BaseMessage[MessageSegment]):
             text_begin = 0
 
             if at_key_to_id:
-                keys_pattern = "|".join(
-                    re.escape(k) for k in at_key_to_id
-                )
+                keys_pattern = "|".join(re.escape(k) for k in at_key_to_id)
                 for embed in re.finditer(
                     rf"@(?P<key>{keys_pattern})",
                     text,
