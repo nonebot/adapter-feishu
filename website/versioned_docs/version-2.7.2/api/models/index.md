@@ -1,0 +1,1 @@
+# nonebot.adapters.feishu.models
