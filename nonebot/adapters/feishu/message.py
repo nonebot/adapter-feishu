@@ -630,21 +630,24 @@ class Message(BaseMessage[MessageSegment]):
             text: str = parsed_content["text"]
             text_begin = 0
 
-            for embed in re.finditer(
-                r"(?P<type>(?:@))(?P<key>\w+)",
-                text,
-            ):
-                matched: str = text[text_begin : embed.pos + embed.start()]
-                if matched:
-                    msg.extend(Message(Text("text", {"text": matched})))
+            if at_key_to_id:
+                keys_pattern = "|".join(
+                    re.escape(k) for k in at_key_to_id
+                )
+                for embed in re.finditer(
+                    rf"@(?P<key>{keys_pattern})",
+                    text,
+                ):
+                    matched: str = text[text_begin : embed.pos + embed.start()]
+                    if matched:
+                        msg.extend(Message(Text("text", {"text": matched})))
 
-                text_begin = embed.pos + embed.end()
-                if embed.group("type") == "@":
+                    text_begin = embed.pos + embed.end()
                     msg.extend(
                         Message(
                             At(
                                 "at",
-                                {"user_id": at_key_to_id.get(embed.group("key"), "")},
+                                {"user_id": at_key_to_id[embed.group("key")]},
                             )
                         )
                     )
