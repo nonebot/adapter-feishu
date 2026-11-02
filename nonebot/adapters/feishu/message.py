@@ -158,9 +158,10 @@ class MessageSegment(BaseMessageSegment["Message"]):
     def sticker(file_key: str) -> "MessageSegment":
         return Sticker("sticker", {"file_key": file_key})
 
-    def to_post(self):
+    def to_post(self) -> str:
         if self.type == "image":
-            self.type = "img"
+            return "img"
+        return self.type
 
 
 class _TextData(TypedDict):
@@ -603,8 +604,8 @@ class Message(BaseMessage[MessageSegment]):
                     ]
 
                 else:
-                    seg.to_post()
-                    combined["zh_cn"]["content"][-1].append({"tag": seg.type, **seg.data})
+                    tag = seg.to_post()
+                    combined["zh_cn"]["content"][-1].append({"tag": tag, **seg.data})
 
             return "post", json.dumps(combined, ensure_ascii=False)
 
