@@ -170,7 +170,6 @@ def test_serialize_keeps_post_content_as_written():
         MessageSegment.share_chat("oc_x"),
         MessageSegment.share_user("ou_x"),
         MessageSegment.interactive_template("id", {}),
-        MessageSegment.system("template", [], []),
     ],
     ids=lambda seg: seg.type,
 )
@@ -274,3 +273,28 @@ def test_received_system_message_keeps_its_format():
 
     assert seg.type == "system"
     assert seg.data == received
+
+
+def test_serialize_rejects_received_system_message():
+    received = {"template": "template", "from_user": ["a"], "to_chatters": ["b"]}
+    seg = Message.deserialize(json.dumps(received), None, "system")[0]
+
+    with pytest.raises(ValueError, match="system_divider"):
+        Message([seg]).serialize()
+
+    with pytest.raises(ValueError, match="system_divider"):
+        Message([MessageSegment.text("hi"), seg]).serialize()
+
+
+def test_serialize_rejects_system_builder_segment():
+    with pytest.raises(ValueError, match="system_divider"):
+        Message([MessageSegment.system("template", [], [])]).serialize()
+
+
+def test_serialize_allows_raw_system_segment_in_documented_format():
+    data = {"type": "divider", "params": {"divider_text": {"text": "新会话"}}}
+
+    msg_type, content = Message([MessageSegment("system", data)]).serialize()
+
+    assert msg_type == "system"
+    assert json.loads(content) == data
