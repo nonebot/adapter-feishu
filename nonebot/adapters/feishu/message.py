@@ -123,6 +123,7 @@ class MessageSegment(BaseMessageSegment["Message"]):
 
     @staticmethod
     def system(template: str, from_user: list[str], to_chatters: list[str]) -> "System":
+        """接收到的系统消息，不能用于发送，发送分割线请使用 `system_divider`。"""
         return System(
             "system",
             {"template": template, "from_user": from_user, "to_chatters": to_chatters},
@@ -672,6 +673,9 @@ class Message(BaseMessage[MessageSegment]):
 
     def serialize(self) -> tuple[str, str]:
         for seg in self:
+            if isinstance(seg, System):
+                raise ValueError("Cannot send a received system message, use MessageSegment.system_divider instead")
+
             if seg.type not in _MSG_TYPES and seg.type not in _POST_TAGS:
                 raise ValueError(f"Cannot send {seg.type!r} segment, Feishu does not support it in outgoing messages")
 
