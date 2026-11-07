@@ -2,7 +2,7 @@ from collections.abc import Iterable
 from dataclasses import dataclass
 import json
 import re
-from typing import TYPE_CHECKING, Any, Literal, Optional, TypedDict, Union
+from typing import TYPE_CHECKING, Any, Literal, TypedDict, Union
 from typing_extensions import override
 
 from nonebot.adapters import Message as BaseMessage
@@ -69,8 +69,8 @@ class MessageSegment(BaseMessageSegment["Message"]):
     def interactive(
         header: "InteractiveHeader",
         config: "InteractiveConfig",
-        elements: Optional[list[dict[str, Any]]] = None,
-        i18n_elements: Optional[list[dict[str, Any]]] = None,
+        elements: list[dict[str, Any]] | None = None,
+        i18n_elements: list[dict[str, Any]] | None = None,
     ):
         elements_key = "elements" if elements else "i18n_elements"
         elements_value = elements or i18n_elements
@@ -135,15 +135,15 @@ class MessageSegment(BaseMessageSegment["Message"]):
         return ShareUser("share_user", {"user_id": user_id})
 
     @staticmethod
-    def audio(file_key: str, duration: Optional[int] = None) -> "MessageSegment":
+    def audio(file_key: str, duration: int | None = None) -> "MessageSegment":
         return Audio("audio", {"file_key": file_key, "duration": duration})
 
     @staticmethod
     def media(
         file_key: str,
-        image_key: Optional[str] = None,
-        file_name: Optional[str] = None,
-        duration: Optional[int] = None,
+        image_key: str | None = None,
+        file_name: str | None = None,
+        duration: int | None = None,
     ) -> "MessageSegment":
         return Media(
             "media",
@@ -156,7 +156,7 @@ class MessageSegment(BaseMessageSegment["Message"]):
         )
 
     @staticmethod
-    def file(file_key: str, file_name: Optional[str] = None) -> "MessageSegment":
+    def file(file_key: str, file_name: str | None = None) -> "MessageSegment":
         return File("file", {"file_key": file_key, "file_name": file_name})
 
     @staticmethod
@@ -222,9 +222,9 @@ class Image(MessageSegment):
 
 class InteractiveHeaderTitle(TypedDict):
     tag: Literal["plain_text"]
-    content: Optional[str]
-    i18n: Optional[dict[str, str]]
-    template: Optional[str]
+    content: str | None
+    i18n: dict[str, str] | None
+    template: str | None
 
 
 class InteractiveHeader(TypedDict):
@@ -232,14 +232,14 @@ class InteractiveHeader(TypedDict):
 
 
 class InteractiveConfig(TypedDict):
-    enable_forward: Optional[bool]
-    update_multi: Optional[bool]
+    enable_forward: bool | None
+    update_multi: bool | None
 
 
 class _InteractiveData(TypedDict):
     header: InteractiveHeader
-    elements: Optional[list[dict[str, Any]]]
-    i18n_elements: Optional[list[dict[str, Any]]]
+    elements: list[dict[str, Any]] | None
+    i18n_elements: list[dict[str, Any]] | None
     config: InteractiveConfig
 
 
@@ -302,7 +302,7 @@ class ShareUser(MessageSegment):
 
 class _AudioData(TypedDict):
     file_key: str
-    duration: Optional[int]
+    duration: int | None
 
 
 @dataclass
@@ -317,9 +317,9 @@ class Audio(MessageSegment):
 
 class _MediaData(TypedDict):
     file_key: str
-    image_key: Optional[str]
-    file_name: Optional[str]
-    duration: Optional[int]
+    image_key: str | None
+    file_name: str | None
+    duration: int | None
 
 
 @dataclass
@@ -334,7 +334,7 @@ class Media(MessageSegment):
 
 class _FileData(TypedDict):
     file_key: str
-    file_name: Optional[str]
+    file_name: str | None
 
 
 @dataclass
@@ -349,7 +349,7 @@ class File(MessageSegment):
 
 class _FolderData(TypedDict):
     file_key: str
-    file_name: Optional[str]
+    file_name: str | None
 
 
 @dataclass
@@ -381,12 +381,12 @@ class PostMessageNode(TypedDict):
 
 
 class PostMessageNodeStylable(TypedDict):
-    style: Optional[list[Literal["bold", "underline", "lineThrough", "italic"]]]
+    style: list[Literal["bold", "underline", "lineThrough", "italic"]] | None
 
 
 class PostText(PostMessageNode, PostMessageNodeStylable):
     text: str
-    un_escape: Optional[bool]
+    un_escape: bool | None
 
 
 class PostA(PostMessageNode, PostMessageNodeStylable):
@@ -396,7 +396,7 @@ class PostA(PostMessageNode, PostMessageNodeStylable):
 
 class PostAt(PostMessageNode, PostMessageNodeStylable):
     user_id: str
-    user_name: Optional[str]
+    user_name: str | None
 
 
 class PostImg(PostMessageNode):
@@ -405,7 +405,7 @@ class PostImg(PostMessageNode):
 
 class PostMedia(PostMessageNode):
     file_key: str
-    image_key: Optional[str]
+    image_key: str | None
 
 
 class PostEmotion(PostMessageNode):
@@ -639,7 +639,7 @@ class Message(BaseMessage[MessageSegment]):
             raise ValueError("Cannot serialize empty message")
 
     @staticmethod
-    def deserialize(content: str, mentions: Optional[list[Mention]], message_type: str) -> "Message":
+    def deserialize(content: str, mentions: list[Mention] | None, message_type: str) -> "Message":
         msg = Message()
         parsed_content = json.loads(content)
         at_key_to_id = {

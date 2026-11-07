@@ -2,7 +2,6 @@ import base64
 import hashlib
 from io import BytesIO
 from pathlib import Path
-from typing import Union
 
 from cashews import cache
 from Crypto.Cipher import AES
@@ -14,7 +13,7 @@ log = logger_wrapper("FEISHU")
 cache.setup("mem://")
 
 
-def f2b(file: Union[str, bytes, BytesIO, Path]) -> bytes:
+def f2b(file: str | bytes | BytesIO | Path) -> bytes:
     if isinstance(file, bytes):
         return file
 

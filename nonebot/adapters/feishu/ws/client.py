@@ -2,7 +2,7 @@
 
 import asyncio
 import json
-from typing import TYPE_CHECKING, Optional
+from typing import TYPE_CHECKING
 
 from nonebot.drivers import URL, Request, WebSocket
 from nonebot.utils import escape_tag
@@ -43,9 +43,9 @@ class WsClient:
         self._device_id: str = ""
         self._service_id: int = 0
         self._ping_interval_seconds: int = 90
-        self._ping_task: Optional[asyncio.Task[None]] = None
+        self._ping_task: asyncio.Task[None] | None = None
         self._cache: dict[str, list[FrameSegment]] = {}
-        self._ws: Optional[WebSocket] = None
+        self._ws: WebSocket | None = None
         self._tasks: set[asyncio.Task] = set()
 
     def _get_ws_endpoint_url(self) -> str:
@@ -110,7 +110,7 @@ class WsClient:
         task.add_done_callback(self._tasks.discard)
         self._tasks.add(task)
 
-    def _retrieve(self, seg: FrameSegment) -> Optional[bytes]:
+    def _retrieve(self, seg: FrameSegment) -> bytes | None:
         """重组分片；若已收齐则返回完整 payload 并清除缓存。"""
         mid, total, data = seg.message_id, seg.sum, seg.data
         if total == 1:

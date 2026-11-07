@@ -1,6 +1,6 @@
 from copy import deepcopy
 from datetime import datetime
-from typing import TYPE_CHECKING, Any, Literal, Optional
+from typing import TYPE_CHECKING, Any, Literal
 from typing_extensions import override
 
 from pydantic import Field
@@ -121,7 +121,7 @@ class MessageEvent(Event):
 
     :类型: ``bool``
     """
-    reply: Optional[Reply] = None
+    reply: Reply | None = None
 
     if TYPE_CHECKING:
         _message: Message
