@@ -11,6 +11,11 @@ from nonebot.adapters import MessageSegment as BaseMessageSegment
 from .models import Mention
 
 
+def _omit_none(data: dict[str, Any]) -> dict[str, Any]:
+    """发送时省略未设置的可选字段，`data` 本身保持不变。"""
+    return {key: value for key, value in data.items() if value is not None}
+
+
 class MessageSegment(BaseMessageSegment["Message"]):
     """
     飞书 协议 MessageSegment 适配。具体方法参考协议消息段类型或源码。
@@ -161,7 +166,7 @@ class MessageSegment(BaseMessageSegment["Message"]):
     def to_post(self) -> dict[str, Any]:
         """转换为富文本（post）消息节点，不修改消息段本身。"""
         tag = "img" if self.type == "image" else self.type
-        return {"tag": tag, **self.data}
+        return {"tag": tag, **_omit_none(self.data)}
 
 
 class _TextData(TypedDict):
@@ -592,28 +597,29 @@ class Message(BaseMessage[MessageSegment]):
         yield Text("text", {"text": msg})
 
     def serialize(self) -> tuple[str, str]:
-        combined = {"zh_cn": {"title": "", "content": [[]]}}
+        # `at` is not a valid msg_type, it can only be sent as a post node
+        if len(self) >= 2 or (len(self) == 1 and self[0].type == "at"):
+            title = ""
+            content: list[list[dict[str, Any]]] = []
 
-        if len(self) >= 2:
             for seg in self:
                 if isinstance(seg, Post):
-                    combined["zh_cn"]["title"] = seg.data["title"]
+                    title = seg.data["title"]
                     # copy each line, later segments are appended to the last one
-                    combined["zh_cn"]["content"] = [
-                        *combined["zh_cn"]["content"],
-                        *(list(line) for line in seg.data["content"]),
-                    ]
+                    content.extend(list(line) for line in seg.data["content"])
 
                 else:
-                    combined["zh_cn"]["content"][-1].append(seg.to_post())
+                    if not content:
+                        content.append([])
+                    content[-1].append(seg.to_post())
 
-            return "post", json.dumps(combined, ensure_ascii=False)
+            return "post", json.dumps({"zh_cn": {"title": title, "content": content}}, ensure_ascii=False)
 
         elif len(self) == 1:
             if self[0].type == "post":
                 return "post", json.dumps({"zh_cn": self[0].data}, ensure_ascii=False)
 
-            return self[0].type, json.dumps(self[0].data, ensure_ascii=False)
+            return self[0].type, json.dumps(_omit_none(self[0].data), ensure_ascii=False)
         else:
             raise ValueError("Cannot serialize empty message")
 
