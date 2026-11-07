@@ -1,0 +1,32 @@
+{
+  "$schema": "./node_modules/oxfmt/configuration_schema.json",
+  "arrowParens": "always",
+  "ignorePatterns": [
+    "node_modules",
+    ".yarn",
+    ".history",
+    "coverage",
+    "**/build/**",
+    "**/dist/**",
+    ".docusaurus",
+    "*.svg",
+    "pnpm-lock.yaml",
+    "/*.md",
+    "*.yml",
+    "*.yaml",
+    ".github/",
+    "nonebot/",
+    "scripts/",
+    "tests/",
+    "pyproject.toml",
+    "uv.lock",
+    "website/versions.json",
+    "website/versioned_docs/",
+    "website/versioned_sidebars/*.json"
+  ],
+  "insertFinalNewline": true,
+  "printWidth": 80,
+  "singleQuote": false,
+  "sortPackageJson": false,
+  "trailingComma": "all"
+}

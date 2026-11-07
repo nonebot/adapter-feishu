@@ -4,6 +4,11 @@ name-template: "Release v$RESOLVED_VERSION 🌈"
 tag-template: "v$RESOLVED_VERSION"
 change-template: "- $TITLE [@$AUTHOR](https://github.com/$AUTHOR) ([#$NUMBER]($URL))"
 change-title-escapes: '\<&'
+replacers:
+  # $AUTHOR is already a markdown link for bots, so change-template nests links
+  # and breaks the MDX build of the changelog
+  - search: '/\[@\[([^[\]]+\[bot\])\]\(([^)]+)\)\]\(https:\/\/github\.com\/\[[^[\]]+\[bot\]\]\([^)]+\)\)/g'
+    replace: "[@$1]($2)"
 exclude-labels:
   - "dependencies"
   - "skip-changelog"
