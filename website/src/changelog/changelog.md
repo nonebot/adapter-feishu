@@ -11,6 +11,10 @@ toc_max_heading_level: 2
 
 - :boom: replace the communication layer with larkify [@StarHeartHunt](https://github.com/StarHeartHunt) ([#178](https://github.com/nonebot/adapter-feishu/pull/178))
 
+### 🐛 Bug 修复
+
+- :bug: stop dropping received card messages [@StarHeartHunt](https://github.com/StarHeartHunt) ([#179](https://github.com/nonebot/adapter-feishu/pull/179))
+
 ## v2.8.0
 
 ### 🚀 新功能
