@@ -1,16 +1,24 @@
-import base64
-import hashlib
+from collections.abc import Awaitable, Callable
+import inspect
 from io import BytesIO
+import logging
 from pathlib import Path
+from typing import TYPE_CHECKING, Any
 
-from cashews import cache
-from Crypto.Cipher import AES
-
+from nonebot.log import LoguruHandler
 from nonebot.utils import logger_wrapper
+
+if TYPE_CHECKING:
+    from larkify import Feishu
+
+    from .bot import Bot
 
 log = logger_wrapper("FEISHU")
 
-cache.setup("mem://")
+# larkify 使用标准库 logging，交给 NoneBot 统一输出，级别由 LOG_LEVEL 控制
+_larkify_logger = logging.getLogger("larkify")
+_larkify_logger.setLevel(logging.DEBUG)
+_larkify_logger.addHandler(LoguruHandler())
 
 
 def f2b(file: str | bytes | BytesIO | Path) -> bytes:
@@ -27,30 +35,35 @@ def f2b(file: str | bytes | BytesIO | Path) -> bytes:
         return file.resolve().read_bytes()
 
 
-class AESCipher:
-    def __init__(self, key):
-        self.block_size = AES.block_size
-        self.key = hashlib.sha256(AESCipher.str_to_bytes(key)).digest()
+def resolve_rest_api(feishu: "Feishu", api: str) -> Callable[..., Awaitable[Any]]:
+    """根据 `rest.im.v1.message.async_create` 这样的路径找到 larkify 的方法。"""
+    func: Any = feishu
+    for part in api.split("."):
+        func = getattr(func, part)
 
-    @staticmethod
-    def str_to_bytes(data):
-        u_type = type(b"".decode("utf8"))
-        if isinstance(data, u_type):
-            return data.encode("utf8")
+    if not inspect.iscoroutinefunction(func):
+        raise TypeError(f"{api} is invalid, only the `async_` methods can be called")
 
-        return data
+    return func
 
-    @staticmethod
-    def _unpad(s):
-        return s[: -ord(s[len(s) - 1 :])]
 
-    def decrypt(self, enc):
-        iv = enc[: AES.block_size]
-        cipher = AES.new(self.key, AES.MODE_CBC, iv)
+class APIContext:
+    """把 `bot.rest.a.b(...)` 转换为 `bot.call_api("rest.a.b", ...)`。"""
 
-        return self._unpad(cipher.decrypt(enc[AES.block_size :]))
+    __slots__ = ("bot", "parts")
 
-    def decrypt_string(self, enc):
-        enc = base64.b64decode(enc)
+    def __init__(self, bot: "Bot", parts: tuple[str, ...]) -> None:
+        self.bot = bot
+        self.parts = parts
 
-        return self.decrypt(enc).decode("utf8")
+    def __getattr__(self, name: str) -> "APIContext":
+        return APIContext(self.bot, (*self.parts, name))
+
+    async def __call__(self, *args: Any, **kwargs: Any) -> Any:
+        api = ".".join(self.parts)
+        if args:
+            # `call_api` 只接受关键字参数，而路径参数可以按位置传入
+            signature = inspect.signature(resolve_rest_api(self.bot.feishu, api))
+            kwargs = {**signature.bind_partial(*args).arguments, **kwargs}
+
+        return await self.bot.call_api(api, **kwargs)

@@ -1,39 +1,79 @@
 import asyncio
-from collections.abc import Callable
+from collections.abc import Callable, Coroutine, Generator, Mapping
+from contextlib import contextmanager
 import inspect
-import json
 from typing import Any, cast
 from typing_extensions import override
 
+import httpx2
+from larkify import UNSET, AppAuthStrategy, Feishu
+from larkify.exception import (
+    AuthCredentialError,
+    FeishuException,
+    RequestFailed,
+    WebhookError,
+    WebSocketError,
+)
+from larkify.webhooks import EventDispatcher
+from larkify.ws import WSClient
 from pygtrie import StringTrie
 
 from nonebot import get_plugin_config
 from nonebot.adapters import Adapter as BaseAdapter
 from nonebot.compat import type_validate_python
-from nonebot.drivers import (
-    URL,
-    ASGIMixin,
-    Driver,
-    HTTPClientMixin,
-    HTTPServerSetup,
-    Request,
-    Response,
-    WebSocketClientMixin,
-)
-from nonebot.exception import WebSocketClosed
+from nonebot.drivers import URL, ASGIMixin, Driver, HTTPServerSetup, Request, Response
 from nonebot.utils import escape_tag
 
 from . import event
 from .bot import Bot
 from .config import BotConfig, Config
 from .event import Event
-from .exception import ApiNotAvailable, FeishuAdapterException, NetworkError
+from .exception import ActionFailed, FeishuAdapterException, NetworkError
 from .message import Message, MessageSegment
-from .models import BotInfoResponse, TenantAccessTokenResponse
-from .utils import AESCipher, cache, log
-from .ws import WsClient
+from .models import BotInfoResponse
+from .utils import log, resolve_rest_api
 
 RECONNECT_INTERVAL = 3.0
+
+
+@contextmanager
+def translate_errors() -> Generator[None, None, None]:
+    """把 larkify 的异常转换为 NoneBot 的异常。"""
+    try:
+        yield
+    except RequestFailed as e:
+        raise ActionFailed(status_code=e.response.status_code, code=e.code, msg=e.msg, log_id=e.log_id) from e
+    except AuthCredentialError as e:
+        raise ActionFailed(msg=str(e)) from e
+    except FeishuException as e:
+        raise NetworkError(f"API request failed: {e!r}") from e
+
+
+class Dispatcher(EventDispatcher):
+    """把事件交给 NoneBot。
+
+    Webhook 的校验、解密和长连接的确认都由 larkify 完成，这里收到的事件已通过校验。
+    """
+
+    def __init__(self, adapter: "Adapter", bot_config: BotConfig) -> None:
+        super().__init__(
+            encrypt_key=bot_config.encrypt_key,
+            verification_token=bot_config.verification_token,
+        )
+        self.adapter = adapter
+        self.app_id = bot_config.app_id
+
+    @override
+    async def adispatch(self, data: Mapping[str, Any]) -> None:
+        if not data.get("header"):
+            raise WebhookError("Missing `header` in delivery, only accept event V2")
+
+        if (bot := self.adapter.bots.get(self.app_id)) is None:
+            raise RuntimeError("Corresponding Bot instance not found")
+
+        # 飞书要求及时确认，事件在单独的任务中处理
+        if event := self.adapter.json_to_event(dict(data)):
+            self.adapter.create_task(cast("Bot", bot).handle_event(event))
 
 
 class Adapter(BaseAdapter):
@@ -53,6 +93,7 @@ class Adapter(BaseAdapter):
         """飞书适配器配置"""
         self.feishu_config: Config = get_plugin_config(Config)
         self.bot_apps: dict[str, BotConfig] = {}
+        self.dispatchers: dict[str, Dispatcher] = {}
         self.tasks: set["asyncio.Task"] = set()
         self.setup()
 
@@ -65,12 +106,14 @@ class Adapter(BaseAdapter):
     async def startup(self):
         for bot_config in self.feishu_config.feishu_bots:
             self.bot_apps[bot_config.app_id] = bot_config
-            result = await self.get_bot_info(bot_config)
-            if result.code != 0:
+            try:
+                result = await self.get_bot_info(bot_config)
+            except FeishuAdapterException as e:
                 log(
                     "ERROR",
                     "<r><bg #f8bbd0>Failed to get bot info.</bg #f8bbd0></r> "
-                    f"Skipped Bot {bot_config.app_id} registration",
+                    f"Skipped Bot {escape_tag(bot_config.app_id)} registration",
+                    e,
                 )
                 continue
 
@@ -83,6 +126,7 @@ class Adapter(BaseAdapter):
                 bot_config=bot_config,
                 bot_info=result.bot,
             )
+            dispatcher = self.dispatchers[bot_config.app_id] = Dispatcher(self, bot_config)
             self.bot_connect(bot)
             log(
                 "INFO",
@@ -90,17 +134,7 @@ class Adapter(BaseAdapter):
             )
 
             if bot_config.protocol == "ws":
-                if not isinstance(self.driver, WebSocketClientMixin):
-                    log(
-                        "WARNING",
-                        f"Current driver does not support WebSocket client. "
-                        f"Skipped WS for Bot {escape_tag(bot_config.app_id)}.",
-                    )
-                else:
-                    client = WsClient(self, bot, bot_config)
-                    task = asyncio.create_task(self._run_ws(client, bot_config))
-                    task.add_done_callback(self.tasks.discard)
-                    self.tasks.add(task)
+                self.create_task(self._run_ws(WSClient(bot.feishu, dispatcher), bot))
             else:
                 setup = HTTPServerSetup(
                     URL(f"/feishu/{bot.self_id}"),
@@ -111,22 +145,23 @@ class Adapter(BaseAdapter):
                 self.setup_http_server(setup)
 
     def setup(self) -> None:
-        if not isinstance(self.driver, ASGIMixin):
+        if not isinstance(self.driver, ASGIMixin) and any(
+            bot_config.protocol == "http" for bot_config in self.feishu_config.feishu_bots
+        ):
             raise RuntimeError(
                 f"Current driver {self.config.driver} "
                 "doesn't support reverse connections!"
-                f"{self.get_name()} Adapter needs a ASGI Driver to work."
-            )
-
-        if not isinstance(self.driver, HTTPClientMixin):
-            raise RuntimeError(
-                f"Current driver {self.config.driver} "
-                "doesn't support http client requests!"
-                f"{self.get_name()} Adapter needs a HTTPClient Driver to work."
+                f"{self.get_name()} Adapter needs a ASGI Driver to receive webhooks."
             )
 
         self.driver.on_startup(self.startup)
         self.driver.on_shutdown(self._stop)
+
+    def create_task(self, coroutine: Coroutine[Any, Any, None]) -> None:
+        """运行后台任务，并持有其引用直至结束。"""
+        task = asyncio.create_task(coroutine)
+        task.add_done_callback(self.tasks.discard)
+        self.tasks.add(task)
 
     async def _stop(self) -> None:
         """取消所有 WS 任务并等待结束（shutdown 时调用）。"""
@@ -138,23 +173,23 @@ class Adapter(BaseAdapter):
             return_exceptions=True,
         )
 
-    async def _run_ws(self, client: WsClient, bot_config: BotConfig) -> None:
-        """单 Bot 的 WebSocket 长连接循环：异常时记录并按间隔重连。"""
-        app_id = bot_config.app_id
+    async def _run_ws(self, client: WSClient, bot: Bot) -> None:
+        """单 Bot 的 WebSocket 长连接：重连节奏由 larkify 按飞书下发的配置控制。"""
+        app_id = escape_tag(bot.self_id)
         while True:
             try:
-                await client.run()
-            except WebSocketClosed as e:
-                log(
-                    "WARNING",
-                    f"Feishu WebSocket for Bot <y>{escape_tag(app_id)}</y> closed by peer",
-                    e,
-                )
+                await client.arun()
+            except WebSocketError as e:
+                # 只有无法恢复时才会抛出，例如凭证错误，此后收不到事件
+                log("ERROR", f"Feishu WebSocket for Bot <y>{app_id}</y> gave up", e)
+                if bot.self_id in self.bots:
+                    self.bot_disconnect(bot)
+                return
             except Exception as e:
                 log(
                     "ERROR",
                     "<r><bg #f8bbd0>Error while processing Feishu WebSocket for bot "
-                    f"<y>{escape_tag(app_id)}</y>. Trying to reconnect...</bg #f8bbd0></r>",
+                    f"<y>{app_id}</y>. Trying to reconnect...</bg #f8bbd0></r>",
                     e,
                 )
             await asyncio.sleep(RECONNECT_INTERVAL)
@@ -168,166 +203,77 @@ class Adapter(BaseAdapter):
         else:
             return URL(str(self.feishu_config.feishu_api_base))
 
-    def get_api_url(self, bot_config: BotConfig, path: str):
-        return self.get_api_base(bot_config).joinpath("open-apis", path)
+    def create_client(self, bot_config: BotConfig) -> Feishu[AppAuthStrategy]:
+        api_timeout = self.config.api_timeout
+        return Feishu(
+            AppAuthStrategy(bot_config.app_id, bot_config.app_secret, tenant_token_api="legacy"),
+            base_url=str(self.get_api_base(bot_config)),
+            timeout=httpx2.Timeout(None) if api_timeout is None else api_timeout,
+            # 默认地址都是 https，http 只可能来自部署者的显式配置
+            insecure_allow_http=True,
+        )
 
-    async def get_bot_info(self, bot_config: BotConfig):
-        token = await self.get_tenant_access_token(bot_config)
-
-        response = await self.send_request(
-            Request(
+    async def get_bot_info(self, bot_config: BotConfig) -> BotInfoResponse:
+        with translate_errors():
+            # 该接口不在 larkify 的生成范围内，字段也不在 `data` 下
+            response = await self.create_client(bot_config).arequest(
                 "GET",
-                self.get_api_url(bot_config, "bot/v3/info"),
-                headers={
-                    "Authorization": f"Bearer {token}",
-                },
-            ),
-        )
-        result = type_validate_python(BotInfoResponse, response)
-
-        return result
-
-    async def get_tenant_access_token(self, bot_config: BotConfig):
-        key = f"feishu_tenant_access_token_{bot_config.app_id}"
-
-        if token := await cache.get(key):
-            return cast("str", token)
-
-        response = await self.send_request(
-            Request(
-                "POST",
-                self.get_api_url(bot_config, "auth/v3/tenant_access_token/internal"),
-                json={
-                    "app_id": bot_config.app_id,
-                    "app_secret": bot_config.app_secret,
-                },
-            ),
-        )
-        result = type_validate_python(TenantAccessTokenResponse, response)
-
-        expire = result.expire
-        if expire > 30 * 60:
-            expire -= 30 * 60
-
-        await cache.set(key, result.tenant_access_token, expire)
-
-        return result.tenant_access_token
-
-    async def send_request(self, request: Request, **data: Any):
-        return_response = data.get("_return_response", False)
-        timeout: float = data.get("_timeout", self.config.api_timeout)
-        request.timeout = timeout
-
-        if not isinstance(self.driver, HTTPClientMixin):
-            raise ApiNotAvailable
-
-        try:
-            response = await self.driver.request(request)
-
-            if 200 <= response.status_code < 300:
-                if not response.content:
-                    raise ValueError("Empty response")
-
-                if return_response:
-                    return response
-
-                if response.headers["Content-Type"].find("application/json") != -1:
-                    result = json.loads(response.content)
-                    return result
-                else:
-                    return response.content
-
-            raise NetworkError(
-                f"HTTP request received unexpected "
-                f"status code: {response.status_code}, "
-                f"response content: {response.content}"
+                "/open-apis/bot/v3/info",
+                response_model=BotInfoResponse,
+                data_key=None,
             )
-
-        except FeishuAdapterException:
-            raise
-
-        except Exception as e:
-            raise NetworkError("HTTP request failed") from e
+        return response.parsed_data
 
     @override
     async def _call_api(self, bot, api: str, **data: Any) -> Any:
         bot = cast("Bot", bot)
-        token = await self.get_tenant_access_token(bot.bot_config)
-        headers = {**data.get("headers", {}), "Authorization": f"Bearer {token}"}
 
-        request = Request(
-            data["method"],
-            self.get_api_url(bot.bot_config, api),
-            cookies=data.get("cookies"),
-            content=data.get("content"),
-            data=data.get("data"),
-            files=data.get("files"),
-            json=data.get("json") or data.get("body"),
-            params=data.get("params") or data.get("query"),
-            headers=headers,
-        )
+        if api.startswith("rest."):
+            func = resolve_rest_api(bot.feishu, api)
+            with translate_errors():
+                return await func(**data)
 
-        return await self.send_request(request, **data)
+        with translate_errors():
+            response = await bot.feishu.arequest(
+                data["method"],
+                f"/open-apis/{api}",
+                params=data.get("params") or data.get("query"),
+                content=data.get("content"),
+                data=data.get("data"),
+                files=data.get("files"),
+                json=data.get("json") or data.get("body"),
+                headers=data.get("headers"),
+                cookies=data.get("cookies"),
+                timeout=data.get("_timeout", UNSET),
+                # 下载的文件不必尝试按 JSON 解析
+                response_model=bytes,
+            )
+
+        if not response.content:
+            raise NetworkError("Empty response")
+
+        if data.get("_return_response"):
+            return response
+
+        if "application/json" in response.headers.get("content-type", ""):
+            return response.json()
+
+        return response.content
 
     async def _handle_http(self, request: Request) -> Response:
-        bot_config = self.bot_apps.get(request.url.parts[-1])
-        if bot_config is None:
+        dispatcher = self.dispatchers.get(request.url.parts[-1])
+        if dispatcher is None:
             raise RuntimeError("Corresponding bot config not found")
 
-        if (data := request.content) is not None:
-            if bot_config.encrypt_key is not None:
-                if (encrypted := json.loads(data).get("encrypt")) is not None:
-                    decrypted = AESCipher(bot_config.encrypt_key).decrypt_string(encrypted)
-                    data = json.loads(decrypted)
-            else:
-                data = json.loads(data)
+        content = request.content
+        body = content.encode() if isinstance(content, str) else content or b""
+        result = await dispatcher.ahandle(body, request.headers)
 
-        if not isinstance(data, dict):
-            return Response(500, content="Received non-JSON data, cannot cast to dict")
-
-        if challenge := data.get("challenge"):
-            return Response(200, content=json.dumps({"challenge": challenge}).encode())
-
-        if not data.get("schema"):
-            return Response(
-                400,
-                content=("Missing `schema` in POST body, only accept event V2"),
-            )
-
-        if headers := data.get("header"):
-            token: str = headers.get("token")
-        else:
-            log("WARNING", "Missing `header` in POST body")
-            return Response(
-                400,
-                content="Missing `header` in POST body",
-            )
-
-        if not token:
-            log("WARNING", "Missing `verification token` in POST body")
-            return Response(
-                400,
-                content="Missing `verification token` in POST body",
-            )
-        else:
-            if token != bot_config.verification_token:
-                log("WARNING", "Verification token check failed")
-                return Response(
-                    403,
-                    content="Verification token check failed",
-                )
-
-        if data is not None:
-            if not (bot := self.bots.get(bot_config.app_id)):
-                raise RuntimeError("Corresponding Bot instance not found")
-
-            if event := self.json_to_event(data):
-                bot = cast("Bot", bot)
-                task = asyncio.create_task(bot.handle_event(event))
-                task.add_done_callback(self.tasks.discard)
-                self.tasks.add(task)
-
-        return Response(200)
+        return Response(
+            result.status_code,
+            headers={"Content-Type": result.content_type},
+            content=result.body,
+        )
 
     @classmethod
     def json_to_event(cls, json_data: Any) -> Event | None:

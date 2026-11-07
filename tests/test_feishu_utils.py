@@ -1,17 +1,15 @@
 from io import BytesIO
+import logging
 from pathlib import Path
 
-import pytest
+from nonebot.adapters.feishu.utils import f2b
+from nonebot.log import LoguruHandler
 
-from nonebot.adapters.feishu.utils import AESCipher, f2b
 
+def test_larkify_logs_go_to_nonebot():
+    handlers = logging.getLogger("larkify").handlers
 
-@pytest.mark.parametrize("key", ["test key", b"test key"])
-def test_aes(key: str):
-    encrypt = "P37w+VZImNgPEO1RBhJ6RtKl7n6zymIbEG1pReEzghk="
-    cipher = AESCipher(key)
-
-    assert cipher.decrypt_string(encrypt) == "hello world"
+    assert any(isinstance(handler, LoguruHandler) for handler in handlers)
 
 
 def test_f2b_bytes():

@@ -8,5 +8,11 @@
     "app_id": "app_id_tome",
     "app_secret": "app_secret_tome",
     "verification_token": "verification_token_tome"
+  },
+  {
+    "app_id": "app_id_encrypted",
+    "app_secret": "app_secret_encrypted",
+    "verification_token": "verification_token_encrypted",
+    "encrypt_key": "encrypt_key"
   }
 ]

@@ -13,11 +13,11 @@ class ActionFailed(BaseActionFailed, FeishuAdapterException):
     """
     :说明:
 
-      API 请求返回错误信息。
+      API 请求返回错误信息，包括 HTTP 错误和飞书返回的非零 ``code``。
 
-    :参数:
+    :属性:
 
-      * ``retcode: Optional[int]``: 错误码
+      * ``info: dict[str, Any]``: 错误信息，通常包含 ``status_code``、``code``、``msg`` 和 ``log_id``
     """
 
     def __init__(self, **kwargs):
@@ -35,11 +35,11 @@ class NetworkError(BaseNetworkError, FeishuAdapterException):
     """
     :说明:
 
-      网络错误。
+      网络错误，包括超时。
 
     :参数:
 
-      * ``retcode: Optional[int]``: 错误码
+      * ``msg: Optional[str]``: 错误信息
     """
 
     def __init__(self, msg: str | None = None):

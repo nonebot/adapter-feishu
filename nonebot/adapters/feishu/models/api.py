@@ -8,11 +8,6 @@ class BaseResponse(BaseModel):
     msg: str
 
 
-class TenantAccessTokenResponse(BaseResponse):
-    tenant_access_token: str
-    expire: int
-
-
 class BotInfo(BaseModel):
     activate_status: int
     app_name: str
@@ -39,5 +34,4 @@ __all__ = [
     "BotInfoResponse",
     "ReplyResponse",
     "ReplyResponseItems",
-    "TenantAccessTokenResponse",
 ]

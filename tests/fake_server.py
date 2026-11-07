@@ -1,6 +1,7 @@
 import base64
 import json
 from pathlib import Path
+import time
 from typing import TypeVar
 
 from werkzeug import Request, Response
@@ -66,7 +67,14 @@ def http_echo(request: Request) -> Response:
     )
 
 
-def handle_get_tenant_access_token():
+def json_response(body: dict, status: int = 200, headers: dict | None = None) -> Response:
+    return Response(json.dumps(body), status=status, headers=headers, content_type="application/json")
+
+
+def handle_get_tenant_access_token(request: Request):
+    if json.loads(request.data)["app_id"] == "app_id_invalid":
+        return json_response({"code": 10003, "msg": "invalid param"}, status=400)
+
     return Response(
         json.dumps(
             {
@@ -92,12 +100,32 @@ def handle_get_bot_info():
     )
 
 
+def handle_slow():
+    time.sleep(0.3)
+    return json_response({"code": 0, "msg": "success", "data": {}})
+
+
+ROUTES = {
+    "/open-apis/test/http_error": lambda: json_response(
+        {"code": 230001, "msg": "invalid"}, status=400, headers={"x-tt-logid": "log_1"}
+    ),
+    "/open-apis/test/business_error": lambda: json_response({"code": 230002, "msg": "bot not in chat"}),
+    "/open-apis/test/binary": lambda: Response(b"\x89PNG\xff\xfe", content_type="image/png"),
+    "/open-apis/test/empty": lambda: Response(b"", content_type="application/json"),
+    "/open-apis/test/slow": handle_slow,
+    "/open-apis/im/v1/messages/om_invalid": lambda: json_response({"code": 230001, "msg": "invalid"}, status=400),
+}
+
+
 @Request.application
 def request_handler(request: Request) -> Response:
     if request.url.endswith("/auth/v3/tenant_access_token/internal"):
-        return handle_get_tenant_access_token()
+        return handle_get_tenant_access_token(request)
 
     elif request.url.endswith("bot/v3/info"):
         return handle_get_bot_info()
+
+    elif handler := ROUTES.get(request.path):
+        return handler()
 
     return http_echo(request)
