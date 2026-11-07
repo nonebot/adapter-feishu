@@ -1,8 +1,25 @@
 import json
+from typing import Any
 
 import pytest
 
 from nonebot.adapters.feishu import Message, MessageSegment
+from nonebot.adapters.feishu.message import (
+    Audio,
+    File,
+    Folder,
+    Hongbao,
+    Image,
+    Interactive,
+    Location,
+    Media,
+    ShareChat,
+    ShareUser,
+    Sticker,
+    System,
+    Todo,
+    VideoChat,
+)
 
 TEXT_A = {"tag": "text", "text": "a"}
 TEXT_B = {"tag": "text", "text": "b"}
@@ -298,3 +315,103 @@ def test_serialize_allows_raw_system_segment_in_documented_format():
 
     assert msg_type == "system"
     assert json.loads(content) == data
+
+
+# 接收消息的内容结构，来自飞书文档《接收消息内容结构》
+RECEIVED_CARD = {
+    "title": "卡片标题",
+    "elements": [
+        [{"tag": "button", "text": "主按钮", "type": "primary"}],
+        [{"tag": "at", "user_id": "@_user_1", "user_name": ""}],
+        [{"tag": "hr"}],
+    ],
+}
+RECEIVED_DIVIDER = {
+    "template": "{divider_text}",
+    "from_user": [],
+    "to_chatters": [],
+    "divider_text": {"text": "新会话", "i18n_text": {"zh_cn": "新话题", "en_us": "New Session"}},
+}
+RECEIVED_SEGMENTS = [
+    ("image", {"image_key": "img_1"}, Image),
+    ("file", {"file_key": "file_1", "file_name": "a.txt"}, File),
+    ("folder", {"file_key": "file_1", "file_name": "folder"}, Folder),
+    ("audio", {"file_key": "file_1", "duration": 2000}, Audio),
+    ("media", {"file_key": "file_1", "image_key": "img_1", "file_name": "a.mp4", "duration": 2000}, Media),
+    ("sticker", {"file_key": "file_1"}, Sticker),
+    ("share_chat", {"chat_id": "oc_1"}, ShareChat),
+    ("share_user", {"user_id": "ou_1"}, ShareUser),
+    ("hongbao", {"text": "[hongbao]"}, Hongbao),
+    ("location", {"name": "place", "longitude": "116.4", "latitude": "39.9"}, Location),
+    ("video_chat", {"topic": "meeting", "start_time": "0"}, VideoChat),
+    ("todo", {"task_id": "t", "summary": {"title": "", "content": []}, "due_time": "0"}, Todo),
+    ("system", {"template": "t", "from_user": ["a"], "to_chatters": ["b"]}, System),
+    ("interactive", RECEIVED_CARD, Interactive),
+]
+
+
+@pytest.mark.parametrize(("msg_type", "content", "segment_class"), RECEIVED_SEGMENTS)
+def test_deserialize_keeps_received_content(msg_type: str, content: dict[str, Any], segment_class: type):
+    seg = Message.deserialize(json.dumps(content), None, msg_type)[0]
+
+    assert isinstance(seg, segment_class)
+    assert seg.type == msg_type
+    assert seg.data == content
+    assert isinstance(str(seg), str)
+
+
+@pytest.mark.parametrize(("msg_type", "content", "segment_class"), RECEIVED_SEGMENTS)
+def test_deserialize_keeps_fields_added_by_feishu(msg_type: str, content: dict[str, Any], segment_class: type):
+    received = {**content, "added_later": "value"}
+
+    seg = Message.deserialize(json.dumps(received), None, msg_type)[0]
+
+    assert isinstance(seg, segment_class)
+    assert seg.data == received
+
+
+def test_deserialize_received_divider():
+    seg = Message.deserialize(json.dumps(RECEIVED_DIVIDER), None, "system")[0]
+
+    assert isinstance(seg, System)
+    assert seg.data == RECEIVED_DIVIDER
+
+
+@pytest.mark.parametrize("msg_type", ["merge_forward", "vote", "calendar", "not_known_yet"])
+def test_deserialize_keeps_types_without_a_segment_class(msg_type: str):
+    received = {"content": "value"}
+
+    seg = Message.deserialize(json.dumps(received), None, msg_type)[0]
+
+    assert seg.type == msg_type
+    assert seg.data == received
+
+
+def test_serialize_rejects_received_card():
+    seg = Message.deserialize(json.dumps(RECEIVED_CARD), None, "interactive")[0]
+
+    with pytest.raises(ValueError, match=r"MessageSegment\.interactive"):
+        Message([seg]).serialize()
+
+    with pytest.raises(ValueError, match=r"MessageSegment\.interactive"):
+        Message([MessageSegment.text("hi"), seg]).serialize()
+
+
+def test_serialize_rejects_received_divider():
+    seg = Message.deserialize(json.dumps(RECEIVED_DIVIDER), None, "system")[0]
+
+    with pytest.raises(ValueError, match="system_divider"):
+        Message([seg]).serialize()
+
+
+def test_serialize_sends_built_card():
+    seg = MessageSegment.interactive(
+        {"title": {"tag": "plain_text", "content": "title"}},  # type: ignore[arg-type]
+        {"enable_forward": True, "update_multi": True},
+        [{"tag": "hr"}],
+    )
+
+    msg_type, content = Message([seg]).serialize()
+
+    assert msg_type == "interactive"
+    assert json.loads(content)["elements"] == [{"tag": "hr"}]

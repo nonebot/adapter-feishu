@@ -1,5 +1,6 @@
 import json
 from pathlib import Path
+from typing import Any
 
 from nonebug import App
 import pytest
@@ -92,3 +93,43 @@ async def test_check_nickname(app: App, server_url: str):
     event = Adapter.json_to_event(event_data)
     _check_nickname(bot, event)
     assert not event.to_me
+
+
+@pytest.mark.anyio
+@pytest.mark.parametrize(
+    ("msg_type", "content"),
+    [
+        pytest.param(
+            "interactive",
+            {"title": "卡片标题", "elements": [[{"tag": "text", "text": "卡片内容"}]]},
+            id="card",
+        ),
+        pytest.param("image", {"image_key": "img_1", "added_later": "value"}, id="added field"),
+    ],
+)
+async def test_received_message_reaches_matchers(
+    server_url: str, monkeypatch: pytest.MonkeyPatch, msg_type: str, content: dict[str, Any]
+):
+    event_data = {k: v for k, v in test_events[0].items() if k != "_model"}
+    message = {**event_data["event"]["message"], "message_type": msg_type, "content": json.dumps(content)}
+    event = Adapter.json_to_event({**event_data, "event": {**event_data["event"], "message": message}})
+    assert isinstance(event, GroupMessageEvent)
+
+    handled = []
+
+    async def handle_event(bot: Bot, event: GroupMessageEvent) -> None:
+        handled.append(event)
+
+    monkeypatch.setattr("nonebot.adapters.feishu.bot.handle_event", handle_event)
+
+    bot = Bot(
+        nonebot.get_adapter(Adapter),
+        bot_id,
+        bot_config=type_validate_python(BotConfig, test_bot),
+        bot_info=type_validate_python(BotInfo, bots_info["bot"]),
+    )
+    await bot.handle_event(event)
+
+    assert handled == [event]
+    assert event.get_message()[0].type == msg_type
+    assert event.get_event_description()
