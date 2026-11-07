@@ -237,3 +237,40 @@ def test_serialize_rejects_segment_not_supported_for_sending(seg: MessageSegment
 def test_serialize_rejects_empty_message():
     with pytest.raises(ValueError, match="empty message"):
         Message().serialize()
+
+
+def test_system_divider_matches_documented_format():
+    seg = MessageSegment.system_divider("新会话", {"zh_CN": "新会话", "en_US": "New Session"}, need_rollup=True)
+
+    msg_type, content = Message([seg]).serialize()
+
+    assert msg_type == "system"
+    assert json.loads(content) == {
+        "type": "divider",
+        "params": {"divider_text": {"text": "新会话", "i18n_text": {"zh_CN": "新会话", "en_US": "New Session"}}},
+        "options": {"need_rollup": True},
+    }
+
+
+def test_system_divider_omits_optional_fields():
+    _, content = Message([MessageSegment.system_divider("新会话")]).serialize()
+
+    assert json.loads(content) == {"type": "divider", "params": {"divider_text": {"text": "新会话"}}}
+
+
+def test_system_divider_cannot_be_combined_with_other_segments():
+    with pytest.raises(ValueError, match="'system' segment in a post message"):
+        Message([MessageSegment.text("hi"), MessageSegment.system_divider("新会话")]).serialize()
+
+
+def test_system_divider_str():
+    assert str(MessageSegment.system_divider("新会话")) == "[system_divider:'新会话']"
+
+
+def test_received_system_message_keeps_its_format():
+    received = {"template": "template", "from_user": ["a"], "to_chatters": ["b"]}
+
+    seg = Message.deserialize(json.dumps(received), None, "system")[0]
+
+    assert seg.type == "system"
+    assert seg.data == received
