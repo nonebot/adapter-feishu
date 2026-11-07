@@ -7,7 +7,9 @@ toc_max_heading_level: 2
 
 ## 最近更新
 
-- No changes
+### 🚀 新功能
+
+- :boom: replace the communication layer with larkify [@StarHeartHunt](https://github.com/StarHeartHunt) ([#178](https://github.com/nonebot/adapter-feishu/pull/178))
 
 ## v2.8.0
 
