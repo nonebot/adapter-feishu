@@ -1,4 +1,4 @@
-from typing import Any, Literal, Optional
+from typing import Any, Literal
 
 from pydantic import BaseModel
 
@@ -12,8 +12,8 @@ class EventHeader(BaseModel):
     token: str
     app_id: str
     tenant_key: str
-    resource_id: Optional[str] = None
-    user_list: Optional[list[dict]] = None
+    resource_id: str | None = None
+    user_list: list[dict] | None = None
 
     if PYDANTIC_V2:
         model_config = ConfigDict(extra="allow")
@@ -31,17 +31,17 @@ class UserId(BaseModel):
 
 class MeetingUser(BaseModel):
     id: UserId
-    user_role: Optional[int] = None
-    user_type: Optional[int] = None
+    user_role: int | None = None
+    user_type: int | None = None
 
 
 class Meeting(BaseModel):
     id: str
     topic: str
     meeting_no: str
-    start_time: Optional[str] = None
-    end_time: Optional[str] = None
-    host_user: Optional[MeetingUser] = None
+    start_time: str | None = None
+    end_time: str | None = None
+    host_user: MeetingUser | None = None
     owner: MeetingUser
 
 
@@ -111,9 +111,9 @@ class MessageBody(BaseModel):
 
 class Reply(BaseModel):
     message_id: str
-    root_id: Optional[str] = None
-    parent_id: Optional[str] = None
-    thread_id: Optional[str] = None
+    root_id: str | None = None
+    parent_id: str | None = None
+    thread_id: str | None = None
     msg_type: str
     create_time: str
     update_time: str
@@ -123,7 +123,7 @@ class Reply(BaseModel):
     sender: ReplySender
     body: MessageBody
     mentions: list[ReplyMention] = []
-    upper_message_id: Optional[str] = None
+    upper_message_id: str | None = None
 
     if PYDANTIC_V2:
         model_config = ConfigDict(extra="allow")
@@ -135,14 +135,14 @@ class Reply(BaseModel):
 
 class EventMessage(BaseModel):
     message_id: str
-    root_id: Optional[str] = None
-    parent_id: Optional[str] = None
+    root_id: str | None = None
+    parent_id: str | None = None
     create_time: str
     chat_id: str
     chat_type: Any
     message_type: str
     content: str
-    mentions: Optional[list[Mention]] = None
+    mentions: list[Mention] | None = None
 
     if PYDANTIC_V2:
         model_config = ConfigDict(extra="allow")
@@ -194,7 +194,7 @@ class AttendanceUserFlowCreatedEventDetail(BaseModel):
     latitude: float
     location_name: str
     longitude: float
-    photo_urls: Optional[list[str]] = None
+    photo_urls: list[str] | None = None
     record_id: str
     ssid: str
     type: int
@@ -388,7 +388,7 @@ class ContactUser(BaseModel):
     gender: int
     avatar: AvatarInfo
     status: UserStatus
-    department_ids: Optional[list[str]] = None
+    department_ids: list[str] | None = None
     leader_user_id: str
     city: str
     country: str
@@ -396,7 +396,7 @@ class ContactUser(BaseModel):
     join_time: int
     employee_no: str
     employee_type: int
-    orders: Optional[list[UserOrder]] = None
+    orders: list[UserOrder] | None = None
     custom_attrs: list[UserCustomAttr]
 
 

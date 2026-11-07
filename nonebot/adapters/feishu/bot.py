@@ -1,7 +1,8 @@
+from collections.abc import Callable
 from io import BytesIO
 from pathlib import Path
 import re
-from typing import TYPE_CHECKING, Any, Callable, Literal, Optional, Union, cast
+from typing import TYPE_CHECKING, Any, Literal, cast
 from typing_extensions import override
 
 from nonebot.adapters import Bot as BaseBot
@@ -220,8 +221,8 @@ class Bot(BaseBot):
         self,
         message_id: str,
         user_id_type: str,
-        page_size: Optional[int] = None,
-        page_token: Optional[str] = None,
+        page_size: int | None = None,
+        page_token: str | None = None,
     ):
         params: dict[str, Any] = {"user_id_type": user_id_type}
         if page_size:
@@ -237,7 +238,7 @@ class Bot(BaseBot):
         receive_id_type: str,
         receive_id: str,
         message_id_list: list[str],
-        uuid: Optional[str] = None,
+        uuid: str | None = None,
     ):
         params = {"receive_id_type": receive_id_type}
         if uuid:
@@ -255,7 +256,7 @@ class Bot(BaseBot):
         message_id: str,
         receive_id: str,
         receive_id_type: str,
-        uuid: Optional[str] = None,
+        uuid: str | None = None,
     ):
         params = {"receive_id_type": receive_id_type}
         if uuid:
@@ -278,7 +279,7 @@ class Bot(BaseBot):
             json={"msg_type": msg_type, "content": content},
         )
 
-    async def reply_msg(self, message_id: str, content: str, msg_type: str, uuid: Optional[str] = None):
+    async def reply_msg(self, message_id: str, content: str, msg_type: str, uuid: str | None = None):
         json = {
             "content": content,
             "msg_type": msg_type,
@@ -320,10 +321,10 @@ class Bot(BaseBot):
         self,
         file_type: Literal["opus", "mp4", "pdf", "doc", "xls", "ppt", "stream"],
         file_name: str,
-        file: Union[str, bytes, BytesIO, Path],
-        duration: Optional[int] = None,
+        file: str | bytes | BytesIO | Path,
+        duration: int | None = None,
     ):
-        data: dict[str, Union[str, int]] = {
+        data: dict[str, str | int] = {
             "file_type": file_type,
             "file_name": file_name,
         }

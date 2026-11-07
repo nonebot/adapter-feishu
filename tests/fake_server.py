@@ -1,7 +1,7 @@
 import base64
 import json
 from pathlib import Path
-from typing import TypeVar, Union
+from typing import TypeVar
 
 from werkzeug import Request, Response
 from werkzeug.datastructures import MultiDict
@@ -26,7 +26,7 @@ def json_safe(string, content_type="application/octet-stream") -> str:
         ).decode("utf-8")
 
 
-def flattern(d: "MultiDict[K, V]") -> dict[K, Union[V, list[V]]]:
+def flattern(d: "MultiDict[K, V]") -> dict[K, V | list[V]]:
     return {k: v[0] if len(v) == 1 else v for k, v in d.to_dict(flat=False).items()}
 
 

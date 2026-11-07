@@ -1,7 +1,8 @@
 import asyncio
+from collections.abc import Callable
 import inspect
 import json
-from typing import Any, Callable, Optional, Union, cast
+from typing import Any, cast
 from typing_extensions import override
 
 from pygtrie import StringTrie
@@ -329,7 +330,7 @@ class Adapter(BaseAdapter):
         return Response(200)
 
     @classmethod
-    def json_to_event(cls, json_data: Any) -> Optional[Event]:
+    def json_to_event(cls, json_data: Any) -> Event | None:
         """将 json 数据转换为 Event 对象。
         参数:
             json_data: json 数据
@@ -390,7 +391,7 @@ class Adapter(BaseAdapter):
     @classmethod
     def custom_send(
         cls,
-        send_func: Callable[[Bot, Event, Union[str, Message, MessageSegment]], Any],
+        send_func: Callable[[Bot, Event, str | Message | MessageSegment], Any],
     ):
         """自定义 Bot 的回复函数。"""
         setattr(Bot, "send_handler", send_func)

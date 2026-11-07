@@ -1,5 +1,3 @@
-from typing import Optional
-
 from nonebot.exception import ActionFailed as BaseActionFailed
 from nonebot.exception import AdapterException
 from nonebot.exception import ApiNotAvailable as BaseApiNotAvailable
@@ -44,7 +42,7 @@ class NetworkError(BaseNetworkError, FeishuAdapterException):
       * ``retcode: Optional[int]``: 错误码
     """
 
-    def __init__(self, msg: Optional[str] = None):
+    def __init__(self, msg: str | None = None):
         super().__init__()
         self.msg = msg
 

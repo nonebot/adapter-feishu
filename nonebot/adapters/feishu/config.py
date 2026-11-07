@@ -1,4 +1,4 @@
-from typing import Literal, Optional
+from typing import Literal
 
 from pydantic import BaseModel, Field, HttpUrl
 
@@ -20,10 +20,10 @@ class BotConfig(BaseModel):
 
     app_id: str
     app_secret: str
-    encrypt_key: Optional[str] = None
+    encrypt_key: str | None = None
     verification_token: str
     is_lark: bool = False
-    api_base: Optional[HttpUrl] = None
+    api_base: HttpUrl | None = None
     protocol: Literal["http", "ws"] = "http"
 
 
