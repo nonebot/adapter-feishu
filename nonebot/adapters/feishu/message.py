@@ -158,10 +158,10 @@ class MessageSegment(BaseMessageSegment["Message"]):
     def sticker(file_key: str) -> "MessageSegment":
         return Sticker("sticker", {"file_key": file_key})
 
-    def to_post(self) -> str:
-        if self.type == "image":
-            return "img"
-        return self.type
+    def to_post(self) -> dict[str, Any]:
+        """转换为富文本（post）消息节点，不修改消息段本身。"""
+        tag = "img" if self.type == "image" else self.type
+        return {"tag": tag, **self.data}
 
 
 class _TextData(TypedDict):
@@ -598,14 +598,14 @@ class Message(BaseMessage[MessageSegment]):
             for seg in self:
                 if isinstance(seg, Post):
                     combined["zh_cn"]["title"] = seg.data["title"]
+                    # copy each line, later segments are appended to the last one
                     combined["zh_cn"]["content"] = [
                         *combined["zh_cn"]["content"],
-                        *seg.data["content"],
+                        *(list(line) for line in seg.data["content"]),
                     ]
 
                 else:
-                    tag = seg.to_post()
-                    combined["zh_cn"]["content"][-1].append({"tag": tag, **seg.data})
+                    combined["zh_cn"]["content"][-1].append(seg.to_post())
 
             return "post", json.dumps(combined, ensure_ascii=False)
 
