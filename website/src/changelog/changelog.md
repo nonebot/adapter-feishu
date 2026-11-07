@@ -9,6 +9,7 @@ toc_max_heading_level: 2
 
 ### 🐛 Bug 修复
 
+- :bug: reject segments that feishu cannot send [@StarHeartHunt](https://github.com/StarHeartHunt) ([#173](https://github.com/nonebot/adapter-feishu/pull/173))
 - :bug: follow feishu post paragraph and send field rules [@StarHeartHunt](https://github.com/StarHeartHunt) ([#172](https://github.com/nonebot/adapter-feishu/pull/172))
 - :bug: follow feishu message format in serialize [@StarHeartHunt](https://github.com/StarHeartHunt) ([#170](https://github.com/nonebot/adapter-feishu/pull/170))
 - :bug: do not mutate post segment in serialize [@StarHeartHunt](https://github.com/StarHeartHunt) ([#169](https://github.com/nonebot/adapter-feishu/pull/169))
@@ -19,6 +20,7 @@ toc_max_heading_level: 2
 
 ### 💫 杂项
 
+- :arrow_up: drop python 3.10 support [@StarHeartHunt](https://github.com/StarHeartHunt) ([#175](https://github.com/nonebot/adapter-feishu/pull/175))
 - fix(message): do not mutate segment type in to_post (#166) [@ANO3457](https://github.com/ANO3457) ([#167](https://github.com/nonebot/adapter-feishu/pull/167))
 - :arrow_up: auto update by pre-commit hooks [@pre-commit-ci[bot]](https://github.com/apps/pre-commit-ci) ([#168](https://github.com/nonebot/adapter-feishu/pull/168))
 - :arrow_up: auto update by pre-commit hooks [@pre-commit-ci[bot]](https://github.com/apps/pre-commit-ci) ([#164](https://github.com/nonebot/adapter-feishu/pull/164))
