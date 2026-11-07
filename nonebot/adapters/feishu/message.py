@@ -289,6 +289,10 @@ class Interactive(MessageSegment):
         return f"[interactive:{self.data!r}]"
 
 
+class ReceivedInteractive(Interactive):
+    """接收到的卡片，结构与发送时不同，不能用于发送，发送卡片请使用 `MessageSegment.interactive`。"""
+
+
 class _InteractiveTemplateDetail(TypedDict):
     template_id: str
     template_variable: dict[str, Any]
@@ -648,6 +652,25 @@ class GeneralCalendar:
         return f"[general_calendar:{self.data!r}]"
 
 
+# 接收消息的内容结构与发送时不完全相同，飞书也可能增加字段，所以直接保留原始内容，不作为 builder 的参数
+_RECEIVED_SEGMENTS: dict[str, type[MessageSegment]] = {
+    "image": Image,
+    "interactive": ReceivedInteractive,
+    "share_chat": ShareChat,
+    "share_user": ShareUser,
+    "audio": Audio,
+    "media": Media,
+    "file": File,
+    "folder": Folder,
+    "sticker": Sticker,
+    "system": System,
+    "location": Location,
+    "video_chat": VideoChat,
+    "todo": Todo,
+    "hongbao": Hongbao,
+}
+
+
 class Message(BaseMessage[MessageSegment]):
     """
     飞书 协议 Message 适配。
@@ -675,6 +698,9 @@ class Message(BaseMessage[MessageSegment]):
         for seg in self:
             if isinstance(seg, System):
                 raise ValueError("Cannot send a received system message, use MessageSegment.system_divider instead")
+
+            if isinstance(seg, ReceivedInteractive):
+                raise ValueError("Cannot send a received card, use MessageSegment.interactive instead")
 
             if seg.type not in _MSG_TYPES and seg.type not in _POST_TAGS:
                 raise ValueError(f"Cannot send {seg.type!r} segment, Feishu does not support it in outgoing messages")
@@ -753,11 +779,8 @@ class Message(BaseMessage[MessageSegment]):
             msg.append(Post("post", parsed_content))
 
         else:
-            seg_builder = getattr(MessageSegment, message_type, None)
-            if seg_builder:
-                msg.append(seg_builder(**parsed_content))
-            else:
-                msg.append(MessageSegment(message_type, parsed_content))
+            segment_class = _RECEIVED_SEGMENTS.get(message_type, MessageSegment)
+            msg.append(segment_class(message_type, parsed_content))
 
         return msg
 
