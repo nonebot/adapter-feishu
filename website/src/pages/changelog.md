@@ -7,6 +7,10 @@ toc_max_heading_level: 2
 
 ## 最近更新
 
+### 🐛 Bug 修复
+
+- :bug: do not mutate post segment in serialize [@StarHeartHunt](https://github.com/StarHeartHunt) ([#169](https://github.com/nonebot/adapter-feishu/pull/169))
+
 ### 💫 杂项
 
 - fix(message): do not mutate segment type in to_post (#166) [@ANO3457](https://github.com/ANO3457) ([#167](https://github.com/nonebot/adapter-feishu/pull/167))
