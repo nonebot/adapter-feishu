@@ -102,8 +102,14 @@ def test_serialize_omits_unset_and_receive_only_fields(seg: MessageSegment, expe
     assert msg_type == seg.type
     assert json.loads(content) == expected
 
-    _, post_content = Message([MessageSegment.text("hi"), seg]).serialize()
-    assert json.loads(post_content)["zh_cn"]["content"][-1][-1] == {"tag": seg.type, **expected}
+
+def test_to_post_omits_unset_and_receive_only_fields():
+    assert MessageSegment.media("fk").to_post() == {"tag": "media", "file_key": "fk"}
+    assert MessageSegment.media("fk", "ik", "a.mp4", 2000).to_post() == {
+        "tag": "media",
+        "file_key": "fk",
+        "image_key": "ik",
+    }
 
 
 def test_serialize_keeps_segment_data_of_received_media():
@@ -153,3 +159,81 @@ def test_serialize_keeps_post_content_as_written():
     post = MessageSegment.post("title", [[TEXT_A, IMG]])
 
     assert _paragraphs(post, MessageSegment.text("b")) == [[TEXT_A, IMG], [TEXT_B]]
+
+
+@pytest.mark.parametrize(
+    "seg",
+    [
+        MessageSegment.audio("fk"),
+        MessageSegment.file("fk"),
+        MessageSegment.sticker("fk"),
+        MessageSegment.share_chat("oc_x"),
+        MessageSegment.share_user("ou_x"),
+        MessageSegment.interactive_template("id", {}),
+        MessageSegment.system("template", [], []),
+    ],
+    ids=lambda seg: seg.type,
+)
+def test_serialize_rejects_segment_not_supported_in_post(seg: MessageSegment):
+    assert Message([seg]).serialize()[0] == seg.type
+
+    with pytest.raises(ValueError, match=seg.type):
+        Message([MessageSegment.text("hi"), seg]).serialize()
+
+
+@pytest.mark.parametrize(
+    ("seg_type", "data"),
+    [
+        ("a", {"text": "link", "href": "https://example.com"}),
+        ("emotion", {"emoji_type": "SMILE"}),
+        ("code_block", {"text": "print()"}),
+        ("hr", {}),
+        ("md", {"text": "**bold**"}),
+    ],
+)
+def test_serialize_allows_documented_post_tags(seg_type: str, data: dict[str, str]):
+    paragraphs = _paragraphs(MessageSegment.text("a"), MessageSegment(seg_type, data))
+
+    assert paragraphs == [[TEXT_A, {"tag": seg_type, **data}]]
+
+
+@pytest.mark.parametrize(
+    ("seg_type", "data"),
+    [
+        ("a", {"text": "link", "href": "https://example.com"}),
+        ("emotion", {"emoji_type": "SMILE"}),
+        ("code_block", {"text": "print()"}),
+        ("hr", {}),
+        ("md", {"text": "**bold**"}),
+    ],
+)
+def test_serialize_sends_lone_post_node_as_post(seg_type: str, data: dict[str, str]):
+    msg_type, content = Message([MessageSegment(seg_type, data)]).serialize()
+
+    assert msg_type == "post"
+    assert json.loads(content)["zh_cn"]["content"] == [[{"tag": seg_type, **data}]]
+
+
+@pytest.mark.parametrize(
+    "seg",
+    [
+        MessageSegment.location("name", "0", "0"),
+        MessageSegment.hongbao("text"),
+        MessageSegment.todo("task", {"title": "", "content": []}, "0"),
+        MessageSegment.video_chat("topic", "0"),
+        MessageSegment.folder("fk", "name"),
+        MessageSegment("vote", {"topic": "topic", "options": []}),
+    ],
+    ids=lambda seg: seg.type,
+)
+def test_serialize_rejects_segment_not_supported_for_sending(seg: MessageSegment):
+    with pytest.raises(ValueError, match=f"Cannot send '{seg.type}' segment"):
+        Message([seg]).serialize()
+
+    with pytest.raises(ValueError, match=f"Cannot send '{seg.type}' segment"):
+        Message([MessageSegment.text("hi"), seg]).serialize()
+
+
+def test_serialize_rejects_empty_message():
+    with pytest.raises(ValueError, match="empty message"):
+        Message().serialize()

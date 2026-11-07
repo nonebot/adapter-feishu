@@ -16,6 +16,22 @@ _RECEIVE_ONLY_FIELDS = {
     "media": {"file_name", "duration"},
     "file": {"file_name"},
 }
+# 发送消息支持的消息类型
+_MSG_TYPES = {
+    "text",
+    "post",
+    "image",
+    "interactive",
+    "share_chat",
+    "share_user",
+    "audio",
+    "media",
+    "file",
+    "sticker",
+    "system",
+}
+# 富文本支持的节点
+_POST_TAGS = {"text", "a", "at", "img", "media", "emotion", "code_block", "hr", "md"}
 # 富文本中必须独占一个段落的节点
 _STANDALONE_POST_TAGS = {"img", "media"}
 
@@ -173,8 +189,11 @@ class MessageSegment(BaseMessageSegment["Message"]):
         return {key: value for key, value in self.data.items() if value is not None and key not in receive_only}
 
     def to_post(self) -> dict[str, Any]:
-        """转换为富文本（post）消息节点，不修改消息段本身。"""
+        """转换为富文本（post）消息节点，不修改消息段本身。富文本不支持该消息段时抛出 `ValueError`。"""
         tag = "img" if self.type == "image" else self.type
+        if tag not in _POST_TAGS:
+            raise ValueError(f"Cannot use {self.type!r} segment in a post message, send it as a separate message")
+
         return {"tag": tag, **self.to_content()}
 
 
@@ -606,8 +625,12 @@ class Message(BaseMessage[MessageSegment]):
         yield Text("text", {"text": msg})
 
     def serialize(self) -> tuple[str, str]:
-        # `at` is not a valid msg_type, it can only be sent as a post node
-        if len(self) >= 2 or (len(self) == 1 and self[0].type == "at"):
+        for seg in self:
+            if seg.type not in _MSG_TYPES and seg.type not in _POST_TAGS:
+                raise ValueError(f"Cannot send {seg.type!r} segment, Feishu does not support it in outgoing messages")
+
+        # types without their own msg_type, such as `at`, can only be sent as post nodes
+        if len(self) >= 2 or (len(self) == 1 and self[0].type not in _MSG_TYPES):
             title = ""
             content: list[list[dict[str, Any]]] = []
 
