@@ -12,17 +12,21 @@ options:
 
 ## 配置驱动器
 
-飞书适配器需要同时启用正向驱动器及 ASGI 驱动器，例如安装 httpx（正向）和 fastapi（ASGI）：
+飞书适配器通过 [larkify](https://github.com/StarHeartHunt/larkify) 与飞书通信，不需要正向驱动器。
+
+使用 HTTP Webhook 接收事件时需要 ASGI 驱动器，例如安装 fastapi：
 
 ```bash
-pip install nonebot[httpx] nonebot[fastapi]
+pip install nonebot2[fastapi]
 ```
 
-同时需要在 .env 配置文件中启用对应的驱动器，例如：
+同时需要在 .env 配置文件中启用对应的驱动器：
 
 ```dotenv
-DRIVER=~fastapi+~httpx
+DRIVER=~fastapi
 ```
+
+所有 Bot 都使用 WebSocket 长连接时不需要 ASGI 驱动器，可以配置 `DRIVER=~none`。
 
 ## 创建应用与启用应用“机器人”能力
 
@@ -38,7 +42,7 @@ DRIVER=~fastapi+~httpx
 
 如果在飞书开发者后台的事件订阅中配置了事件上报的 Encrypt Key，也需要传入 FEISHU_BOTS 中。
 
-当 `encrypt_key` 存在且不为空时，飞书适配器会认为用户启用了加密机制，并对事件上报中的密文进行解密。
+当 `encrypt_key` 存在且不为空时，飞书适配器会认为用户启用了加密机制，对事件上报中的密文进行解密，并校验请求签名。
 
 protocol 字段可以控制使用 Websocket 长连接或者 HTTP Webhook 接收飞书事件，`http` 为 HTTP Webhook，`ws` 为 Websocket 长连接。
 

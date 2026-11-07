@@ -1,6 +1,6 @@
 [project]
 name = "nonebot-adapter-feishu"
-version = "2.8.0"
+version = "3.0.0"
 description = "feishu(larksuite) adapter for nonebot2"
 authors = [{ name = "StarHeartHunt", email = "starheart233@gmail.com" }]
 requires-python = ">=3.11, <4.0"
@@ -16,9 +16,8 @@ classifiers = [
 ]
 dependencies = [
     "nonebot2 ~=2.2",
-    "cashews ~=7.0",
-    "pycryptodome ~=3.18",
-    "protobuf ~=7.34",
+    "httpx2 >=2.16.0, <3.0.0",
+    "larkify[crypto,ws] >=0.2.0, <0.3.0",
 ]
 
 [project.urls]

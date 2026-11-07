@@ -1,4 +1,5 @@
 from collections.abc import Callable
+from functools import cached_property
 from io import BytesIO
 from pathlib import Path
 import re
@@ -21,9 +22,12 @@ from .event import (
 )
 from .message import At, Message, MessageSegment
 from .models import BotInfo, ReplyResponse
-from .utils import f2b, log
+from .utils import APIContext, f2b, log
 
 if TYPE_CHECKING:
+    from larkify import AppAuthStrategy, Feishu
+    from larkify.rest import RestNamespace
+
     from .adapter import Adapter
 
 
@@ -192,6 +196,20 @@ class Bot(BaseBot):
         super().__init__(adapter, self_id)
         self.bot_config: BotConfig = bot_config
         self.bot_info: BotInfo = bot_info
+
+    @cached_property
+    def feishu(self) -> "Feishu[AppAuthStrategy]":
+        """当前 Bot 的 larkify 客户端。"""
+        return cast("Adapter", self.adapter).create_client(self.bot_config)
+
+    @property
+    def rest(self) -> "RestNamespace":
+        """类型化的飞书 API，如 `await bot.rest.im.v1.message.async_get("om_xxx")`。
+
+        只能调用 `async_` 开头的方法，返回 `larkify.Response`。调用经过 `call_api`，
+        因此会触发 `on_calling_api` 和 `on_called_api` 钩子。
+        """
+        return cast("RestNamespace", APIContext(self, ("rest",)))
 
     async def get_msgs(self, container_id_type: Literal["chat"], container_id: str, **params: Any):
         return await self.call_api(

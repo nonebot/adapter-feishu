@@ -29,7 +29,7 @@ def pytest_configure(config: pytest.Config) -> None:
         feishu_bots = json.load(f)
 
     config.stash[NONEBOT_INIT_KWARGS] = {
-        "driver": "~fastapi+~httpx",
+        "driver": "~fastapi",
         "log_level": "DEBUG",
         "feishu_bots": feishu_bots,
         "nickname": ["bot"],
