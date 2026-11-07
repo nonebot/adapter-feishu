@@ -1,36 +1,36 @@
 {
   // This file is not used in compilation. It is here just for a nice editor experience.
-  "extends": "@tsconfig/docusaurus/tsconfig.json",
+  "extends": "@nullbot/docusaurus-tsconfig",
   "compilerOptions": {
+    "lib": ["DOM", "ESNext"],
     "baseUrl": ".",
-    "types": [
-      "node",
-      "@docusaurus/module-type-aliases",
-      "@nullbot/docusaurus-theme-nonepress"
-    ],
     "paths": {
       "@/*": ["./src/*"],
       "@theme/*": ["./src/theme/*"]
     },
-
-    /* Strict Type-Checking Options */
-    "strict": true,
-    "strictNullChecks": true,
-    "strictFunctionTypes": true,
-    "strictBindCallApply": true,
-    "strictPropertyInitialization": true,
-    "noImplicitThis": true,
-    "alwaysStrict": true,
-
-    /* Disabled on purpose (handled by ESLint, should not block compilation) */
-    "noUnusedParameters": false,
-
-    /* Advanced Options */
     "resolveJsonModule": true,
-    "skipLibCheck": true, // @types/webpack and webpack/types.d.ts are not the same thing
+    "allowArbitraryExtensions": true,
 
-    /* Use tslib */
-    "importHelpers": true,
-    "noEmitHelpers": true
+    "allowUnreachableCode": false,
+    "exactOptionalPropertyTypes": false,
+    "noFallthroughCasesInSwitch": true,
+    "noImplicitOverride": true,
+    "noImplicitReturns": true,
+    "noPropertyAccessFromIndexSignature": false,
+    "noUncheckedIndexedAccess": true,
+    "strict": true,
+    "alwaysStrict": true,
+    "noImplicitAny": true,
+    "noImplicitThis": true,
+    "strictBindCallApply": true,
+    "strictFunctionTypes": true,
+    "strictNullChecks": true,
+    "strictPropertyInitialization": true,
+    "useUnknownInCatchVariables": true,
+    "noUnusedLocals": false,
+    "noUnusedParameters": false,
+    "importsNotUsedAsValues": "remove",
+
+    "skipLibCheck": true
   }
 }

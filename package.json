@@ -1,18 +1,16 @@
 {
   "name": "root",
   "private": true,
-  "workspaces": [
-    "website"
-  ],
+  "packageManager": "pnpm@12.16.1",
   "scripts": {
-    "archive": "yarn workspace feishu docusaurus docs:version",
-    "build": "yarn workspace feishu build",
-    "build:plugin": "cross-env BASE_URL='/website/' yarn workspace feishu build",
-    "start": "yarn workspace feishu start",
-    "serve": "yarn workspace feishu serve",
-    "clear": "yarn workspace feishu clear",
+    "archive": "pnpm --filter feishu docusaurus docs:version",
+    "build": "pnpm --filter feishu build",
+    "build:plugin": "cross-env BASE_URL='/website/' pnpm --filter feishu build",
+    "start": "pnpm --filter feishu start",
+    "serve": "pnpm --filter feishu serve",
+    "clear": "pnpm --filter feishu clear",
     "prettier": "prettier --config ./.prettierrc --write \"./website/\"",
-    "lint": "yarn lint:js && yarn lint:style",
+    "lint": "pnpm lint:js && pnpm lint:style",
     "lint:js": "eslint --cache --report-unused-disable-directives \"**/*.{js,jsx,ts,tsx,mjs}\"",
     "lint:js:fix": "eslint --cache --report-unused-disable-directives --fix \"**/*.{js,jsx,ts,tsx,mjs}\"",
     "lint:style": "stylelint \"**/*.css\"",

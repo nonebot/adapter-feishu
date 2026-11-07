@@ -7,5 +7,5 @@ runs:
     - run: |
         uv run --no-sync python scripts/build_api_docs.py
         cp -r ./build/nonebot/adapters/feishu/* ./website/docs/api/
-        yarn prettier
+        pnpm prettier
       shell: bash
