@@ -7,8 +7,13 @@ toc_max_heading_level: 2
 
 ## 最近更新
 
+### 🚀 新功能
+
+- :sparkles: add system divider message segment [@StarHeartHunt](https://github.com/StarHeartHunt) ([#174](https://github.com/nonebot/adapter-feishu/pull/174))
+
 ### 🐛 Bug 修复
 
+- :bug: reject sending received system messages [@StarHeartHunt](https://github.com/StarHeartHunt) ([#176](https://github.com/nonebot/adapter-feishu/pull/176))
 - :bug: reject segments that feishu cannot send [@StarHeartHunt](https://github.com/StarHeartHunt) ([#173](https://github.com/nonebot/adapter-feishu/pull/173))
 - :bug: follow feishu post paragraph and send field rules [@StarHeartHunt](https://github.com/StarHeartHunt) ([#172](https://github.com/nonebot/adapter-feishu/pull/172))
 - :bug: follow feishu message format in serialize [@StarHeartHunt](https://github.com/StarHeartHunt) ([#170](https://github.com/nonebot/adapter-feishu/pull/170))
