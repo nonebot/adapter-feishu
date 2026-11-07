@@ -9,6 +9,7 @@ toc_max_heading_level: 2
 
 ### 💫 杂项
 
+- fix(message): do not mutate segment type in to_post (#166) [@ANO3457](https://github.com/ANO3457) ([#167](https://github.com/nonebot/adapter-feishu/pull/167))
 - :arrow_up: auto update by pre-commit hooks [@[pre-commit-ci[bot]](https://github.com/apps/pre-commit-ci)](<https://github.com/[pre-commit-ci[bot]](https://github.com/apps/pre-commit-ci)>) ([#168](https://github.com/nonebot/adapter-feishu/pull/168))
 - :arrow_up: auto update by pre-commit hooks [@[pre-commit-ci[bot]](https://github.com/apps/pre-commit-ci)](<https://github.com/[pre-commit-ci[bot]](https://github.com/apps/pre-commit-ci)>) ([#164](https://github.com/nonebot/adapter-feishu/pull/164))
 - :arrow_up: auto update by pre-commit hooks [@[pre-commit-ci[bot]](https://github.com/apps/pre-commit-ci)](<https://github.com/[pre-commit-ci[bot]](https://github.com/apps/pre-commit-ci)>) ([#162](https://github.com/nonebot/adapter-feishu/pull/162))
