@@ -9,6 +9,7 @@ toc_max_heading_level: 2
 
 ### 🐛 Bug 修复
 
+- :bug: follow feishu post paragraph and send field rules [@StarHeartHunt](https://github.com/StarHeartHunt) ([#172](https://github.com/nonebot/adapter-feishu/pull/172))
 - :bug: follow feishu message format in serialize [@StarHeartHunt](https://github.com/StarHeartHunt) ([#170](https://github.com/nonebot/adapter-feishu/pull/170))
 - :bug: do not mutate post segment in serialize [@StarHeartHunt](https://github.com/StarHeartHunt) ([#169](https://github.com/nonebot/adapter-feishu/pull/169))
 
