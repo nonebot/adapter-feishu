@@ -10,8 +10,9 @@
  */
 import path from "path";
 
-import type { SidebarsConfig } from "@docusaurus/plugin-content-docs";
 import { getChangelogItemsSync } from "@nullbot/docusaurus-plugin-changelog";
+
+import type { SidebarsConfig } from "@docusaurus/plugin-content-docs";
 
 const changelogPath = path.join(__dirname, "src/changelog/changelog.md");
 const changelogItems = getChangelogItemsSync(changelogPath, 10);
@@ -29,7 +30,7 @@ const sidebars: SidebarsConfig = {
           type: "link",
           label: chunk[0]!.title,
           href: `/changelog/${index > 0 ? index.toString() : ""}`,
-        })
+        }),
       ),
     },
   ],

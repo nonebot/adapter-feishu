@@ -7,16 +7,11 @@ const darkTheme = themes.dark;
 
 function excludeThemeColor(
   theme: { [key: string]: string },
-  exclude: string[]
+  exclude: string[],
 ): { [key: string]: string } {
-  const newObj: { [key: string]: string } = {};
-  for (const key in theme) {
-    if (exclude.includes(key)) {
-      continue;
-    }
-    newObj[key] = theme[key]!;
-  }
-  return newObj;
+  return Object.fromEntries(
+    Object.entries(theme).filter(([key]) => !exclude.includes(key)),
+  );
 }
 
 export default {

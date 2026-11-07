@@ -6,6 +6,8 @@ import useDocusaurusContext from "@docusaurus/useDocusaurusContext";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useNonepressThemeConfig } from "@nullbot/docusaurus-theme-nonepress/client";
 
+import Heading from "@theme/Heading";
+
 function HomeHero(): React.ReactNode {
   const {
     siteConfig: { tagline },
@@ -18,10 +20,10 @@ function HomeHero(): React.ReactNode {
   return (
     <div className="home-hero">
       <img src={logoSrc} alt={logo!.alt} className="home-hero-logo" />
-      <h1 className="home-hero-title">
+      <Heading as="h1" className="home-hero-title">
         <span className="text-primary">N</span>one
         <span className="text-primary">B</span>ot
-      </h1>
+      </Heading>
       <p className="home-hero-tagline">{tagline}</p>
       <div className="home-hero-actions">
         <Link to="/docs/guide/" className="btn btn-primary">

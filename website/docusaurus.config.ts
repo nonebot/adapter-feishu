@@ -1,7 +1,8 @@
+import { themes } from "prism-react-renderer";
+
 import type { Config } from "@docusaurus/types";
 import type { Options as ChangelogOptions } from "@nullbot/docusaurus-plugin-changelog";
 import type * as Preset from "@nullbot/docusaurus-preset-nonepress";
-import { themes } from "prism-react-renderer";
 
 // color mode config
 const colorMode: Preset.ThemeConfig["colorMode"] = {
@@ -145,7 +146,7 @@ const themeConfig: Preset.ThemeConfig = {
   nonepress,
 };
 
-export default async function createConfigAsync() {
+export default async function createConfigAsync(): Promise<Config> {
   return {
     title: "NoneBot",
     tagline: "飞书协议适配器",
@@ -164,9 +165,9 @@ export default async function createConfigAsync() {
 
     onBrokenLinks: "throw",
 
-    // Even if you don't use internalization, you can use this field to set useful
-    // metadata like html lang. For example, if your site is Chinese, you may want
-    // to replace "en" with "zh-Hans".
+    // Even if you don't use internalization, you can use this field to set
+    // useful metadata like html lang. For example, if your site is Chinese, you
+    // may want to replace "en" with "zh-Hans".
     i18n: {
       defaultLocale: "zh-Hans",
       locales: ["zh-Hans"],
@@ -222,5 +223,5 @@ sidebar_custom_props:
     },
 
     themeConfig,
-  } satisfies Config;
+  };
 }
