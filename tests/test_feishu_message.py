@@ -4,6 +4,16 @@ import pytest
 
 from nonebot.adapters.feishu import Message, MessageSegment
 
+TEXT_A = {"tag": "text", "text": "a"}
+TEXT_B = {"tag": "text", "text": "b"}
+IMG = {"tag": "img", "image_key": "ik"}
+MEDIA = {"tag": "media", "file_key": "fk"}
+
+
+def _paragraphs(*segments: MessageSegment) -> list[list[dict[str, str]]]:
+    _, content = Message(list(segments)).serialize()
+    return json.loads(content)["zh_cn"]["content"]
+
 
 @pytest.mark.anyio
 async def test_to_post_does_not_mutate_image_segment():
@@ -80,11 +90,14 @@ def test_serialize_keeps_empty_paragraph_from_post():
     [
         (MessageSegment.media("fk"), {"file_key": "fk"}),
         (MessageSegment.media("fk", image_key="ik"), {"file_key": "fk", "image_key": "ik"}),
+        (MessageSegment.media("fk", "ik", "a.mp4", 2000), {"file_key": "fk", "image_key": "ik"}),
         (MessageSegment.audio("fk"), {"file_key": "fk"}),
+        (MessageSegment.audio("fk", 2000), {"file_key": "fk"}),
         (MessageSegment.file("fk"), {"file_key": "fk"}),
+        (MessageSegment.file("fk", "a.txt"), {"file_key": "fk"}),
     ],
 )
-def test_serialize_omits_unset_optional_fields(seg: MessageSegment, expected: dict[str, str]):
+def test_serialize_omits_unset_and_receive_only_fields(seg: MessageSegment, expected: dict[str, str]):
     msg_type, content = Message([seg]).serialize()
     assert msg_type == seg.type
     assert json.loads(content) == expected
@@ -103,3 +116,40 @@ def test_serialize_keeps_segment_data_of_received_media():
 
     assert seg.data == {"file_key": "fk", "image_key": "ik", "file_name": "a.mp4", "duration": 2000}
     assert unset.data == {"file_key": "fk", "image_key": None, "file_name": None, "duration": None}
+
+
+def test_serialize_puts_image_in_own_paragraph():
+    paragraphs = _paragraphs(MessageSegment.text("a"), MessageSegment.image("ik"), MessageSegment.text("b"))
+
+    assert paragraphs == [[TEXT_A], [IMG], [TEXT_B]]
+
+
+def test_serialize_puts_media_in_own_paragraph():
+    paragraphs = _paragraphs(MessageSegment.text("a"), MessageSegment.media("fk"), MessageSegment.text("b"))
+
+    assert paragraphs == [[TEXT_A], [MEDIA], [TEXT_B]]
+
+
+def test_serialize_keeps_each_image_in_separate_paragraphs():
+    paragraphs = _paragraphs(MessageSegment.image("ik"), MessageSegment.media("fk"), MessageSegment.image("ik"))
+
+    assert paragraphs == [[IMG], [MEDIA], [IMG]]
+
+
+def test_serialize_keeps_inline_segments_in_one_paragraph():
+    paragraphs = _paragraphs(MessageSegment.at("ou_x"), MessageSegment.text("a"), MessageSegment.text("b"))
+
+    assert paragraphs == [[{"tag": "at", "user_id": "ou_x"}, TEXT_A, TEXT_B]]
+
+
+def test_serialize_starts_new_paragraph_after_post_ending_with_image():
+    post = MessageSegment.post("title", [[TEXT_A], [IMG]])
+
+    assert _paragraphs(post, MessageSegment.text("b")) == [[TEXT_A], [IMG], [TEXT_B]]
+    assert post.data["content"] == [[TEXT_A], [IMG]]
+
+
+def test_serialize_keeps_post_content_as_written():
+    post = MessageSegment.post("title", [[TEXT_A, IMG]])
+
+    assert _paragraphs(post, MessageSegment.text("b")) == [[TEXT_A, IMG], [TEXT_B]]

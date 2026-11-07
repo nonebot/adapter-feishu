@@ -10,10 +10,14 @@ from nonebot.adapters import MessageSegment as BaseMessageSegment
 
 from .models import Mention
 
-
-def _omit_none(data: dict[str, Any]) -> dict[str, Any]:
-    """发送时省略未设置的可选字段，`data` 本身保持不变。"""
-    return {key: value for key, value in data.items() if value is not None}
+# 仅接收消息时存在的字段，这些信息在上传文件时提供，发送消息时不传
+_RECEIVE_ONLY_FIELDS = {
+    "audio": {"duration"},
+    "media": {"file_name", "duration"},
+    "file": {"file_name"},
+}
+# 富文本中必须独占一个段落的节点
+_STANDALONE_POST_TAGS = {"img", "media"}
 
 
 class MessageSegment(BaseMessageSegment["Message"]):
@@ -163,10 +167,15 @@ class MessageSegment(BaseMessageSegment["Message"]):
     def sticker(file_key: str) -> "MessageSegment":
         return Sticker("sticker", {"file_key": file_key})
 
+    def to_content(self) -> dict[str, Any]:
+        """转换为发送时的消息内容，省略未设置和仅接收时存在的字段，不修改消息段本身。"""
+        receive_only = _RECEIVE_ONLY_FIELDS.get(self.type, ())
+        return {key: value for key, value in self.data.items() if value is not None and key not in receive_only}
+
     def to_post(self) -> dict[str, Any]:
         """转换为富文本（post）消息节点，不修改消息段本身。"""
         tag = "img" if self.type == "image" else self.type
-        return {"tag": tag, **_omit_none(self.data)}
+        return {"tag": tag, **self.to_content()}
 
 
 class _TextData(TypedDict):
@@ -609,9 +618,15 @@ class Message(BaseMessage[MessageSegment]):
                     content.extend(list(line) for line in seg.data["content"])
 
                 else:
-                    if not content:
-                        content.append([])
-                    content[-1].append(seg.to_post())
+                    node = seg.to_post()
+                    if (
+                        not content
+                        or node["tag"] in _STANDALONE_POST_TAGS
+                        or any(item.get("tag") in _STANDALONE_POST_TAGS for item in content[-1])
+                    ):
+                        content.append([node])
+                    else:
+                        content[-1].append(node)
 
             return "post", json.dumps({"zh_cn": {"title": title, "content": content}}, ensure_ascii=False)
 
@@ -619,7 +634,7 @@ class Message(BaseMessage[MessageSegment]):
             if self[0].type == "post":
                 return "post", json.dumps({"zh_cn": self[0].data}, ensure_ascii=False)
 
-            return self[0].type, json.dumps(_omit_none(self[0].data), ensure_ascii=False)
+            return self[0].type, json.dumps(self[0].to_content(), ensure_ascii=False)
         else:
             raise ValueError("Cannot serialize empty message")
 
