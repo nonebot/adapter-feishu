@@ -2,7 +2,7 @@ from collections.abc import Iterable
 from dataclasses import dataclass
 import json
 import re
-from typing import TYPE_CHECKING, Any, Literal, TypedDict, Union
+from typing import TYPE_CHECKING, Any, Literal, NotRequired, TypedDict, Union
 from typing_extensions import override
 
 from nonebot.adapters import Message as BaseMessage
@@ -127,6 +127,23 @@ class MessageSegment(BaseMessageSegment["Message"]):
             "system",
             {"template": template, "from_user": from_user, "to_chatters": to_chatters},
         )
+
+    @staticmethod
+    def system_divider(
+        text: str,
+        i18n_text: dict[str, str] | None = None,
+        need_rollup: bool = False,
+    ) -> "SystemDivider":
+        """分割线系统消息，目前仅在机器人与用户的单聊中生效，需要 `im:message:send_sys_msg` 权限。"""
+        divider_text: _SystemDividerText = {"text": text}
+        if i18n_text:
+            divider_text["i18n_text"] = i18n_text
+
+        data: _SystemDividerData = {"type": "divider", "params": {"divider_text": divider_text}}
+        if need_rollup:
+            data["options"] = {"need_rollup": need_rollup}
+
+        return SystemDivider("system", data)
 
     @staticmethod
     def location(name: str, longitude: str, latitude: str) -> "Location":
@@ -489,6 +506,35 @@ class System(MessageSegment):
     @override
     def __str__(self) -> str:
         return f"[system:{self.data!r}]"
+
+
+class _SystemDividerText(TypedDict):
+    text: str
+    i18n_text: NotRequired[dict[str, str]]
+
+
+class _SystemDividerParams(TypedDict):
+    divider_text: _SystemDividerText
+
+
+class _SystemDividerOptions(TypedDict):
+    need_rollup: bool
+
+
+class _SystemDividerData(TypedDict):
+    type: Literal["divider"]
+    params: _SystemDividerParams
+    options: NotRequired[_SystemDividerOptions]
+
+
+@dataclass
+class SystemDivider(MessageSegment):
+    if TYPE_CHECKING:
+        data: _SystemDividerData
+
+    @override
+    def __str__(self) -> str:
+        return f"[system_divider:{self.data['params']['divider_text']['text']!r}]"
 
 
 class _LocationData(TypedDict):
