@@ -20,6 +20,7 @@ from nonebot.adapters.feishu.message import (
     Todo,
     VideoChat,
 )
+from nonebot.adapters.feishu.models import Mention, UserId
 
 TEXT_A = {"tag": "text", "text": "a"}
 TEXT_B = {"tag": "text", "text": "b"}
@@ -415,3 +416,101 @@ def test_serialize_sends_built_card():
 
     assert msg_type == "interactive"
     assert json.loads(content)["elements"] == [{"tag": "hr"}]
+
+
+BOT_MENTION = Mention(
+    key="@_user_1",
+    id=UserId(open_id="ou_bot", user_id="u_bot", union_id="on_bot"),
+    name="bot",
+    tenant_key="tk",
+)
+# 接收到的富文本：没有语言层，at 节点的 user_id 是 mentions 中的 key，节点常带空的 style
+RECEIVED_POST = {
+    "title": "",
+    "content": [
+        [
+            {"tag": "at", "user_id": "@_user_1", "user_name": "bot", "style": []},
+            {"tag": "text", "text": " /explain this", "style": []},
+        ],
+        [{"tag": "img", "image_key": "img_1"}],
+        [
+            {"tag": "text", "text": "see "},
+            {"tag": "a", "href": "https://example.com", "text": "docs", "style": []},
+            {"tag": "emotion", "emoji_type": "SMILE"},
+        ],
+        [{"tag": "code_block", "language": "PYTHON", "text": "print(1)\n"}],
+    ],
+}
+
+
+def _flat(msg: Message) -> list[tuple[str, dict[str, Any]]]:
+    return [(seg.type, seg.data) for seg in msg]
+
+
+def test_deserialize_post_into_segments():
+    msg = Message.deserialize(json.dumps(RECEIVED_POST), [BOT_MENTION], "post")
+
+    assert _flat(msg) == [
+        ("at", {"user_id": "ou_bot", "user_name": "bot"}),
+        ("text", {"text": " /explain this\n"}),
+        ("image", {"image_key": "img_1"}),
+        ("text", {"text": "\nsee "}),
+        ("a", {"href": "https://example.com", "text": "docs"}),
+        ("emotion", {"emoji_type": "SMILE"}),
+        ("text", {"text": "\n"}),
+        ("code_block", {"language": "PYTHON", "text": "print(1)\n"}),
+    ]
+    assert isinstance(msg[2], Image)
+    assert msg.extract_plain_text() == " /explain this\n\nsee docs\nprint(1)\n"
+
+
+def test_deserialize_post_puts_title_on_first_line():
+    received = {"title": "title", "content": [[TEXT_A], [], [TEXT_B]]}
+
+    msg = Message.deserialize(json.dumps(received), None, "post")
+
+    assert _flat(msg) == [("text", {"text": "title\na\n\nb"})]
+
+
+def test_deserialize_post_keeps_styled_text_apart():
+    bold = {"tag": "text", "text": "b", "style": ["bold"]}
+    received = {"title": "", "content": [[TEXT_A, bold, TEXT_A]]}
+
+    msg = Message.deserialize(json.dumps(received), None, "post")
+
+    assert _flat(msg) == [
+        ("text", {"text": "a"}),
+        ("text", {"text": "b", "style": ["bold"]}),
+        ("text", {"text": "a"}),
+    ]
+
+
+def test_deserialize_post_keeps_at_without_mention():
+    received = {"title": "", "content": [[{"tag": "at", "user_id": "@_user_2"}]]}
+
+    msg = Message.deserialize(json.dumps(received), [BOT_MENTION], "post")
+
+    assert _flat(msg) == [("at", {"user_id": "@_user_2"})]
+
+
+def test_deserialize_empty_post():
+    assert Message.deserialize(json.dumps({"title": "", "content": []}), None, "post") == Message()
+
+
+def test_received_post_can_be_sent_again():
+    msg = Message.deserialize(json.dumps(RECEIVED_POST), [BOT_MENTION], "post")
+
+    msg_type, content = msg.serialize()
+
+    assert msg_type == "post"
+    assert json.loads(content)["zh_cn"]["content"] == [
+        [{"tag": "at", "user_id": "ou_bot", "user_name": "bot"}, {"tag": "text", "text": " /explain this\n"}],
+        [{"tag": "img", "image_key": "img_1"}],
+        [
+            {"tag": "text", "text": "\nsee "},
+            {"tag": "a", "href": "https://example.com", "text": "docs"},
+            {"tag": "emotion", "emoji_type": "SMILE"},
+            {"tag": "text", "text": "\n"},
+            {"tag": "code_block", "language": "PYTHON", "text": "print(1)\n"},
+        ],
+    ]

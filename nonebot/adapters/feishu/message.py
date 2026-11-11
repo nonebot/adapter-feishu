@@ -34,6 +34,8 @@ _MSG_TYPES = {
 _POST_TAGS = {"text", "a", "at", "img", "media", "emotion", "code_block", "hr", "md"}
 # 富文本中必须独占一个段落的节点
 _STANDALONE_POST_TAGS = {"img", "media"}
+# 视为文本的消息段，链接和代码块取其中的文字
+_TEXT_TYPES = {"text", "post", "a", "code_block"}
 
 
 class MessageSegment(BaseMessageSegment["Message"]):
@@ -48,7 +50,7 @@ class MessageSegment(BaseMessageSegment["Message"]):
 
     @override
     def is_text(self) -> bool:
-        return self.type == "text" or self.type == "post"
+        return self.type in _TEXT_TYPES
 
     @override
     def __str__(self) -> str:
@@ -671,6 +673,63 @@ _RECEIVED_SEGMENTS: dict[str, type[MessageSegment]] = {
 }
 
 
+# 接收到的富文本节点 -> 消息段，img 与单独发送的图片一样记为 image
+_RECEIVED_POST_NODES: dict[str, tuple[str, type[MessageSegment]]] = {
+    "text": ("text", Text),
+    "at": ("at", At),
+    "img": ("image", Image),
+    "media": ("media", Media),
+}
+
+
+def _post_node_to_segment(node: dict[str, Any], at_key_to_id: dict[str, str]) -> MessageSegment:
+    tag = node.get("tag", "")
+    # 接收到的节点常带有空的 style 列表，去掉后相邻的纯文本才能合并
+    data = {key: value for key, value in node.items() if key != "tag" and value is not None and value != []}
+
+    if tag == "at":
+        # 接收到的 at 节点中 user_id 是 `@_user_1` 这样的 key，与文本消息一样换成 mentions 中的 id
+        user_id: str = data.get("user_id", "")
+        data["user_id"] = at_key_to_id.get(user_id.removeprefix("@"), user_id)
+
+    seg_type, segment_class = _RECEIVED_POST_NODES.get(tag, (tag, MessageSegment))
+    return segment_class(seg_type, data)
+
+
+def _deserialize_post(content: dict[str, Any], at_key_to_id: dict[str, str]) -> "Message":
+    """把接收到的富文本展开为消息段。
+
+    段落之间以换行分隔，标题作为第一行。展开后 @、图片与文字和文本消息中的一致，
+    @ 检测与命令匹配可以直接使用，再次发送时 `Message.serialize` 会重新组合为富文本。
+    """
+    paragraphs: list[list[dict[str, Any]]] = []
+    if title := content.get("title"):
+        paragraphs.append([{"tag": "text", "text": title}])
+    paragraphs.extend(content.get("content") or [])
+
+    segments: list[MessageSegment] = []
+    for index, paragraph in enumerate(paragraphs):
+        if index:
+            segments.append(Text("text", {"text": "\n"}))
+        segments.extend(_post_node_to_segment(node, at_key_to_id) for node in paragraph)
+
+    msg = Message()
+    for seg in segments:
+        # 合并相邻的纯文本，带样式的文本保持独立
+        last = msg[-1] if msg else None
+        if (
+            seg.type == "text"
+            and seg.data.keys() == {"text"}
+            and last is not None
+            and last.type == "text"
+            and last.data.keys() == {"text"}
+        ):
+            msg[-1] = Text("text", {"text": last.data["text"] + seg.data["text"]})
+        else:
+            msg.append(seg)
+    return msg
+
+
 class Message(BaseMessage[MessageSegment]):
     """
     飞书 协议 Message 适配。
@@ -738,7 +797,15 @@ class Message(BaseMessage[MessageSegment]):
             raise ValueError("Cannot serialize empty message")
 
     @staticmethod
-    def deserialize(content: str, mentions: list[Mention] | None, message_type: str) -> "Message":
+    def deserialize(
+        content: str,
+        mentions: list[Mention] | None,
+        message_type: str,
+    ) -> "Message":
+        """解析接收到的消息内容。
+
+        `@_user_1` 这样的 key 会换成 `mentions` 中的 open_id，富文本会展开为文字、@、图片等消息段。
+        """
         msg = Message()
         parsed_content = json.loads(content)
         at_key_to_id = {
@@ -776,7 +843,7 @@ class Message(BaseMessage[MessageSegment]):
                 msg.append(Text("text", {"text": text[text_begin:]}))
 
         elif message_type == "post":
-            msg.append(Post("post", parsed_content))
+            msg.extend(_deserialize_post(parsed_content, at_key_to_id))
 
         else:
             segment_class = _RECEIVED_SEGMENTS.get(message_type, MessageSegment)
