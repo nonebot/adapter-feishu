@@ -133,3 +133,36 @@ async def test_received_message_reaches_matchers(
     assert handled == [event]
     assert event.get_message()[0].type == msg_type
     assert event.get_event_description()
+
+
+@pytest.mark.anyio
+async def test_check_tome_in_post():
+    """@ 机器人的富文本与文本消息一样去掉开头的 @，命令可以匹配"""
+    event_data = {k: v for k, v in test_events[1].items() if k != "_model"}
+    content = {
+        "title": "",
+        "content": [
+            [
+                {"tag": "at", "user_id": "@_user_1", "user_name": "bot", "style": []},
+                {"tag": "text", "text": " /say 34567", "style": []},
+            ],
+            [{"tag": "img", "image_key": "img_1"}],
+        ],
+    }
+    message = {**event_data["event"]["message"], "message_type": "post", "content": json.dumps(content)}
+    event = Adapter.json_to_event({**event_data, "event": {**event_data["event"], "message": message}})
+    assert isinstance(event, GroupMessageEvent)
+
+    bot = Bot(
+        nonebot.get_adapter(Adapter),
+        bot_id,
+        bot_config=type_validate_python(BotConfig, test_bot),
+        bot_info=type_validate_python(BotInfo, bots_info["bot"]),
+    )
+    _check_at_me(bot, event)
+
+    assert event.to_me
+    assert event.get_message().extract_plain_text() == "/say 34567\n"
+    assert [seg.type for seg in event.get_message()] == ["text", "image"]
+    assert event.original_message[0].type == "at"
+    assert event.original_message[0].data["user_id"] == bots_info["bot"]["open_id"]

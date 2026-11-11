@@ -1,8 +1,11 @@
-from typing import Any, Literal
+from typing import TYPE_CHECKING, Any, Literal
 
 from pydantic import BaseModel
 
 from nonebot.compat import PYDANTIC_V2, ConfigDict
+
+if TYPE_CHECKING:
+    from ..message import Message
 
 
 class EventHeader(BaseModel):
@@ -124,6 +127,12 @@ class Reply(BaseModel):
     body: MessageBody
     mentions: list[ReplyMention] = []
     upper_message_id: str | None = None
+
+    def get_message(self) -> "Message":
+        """被回复消息的内容，按消息类型解析，@ 换成 `mentions` 中给出的 id（默认为 open_id）。"""
+        from ..message import Message
+
+        return Message.deserialize(self.body.content, self.mentions, self.msg_type)
 
     if PYDANTIC_V2:
         model_config = ConfigDict(extra="allow")
