@@ -1,4 +1,4 @@
-from collections.abc import Iterable
+from collections.abc import Iterable, Sequence
 from dataclasses import dataclass
 import json
 import re
@@ -8,7 +8,7 @@ from typing_extensions import override
 from nonebot.adapters import Message as BaseMessage
 from nonebot.adapters import MessageSegment as BaseMessageSegment
 
-from .models import Mention
+from .models import Mention, ReplyMention
 
 # 仅接收消息时存在的字段，这些信息在上传文件时提供，发送消息时不传
 _RECEIVE_ONLY_FIELDS = {
@@ -682,6 +682,11 @@ _RECEIVED_POST_NODES: dict[str, tuple[str, type[MessageSegment]]] = {
 }
 
 
+def _mention_id(mention: Mention | ReplyMention) -> str:
+    # 事件中的 id 是包含各类 id 的对象，获取消息接口返回的是按 id_type 给出的单个 id
+    return mention.id.open_id if isinstance(mention, Mention) else mention.id
+
+
 def _post_node_to_segment(node: dict[str, Any], at_key_to_id: dict[str, str]) -> MessageSegment:
     tag = node.get("tag", "")
     # 接收到的节点常带有空的 style 列表，去掉后相邻的纯文本才能合并
@@ -799,18 +804,19 @@ class Message(BaseMessage[MessageSegment]):
     @staticmethod
     def deserialize(
         content: str,
-        mentions: list[Mention] | None,
+        mentions: Sequence[Mention | ReplyMention] | None,
         message_type: str,
     ) -> "Message":
         """解析接收到的消息内容。
 
-        `@_user_1` 这样的 key 会换成 `mentions` 中的 open_id，富文本会展开为文字、@、图片等消息段。
+        `mentions` 可以是事件中的 `Mention`，也可以是获取消息接口返回的 `ReplyMention`，
+        `@_user_1` 这样的 key 会换成对应的 id。富文本会展开为文字、@、图片等消息段。
         """
         msg = Message()
         parsed_content = json.loads(content)
         at_key_to_id = {
             # wipeout @ at the start of key
-            mention.key[1:]: mention.id.open_id
+            mention.key[1:]: _mention_id(mention)
             for mention in (mentions or [])
         }
 
