@@ -1,6 +1,6 @@
 [project]
 name = "nonebot-adapter-feishu"
-version = "3.0.0"
+version = "3.1.0"
 description = "feishu(larksuite) adapter for nonebot2"
 authors = [{ name = "StarHeartHunt", email = "starheart233@gmail.com" }]
 requires-python = ">=3.11, <4.0"
