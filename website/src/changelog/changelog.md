@@ -7,9 +7,7 @@ toc_max_heading_level: 2
 
 ## 最近更新
 
-### 🐛 Bug 修复
-
-- :bug: parse received rich text and replied messages [@StarHeartHunt](https://github.com/StarHeartHunt) ([#181](https://github.com/nonebot/adapter-feishu/pull/181))
+- No changes
 
 ## v3.1.0
 
